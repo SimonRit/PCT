@@ -9,8 +9,6 @@
 #include <TChain.h>
 #include <TROOT.h>
 
-#include "pctBetheBlochFunctor.h"
-
 struct ParticleData
   {
   float ekine;
@@ -28,28 +26,34 @@ struct ParticleInfo
   };
 
 
-void SetTreeBranch(TChain *tree, std::string branchName, void *add)
+bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandatory=true)
 {
   unsigned int found = 0;
   tree->SetBranchStatus(branchName.c_str(), 1, &found);
   if(!found)
     {
-    std::cerr <<  "Could not load branch "
-             << branchName << std::endl;
-    exit(EXIT_FAILURE);
+    if(mandatory)
+      {
+      std::cerr <<  "Could not load branch "
+               << branchName << std::endl;
+      exit(EXIT_FAILURE);
+      }
     }
-  tree->SetBranchAddress(branchName.c_str(), add);
+  else
+    tree->SetBranchAddress(branchName.c_str(), add);
+  return found;
 }
 
 void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd, TChain *tree)
 {
   tree->GetListOfBranches(); // force reading of chain
-  SetTreeBranch(tree, "ParticleName", pi.name);
+  if(!SetTreeBranch(tree, "ParticleName", pi.name, false))
+    strcpy(pi.name, "proton"); // If absent, assume that particles have been filtered
   SetTreeBranch(tree, "RunID", &pi.runID);
   SetTreeBranch(tree, "TrackID", &pi.trackID);
   SetTreeBranch(tree, "EventID", &pi.eventID);
   SetTreeBranch(tree, "Ekine", &pd.ekine);
-  SetTreeBranch(tree, "X", pd.position.GetDataPointer()  );
+  //SetTreeBranch(tree, "X", pd.position.GetDataPointer()  );
   SetTreeBranch(tree, "Y", pd.position.GetDataPointer()+1);
   SetTreeBranch(tree, "Z", pd.position.GetDataPointer()+2);
   SetTreeBranch(tree, "dX", pd.direction.GetDataPointer()  );
@@ -115,6 +119,8 @@ int main(int argc, char * argv[])
   struct ParticleData pdIn, pdOut;
   BranchParticleToPhaseSpace(piIn, pdIn, treeIn);
   BranchParticleToPhaseSpace(piOut, pdOut, treeOut);
+  pdIn.position[0]  = args_info.planeIn_arg;
+  pdOut.position[0] = args_info.planeOut_arg;
 
   // Init
   std::vector< std::pair<ParticleData, ParticleData> > pairs;
@@ -137,6 +143,20 @@ int main(int argc, char * argv[])
 
     treeIn->GetEntry(iIn);
     treeOut->GetEntry(iOut);
+
+    // Move to next adequate RunID
+    if(piIn.runID!=args_info.runid_arg)
+      {
+      while(piIn.runID!=args_info.runid_arg && ++iIn<nparticulesIn)
+        treeIn->GetEntry(iIn);
+      continue;
+      }
+    if(piOut.runID!=args_info.runid_arg)
+      {
+      while(piOut.runID!=args_info.runid_arg && ++iOut<nparticulesOut)
+        treeOut->GetEntry(iOut);
+      continue;
+      }
 
     // Manage merged root files
     if(piIn.eventID<prevEventIDIn)
@@ -190,8 +210,9 @@ int main(int argc, char * argv[])
       continue;
       }
 
-    // Corresponding protons found, add to vector
-    pairs.push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
+    // Corresponding protons found, add to vector if no nuclear interaction
+    if(piIn.trackID == piOut.trackID)
+      pairs.push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
     iIn++;
     iOut++;
     }
