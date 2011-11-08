@@ -53,12 +53,14 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd
   SetTreeBranch(tree, "TrackID", &pi.trackID);
   SetTreeBranch(tree, "EventID", &pi.eventID);
   SetTreeBranch(tree, "Ekine", &pd.ekine);
-  //SetTreeBranch(tree, "X", pd.position.GetDataPointer()  );
+
+  // WARNING: X and Z are purposely swap...
+  //SetTreeBranch(tree, "X", pd.position.GetDataPointer()+2);
   SetTreeBranch(tree, "Y", pd.position.GetDataPointer()+1);
-  SetTreeBranch(tree, "Z", pd.position.GetDataPointer()+2);
-  SetTreeBranch(tree, "dX", pd.direction.GetDataPointer()  );
+  SetTreeBranch(tree, "Z", pd.position.GetDataPointer());
+  SetTreeBranch(tree, "dX", pd.direction.GetDataPointer()+2);
   SetTreeBranch(tree, "dY", pd.direction.GetDataPointer()+1);
-  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+2);
+  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer());
   SetTreeBranch(tree, "Time", &pd.time);
 }
 
@@ -119,8 +121,8 @@ int main(int argc, char * argv[])
   struct ParticleData pdIn, pdOut;
   BranchParticleToPhaseSpace(piIn, pdIn, treeIn);
   BranchParticleToPhaseSpace(piOut, pdOut, treeOut);
-  pdIn.position[0]  = args_info.planeIn_arg;
-  pdOut.position[0] = args_info.planeOut_arg;
+  pdIn.position[2]  = args_info.planeIn_arg;
+  pdOut.position[2] = args_info.planeOut_arg;
 
   // Init
   std::vector< std::pair<ParticleData, ParticleData> > pairs;
@@ -212,7 +214,14 @@ int main(int argc, char * argv[])
 
     // Corresponding protons found, add to vector if no nuclear interaction
     if(piIn.trackID == piOut.trackID)
+      {
+      // WARNING: We have swap x and z, z sign must also be changed
+      pdIn.position[2] *= -1.;
+      pdIn.direction[2] *= -1.;
+      pdOut.position[2] *= -1.;
+      pdOut.direction[2] *= -1.;
       pairs.push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
+      }
     iIn++;
     iOut++;
     }
