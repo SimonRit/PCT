@@ -26,6 +26,7 @@ INCLUDE_DIRECTORIES(${ROOT_INCLUDE_DIR})
 
 FIND_PACKAGE(CLHEP 2.0 REQUIRED)
 INCLUDE_DIRECTORIES(${CLHEP_INCLUDE_DIRS})
+#INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/CLHEP")
 
 #=========================================================
 # Executables
@@ -39,3 +40,5 @@ ENDMACRO (ADD_PCT_EXECUTABLE)
 
 # Executable
 ADD_PCT_EXECUTABLE(pctpairprotons pctpairprotons.cxx)
+ADD_PCT_EXECUTABLE(pctstraightpath pctstraightpath.cxx)
+ADD_PCT_EXECUTABLE(pctprojection pctprojection.cxx)

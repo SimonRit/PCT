@@ -1,0 +1,14 @@
+package "pct"
+version "Create the 3D sequence (2D + distance) of proton radiographies"
+
+option "config"    - "Config file"                                               string    no
+option "input"		 i "Input file name containing the proton pairs"		            string  	yes
+option "output"    o "Output file name"                                          string    yes
+option "source"    s "Source position"                    double    no   default="0."
+option "quadricIn" - "Parameters of the quadric function defining object support for input rays" double multiple no
+option "quadricOut" - "Parameters of the quadric function defining object support for output rays" double multiple no
+
+section "Projections parameters"
+option "origin"    - "Origin (default=centered)" double multiple no
+option "dimension" - "Dimension"                 int    multiple no default="256"
+option "spacing"   - "Spacing"                   double multiple no default="1"
