@@ -216,9 +216,7 @@ int main(int argc, char * argv[])
     if(piIn.trackID == piOut.trackID)
       {
       // WARNING: We have swap x and z, z sign must also be changed
-      pdIn.position[2] *= -1.;
       pdIn.direction[2] *= -1.;
-      pdOut.position[2] *= -1.;
       pdOut.direction[2] *= -1.;
       pairs.push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
       }
