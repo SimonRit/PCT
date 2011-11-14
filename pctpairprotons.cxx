@@ -1,13 +1,18 @@
 #include "pctpairprotons_ggo.h"
 
+#include <iomanip>
+
 #include <rtkGgoFunctions.h>
 #include <itkImage.h>
 #include <itkImageIterator.h>
 #include <itkImageFileWriter.h>
+#include <itksys/SystemTools.hxx>
 
 // Root includes
 #include <TChain.h>
 #include <TROOT.h>
+
+#define MAX_RUNS 1024
 
 struct ParticleData
   {
@@ -55,16 +60,16 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd
   SetTreeBranch(tree, "Ekine", &pd.ekine);
 
   // WARNING: X and Z are purposely swap...
-  //SetTreeBranch(tree, "X", pd.position.GetDataPointer()+2);
-  SetTreeBranch(tree, "Y", pd.position.GetDataPointer()+1);
-  SetTreeBranch(tree, "Z", pd.position.GetDataPointer());
+  //SetTreeBranch(tree, "X",  pd.position.GetDataPointer()+2);
+  SetTreeBranch(tree, "Y",  pd.position.GetDataPointer());
+  SetTreeBranch(tree, "Z",  pd.position.GetDataPointer()+1);
   SetTreeBranch(tree, "dX", pd.direction.GetDataPointer()+2);
-  SetTreeBranch(tree, "dY", pd.direction.GetDataPointer()+1);
-  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer());
+  SetTreeBranch(tree, "dY", pd.direction.GetDataPointer());
+  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+1);
   SetTreeBranch(tree, "Time", &pd.time);
 }
 
-void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs, const char *fileName)
+void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs, std::string fileName)
 {
   itk::ImageRegion<2> region;
   itk::ImageRegion<2>::SizeType size;
@@ -125,7 +130,7 @@ int main(int argc, char * argv[])
   pdOut.position[2] = args_info.planeOut_arg;
 
   // Init
-  std::vector< std::pair<ParticleData, ParticleData> > pairs;
+  std::vector< std::vector< std::pair<ParticleData, ParticleData> > > pairs(MAX_RUNS);
   size_t nparticulesIn = treeIn->GetEntries();
   size_t nparticulesOut = treeOut->GetEntries();
   size_t iIn=0, iOut=0;
@@ -146,19 +151,19 @@ int main(int argc, char * argv[])
     treeIn->GetEntry(iIn);
     treeOut->GetEntry(iOut);
 
-    // Move to next adequate RunID
-    if(piIn.runID!=args_info.runid_arg)
-      {
-      while(piIn.runID!=args_info.runid_arg && ++iIn<nparticulesIn)
-        treeIn->GetEntry(iIn);
-      continue;
-      }
-    if(piOut.runID!=args_info.runid_arg)
-      {
-      while(piOut.runID!=args_info.runid_arg && ++iOut<nparticulesOut)
-        treeOut->GetEntry(iOut);
-      continue;
-      }
+//    // Move to next adequate RunID
+//    if(piIn.runID!=args_info.runid_arg)
+//      {
+//      while(piIn.runID!=args_info.runid_arg && ++iIn<nparticulesIn)
+//        treeIn->GetEntry(iIn);
+//      continue;
+//      }
+//    if(piOut.runID!=args_info.runid_arg)
+//      {
+//      while(piOut.runID!=args_info.runid_arg && ++iOut<nparticulesOut)
+//        treeOut->GetEntry(iOut);
+//      continue;
+//      }
 
     // Manage merged root files
     if(piIn.eventID<prevEventIDIn)
@@ -213,12 +218,12 @@ int main(int argc, char * argv[])
       }
 
     // Corresponding protons found, add to vector if no nuclear interaction
-    if(piIn.trackID == piOut.trackID)
+    //if(piIn.trackID == piOut.trackID)
       {
       // WARNING: We have swap x and z, z sign must also be changed
       pdIn.direction[2] *= -1.;
       pdOut.direction[2] *= -1.;
-      pairs.push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
+      pairs[piIn.runID].push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
       }
     iIn++;
     iOut++;
@@ -231,6 +236,16 @@ int main(int argc, char * argv[])
             << "Writing..."
             << std::endl;
 
-  WritePairs(pairs, args_info.output_arg);
+  for(unsigned int i=0; i<MAX_RUNS; i++)
+    {
+    if(pairs[i].size())
+      {
+      std::ostringstream os;
+      os << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
+         << std::setw(3) << std::setfill ('0') << i
+         << itksys::SystemTools::GetFilenameLastExtension(args_info.output_arg);
+      WritePairs(pairs[i], os.str());
+      }
+    }
   return EXIT_SUCCESS;
 }
