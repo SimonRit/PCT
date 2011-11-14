@@ -1,0 +1,11 @@
+package "pct"
+version "Select proton pairs according to relative exit angle and energy [Schulte, MedPhys, 2008]."
+
+option "config"    - "Config file"                                  string    no
+option "input"		 i "Input file name containing the proton pairs"	string  	yes
+option "output"    o "Output file name"                             string    yes
+
+section "Projections parameters"
+option "origin"    - "Origin (default=centered)" double multiple no
+option "dimension" - "Dimension"                 int    multiple no default="256"
+option "spacing"   - "Spacing"                   double multiple no default="1"

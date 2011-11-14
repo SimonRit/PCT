@@ -40,5 +40,6 @@ ENDMACRO (ADD_PCT_EXECUTABLE)
 
 # Executable
 ADD_PCT_EXECUTABLE(pctpairprotons pctpairprotons.cxx)
+ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
 ADD_PCT_EXECUTABLE(pctstraightpath pctstraightpath.cxx)
 ADD_PCT_EXECUTABLE(pctprojection pctprojection.cxx)
