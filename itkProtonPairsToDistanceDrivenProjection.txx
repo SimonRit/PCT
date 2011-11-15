@@ -144,23 +144,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       {
       quadricIn->SetRayOrigin(pIn);
       quadricOut->SetRayOrigin(pOut);
-      if(!quadricIn->Evaluate(dIn) || (quadricIn != quadricOut && !quadricOut->Evaluate(dOut)))
-        //No intersection with object, ignore
-        continue;
-
-      pSIn  = pIn + dIn * quadricIn->GetFarthestDistance();
-      VectorType pSIn2 = pIn + dIn * quadricIn->GetNearestDistance();
-      if(pSIn[2]<m_SourceDistance)
-        pSIn = pSIn2;
-      else if(pSIn2[2]>m_SourceDistance && pSIn2[2]<pSIn[2])
-        pSIn = pSIn2;
-
-      pSOut  = pOut + dOut * quadricOut->GetFarthestDistance();
-      VectorType pSOut2 = pOut + dOut * quadricOut->GetNearestDistance();
-      if(pSOut[2]<m_SourceDistance)
-        pSOut = pSOut2;
-      else if(pSOut2[2]>m_SourceDistance && pSOut2[2]<pSOut[2])
-        pSOut = pSOut2;
+      if(quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
+        {
+        pSIn  = pIn  + dIn  * quadricIn ->GetNearestDistance();
+        if(pSIn[2]<pIn[2])
+          pSIn  = pIn  + dIn  * quadricIn ->GetFarthestDistance();
+        pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
+        }
       }
 
     // Convert everything to voxel coordinates
