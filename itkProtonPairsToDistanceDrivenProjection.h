@@ -53,6 +53,9 @@ public:
   itkGetMacro(QuadricOut, RQIType::Pointer);
   itkSetMacro(QuadricOut, RQIType::Pointer);
 
+  /** Get/Set the count of proton pairs per pixel. */
+  itkGetMacro(Count, CountImagePointer);
+
 protected:
   ProtonPairsToDistanceDrivenProjection() {
     this->SetInPlace( true );

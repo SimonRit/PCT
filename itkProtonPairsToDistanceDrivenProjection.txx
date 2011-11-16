@@ -262,6 +262,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     itCOut.GoToBegin();
     }
 
+  // Set count image information
+  m_Count->SetSpacing( this->GetOutput()->GetSpacing() );
+  m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
+
   // Normalize with proton count (average)
   while(!itCOut.IsAtEnd())
     {
