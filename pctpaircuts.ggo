@@ -4,6 +4,7 @@ version "Select proton pairs according to relative exit angle and energy [Schult
 option "config"    - "Config file"                                  string    no
 option "input"		 i "Input file name containing the proton pairs"	string  	yes
 option "output"    o "Output file name"                             string    yes
+option "source"    s "Source position"                              double    no   default="0."
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no

@@ -90,12 +90,14 @@ int main(int argc, char * argv[])
       VectorType data = it.Get();
       ++it;
 
-      const double xx = (pOut[0]-imgOrigin[0]) * imgSpacingInv[0];
+      static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
+
+      const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0];
       const int i = int(xx+0.5);
       if(i<0 || i>=(int)imgSize[0])
         continue;
 
-      const double yy = (pOut[1]-imgOrigin[1]) * imgSpacingInv[1];
+      const double yy = (pIn[1]*mag-imgOrigin[1]) * imgSpacingInv[1];
       const int j = int(yy+0.5);
       if(j<0 || j>=(int)imgSize[1])
         continue;
@@ -155,12 +157,14 @@ int main(int argc, char * argv[])
       VectorType data = it.Get();
       ++it;
 
-      const double xx = (pOut[0]-imgOrigin[0]) * imgSpacingInv[0];
+      static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
+
+      const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0];
       const int i = int(xx+0.5);
       if(i<0 || i>=(int)imgSize[0])
         continue;
 
-      const double yy = (pOut[1]-imgOrigin[1]) * imgSpacingInv[1];
+      const double yy = (pIn[1]*mag-imgOrigin[1]) * imgSpacingInv[1];
       const int j = int(yy+0.5);
       if(j<0 || j>=(int)imgSize[1])
         continue;
