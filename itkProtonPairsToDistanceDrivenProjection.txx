@@ -2,6 +2,7 @@
 #include <itkImageRegionIterator.h>
 
 #include "pctBetheBlochFunctor.h"
+#include "itkThirdOrderPolynomialMLPFunction.h"
 
 namespace itk
 {
@@ -172,23 +173,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
 
-    // Parameters of the 3rd order polynomial. The function goes from
-    // z=0 to z=lastSliceZ
-    const double ax = pSIn[0];
-    const double ay = pSIn[1];
-    const double x  = pSOut[0];
-    const double y  = pSOut[1];
-    const double bx = dIn[0];
-    const double by = dIn[1];
-    const double xd = dOut[0];
-    const double yd = dOut[1];
-    const double lastSliceZ = (pSOut[2]-pSIn[2]);
-    const double invzsq = 1./(lastSliceZ*lastSliceZ);
-    const double cx = invzsq * ( 3*x - lastSliceZ*xd - 3*ax - 2*bx*lastSliceZ );
-    const double cy = invzsq * ( 3*y - lastSliceZ*yd - 3*ay - 2*by*lastSliceZ );
-    const double inv3zsq = invzsq/3.;
-    const double dx = inv3zsq * ( xd - bx - 2*cx*lastSliceZ );
-    const double dy = inv3zsq * ( yd - by - 2*cy*lastSliceZ );
+    itk::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
+    mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+    mlp->Init(pSIn, pSOut, dIn, dOut);
 
     for(unsigned int k=0; k<imgSize[2]; k+=1)
       {
@@ -208,9 +195,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         }
       else
         {
-        const double z = (dk-pSIn[2]);
-        xx = ax+z*(bx+z*(cx+z*dx));
-        yy = ay+z*(by+z*(cy+z*dy));
+        mlp->Evaluate(dk, xx, yy);
         }
 
       xx = (xx-originInVox[0])*zmag[k]+originInVox[0];
