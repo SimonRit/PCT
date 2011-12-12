@@ -129,6 +129,11 @@ int main(int argc, char * argv[])
       pSumAngleSq[idx]  = 3*sqrt( pSumAngleSq [idx]-pSumAngle [idx]*pSumAngle [idx] );
       }
     }
+  for(unsigned int idx=0; idx<npixels; idx++)
+    {
+    pSumEnergySq[idx] *= 3;
+    pSumAngleSq[idx]  *= 3;
+    }
 
   std::cout << "Select pairs..." << std::endl;
 
@@ -205,5 +210,43 @@ int main(int argc, char * argv[])
   writer->SetInput( img );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
 
+  // Optional outputs
+  typedef itk::ImageFileWriter<ProjectionImageType> PWriterType;
+  if(args_info.mangle_given)
+    {
+    PWriterType::Pointer w = PWriterType::New();
+    w->SetInput(sumAngle->GetOutput());
+    w->SetFileName(args_info.mangle_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }
+  if(args_info.sangle_given)
+    {
+    PWriterType::Pointer w = PWriterType::New();
+    w->SetInput(sumAngleSq->GetOutput());
+    w->SetFileName(args_info.sangle_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }
+  if(args_info.menergy_given)
+    {
+    PWriterType::Pointer w = PWriterType::New();
+    w->SetInput(sumEnergy->GetOutput());
+    w->SetFileName(args_info.menergy_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }  typedef itk::ImageFileWriter<ProjectionImageType> PWriterType;
+  if(args_info.senergy_given)
+    {
+    PWriterType::Pointer w = PWriterType::New();
+    w->SetInput(sumEnergySq->GetOutput());
+    w->SetFileName(args_info.senergy_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }
+  if(args_info.count_given)
+    {
+    itk::ImageFileWriter<CountImageType>::Pointer w;
+    w = itk::ImageFileWriter<CountImageType>::New();
+    w->SetInput(counts->GetOutput());
+    w->SetFileName(args_info.count_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }
   return EXIT_SUCCESS;
 }
