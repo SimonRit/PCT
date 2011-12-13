@@ -125,8 +125,8 @@ int main(int argc, char * argv[])
       pSumAngle   [idx] /= pCounts[idx];
       pSumEnergySq[idx] /= pCounts[idx];
       pSumAngleSq [idx] /= pCounts[idx];
-      pSumEnergySq[idx] = 3*sqrt( pSumEnergySq[idx]-pSumEnergy[idx]*pSumEnergy[idx] );
-      pSumAngleSq[idx]  = 3*sqrt( pSumAngleSq [idx]-pSumAngle [idx]*pSumAngle [idx] );
+      pSumEnergySq[idx] = sqrt( pSumEnergySq[idx]-pSumEnergy[idx]*pSumEnergy[idx] );
+      pSumAngleSq[idx]  = sqrt( pSumAngleSq [idx]-pSumAngle [idx]*pSumAngle [idx] );
       }
     }
   for(unsigned int idx=0; idx<npixels; idx++)
