@@ -54,6 +54,7 @@ FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
   // We only set the first sub-stack at that point, the rest will be
   // requested in the GenerateData function
   typename ExtractFilterType::InputImageRegionType projRegion;
+  m_ProjectionStack->UpdateOutputInformation();
   projRegion = m_ProjectionStack->GetLargestPossibleRegion();
   projRegion.SetSize(Dimension, 1);
   m_ExtractFilter->SetExtractionRegion(projRegion);
