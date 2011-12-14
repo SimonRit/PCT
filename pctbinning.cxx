@@ -1,4 +1,4 @@
-#include "pctprojection_ggo.h"
+#include "pctbinning_ggo.h"
 
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
@@ -12,7 +12,7 @@
 
 int main(int argc, char * argv[])
 {
-  GGO(pctprojection, args_info);
+  GGO(pctbinning, args_info);
 
   typedef float OutputPixelType;
   const unsigned int Dimension = 3;
@@ -21,7 +21,7 @@ int main(int argc, char * argv[])
   // Create a stack of empty projection images
   typedef itk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer constantImageSource = ConstantImageSourceType::New();
-  rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctprojection>(constantImageSource, args_info);
+  rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctbinning>(constantImageSource, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( constantImageSource->Update() );
 
   // Projection filter
