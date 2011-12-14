@@ -3,7 +3,7 @@
 
 #include "itkThreeDCircularProjectionGeometryXMLFile.h"
 #include "itkProjectionsReader.h"
-#include "itkFDKWeightProjectionFilter.h"
+#include "itkFDKDDWeightProjectionFilter.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -14,8 +14,6 @@ int main(int argc, char * argv[])
 
   typedef float OutputPixelType;
   const unsigned int Dimension = 3;
-
-  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
   // Generate file names
   itk::RegularExpressionSeriesFileNames::Pointer names = itk::RegularExpressionSeriesFileNames::New();
@@ -49,11 +47,10 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 
   // Weights filter
-  typedef itk::FDKWeightProjectionFilter< ProjectionImageType > WeightType;
+  typedef itk::FDKDDWeightProjectionFilter< ProjectionImageType > WeightType;
   WeightType::Pointer wf = WeightType::New();
   wf->SetInput( reader->GetOutput() );
   wf->SetGeometry( geometryReader->GetOutputObject() );
-  wf->SetNumberOfThreads(1);
   wf->InPlaceOff();
 
   // Write

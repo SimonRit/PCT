@@ -1,7 +1,7 @@
 #ifndef __itkFDKDDConeBeamReconstructionFilter_h
 #define __itkFDKDDConeBeamReconstructionFilter_h
 
-#include "itkFDKWeightProjectionFilter.h"
+#include "itkFDKDDWeightProjectionFilter.h"
 #include "itkFFTRampImageFilter.h"
 #include "itkFDKDDBackProjectionImageFilter.h"
 
@@ -36,7 +36,7 @@ public:
 
   /** Typedefs of each subfilter of this composite filter */
   typedef itk::ExtractImageFilter< ProjectionStackType, ProjectionStackType >                ExtractFilterType;
-  typedef itk::FDKWeightProjectionFilter< ProjectionStackType, ProjectionStackType >         WeightFilterType;
+  typedef itk::FDKDDWeightProjectionFilter< ProjectionStackType, ProjectionStackType >       WeightFilterType;
   typedef itk::FFTRampImageFilter< ProjectionStackType, ProjectionStackType, TFFTPrecision > RampFilterType;
   typedef itk::FDKDDBackProjectionImageFilter< OutputImageType, OutputImageType >            BackProjectionFilterType;
 
