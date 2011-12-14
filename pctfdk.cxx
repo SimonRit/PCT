@@ -36,7 +36,6 @@ int main(int argc, char * argv[])
   typedef itk::ProjectionsReader< ProjectionImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
-  TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->GenerateOutputInformation() );
 
   // Geometry
   if(args_info.verbose_flag)
