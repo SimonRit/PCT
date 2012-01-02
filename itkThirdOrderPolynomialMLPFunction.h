@@ -18,7 +18,7 @@ class ITK_EXPORT ThirdOrderPolynomialMLPFunction :
 public:
   /** Standard class typedefs. */
   typedef ThirdOrderPolynomialMLPFunction                       Self;
-  typedef ThirdOrderPolynomialMLPFunction<TCoordRep>            Superclass;
+  typedef MostLikelyPathFunction<TCoordRep>                     Superclass;
   typedef SmartPointer<Self>                                    Pointer;
   typedef SmartPointer<const Self>                              ConstPointer;
 
