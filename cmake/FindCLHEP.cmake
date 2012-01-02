@@ -65,6 +65,13 @@ else ()
     # Find the clhep-config program
     find_program(CLHEP_CONFIG_EXECUTABLE NAMES clhep-config)
 
+IF( WIN32 )
+  get_filename_component(CLHEP_CONFIG_PATH ${CLHEP_CONFIG_EXECUTABLE} PATH)
+  get_filename_component(CLHEP_CONFIG_PATH ${CLHEP_CONFIG_PATH} PATH)
+  SET( CLHEP_LIBRARIES ${CLHEP_CONFIG_PATH}/lib )
+  SET( CLHEP_INCLUDE_DIRS ${CLHEP_CONFIG_PATH}/include )
+
+ELSE( WIN32 )
     # Reset vars
     set(CLHEP_LIBRARIES)
     set(CLHEP_INCLUDE_DIRS)
@@ -111,10 +118,12 @@ else ()
             RESOLVE_LIBRARIES(CLHEP_LIBRARIES ${CLHEP_CONFIG_LIBS})
         endif ()
     endif ()
+ENDIF( WIN32 )
 endif ()
 
 
+IF( NOT WIN32 )
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(CLHEP "Failed to find CLHEP" CLHEP_VERSION_OK CLHEP_LIBRARIES CLHEP_INCLUDE_DIRS)
 mark_as_advanced(CLHEP_CONFIG_EXECUTABLE)
-
+ENDIF( NOT WIN32 )
