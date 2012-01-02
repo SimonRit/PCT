@@ -2,7 +2,8 @@
 #include <itkImageRegionIterator.h>
 
 #include "pctBetheBlochFunctor.h"
-#include "itkThirdOrderPolynomialMLPFunction.h"
+//#include "itkThirdOrderPolynomialMLPFunction.h"
+#include "itkSchulteMLPFunction.h"
 
 namespace itk
 {
@@ -50,7 +51,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   size_t nprotons = reader->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
   ProtonPairsImageType::RegionType region = reader->GetOutput()->GetLargestPossibleRegion();
   region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
-  region.SetSize(1, vnl_math_min(nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
+  region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
   reader->GetOutput()->SetRequestedRegion(region);
   reader->Update();
 
@@ -107,14 +108,18 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     quadricOut->SetJ(m_QuadricOut->GetJ());
     }
 
-  // Create magnitude lut
+  // Create zmm and magnitude lut
+  std::vector<double> zmm(imgSize[2]);
   std::vector<double> zmag(imgSize[2]);
   const double sourcePosInVox = (m_SourceDistance-imgOrigin[2]) * imgSpacingInv[2];
   const double zPlaneOutInMM = (*(reader->GetOutput()->GetBufferPointer()+1))[2];
 
   const double zPlaneOutInVox = (zPlaneOutInMM-imgOrigin[2]) * imgSpacingInv[2];
   for(unsigned int i=0; i<imgSize[2]; i++)
+    {
+    zmm[i] = i*imgSpacingInv[2]+imgOrigin[2];
     zmag[i] = (zPlaneOutInVox-sourcePosInVox)/(i-sourcePosInVox);
+    }
 
   // Process pairs
   ImageRegionIterator<ProtonPairsImageType> it(reader->GetOutput(), region);
@@ -127,6 +132,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
                 << 100*it.GetIndex()[1]/region.GetSize(1) << "%) in thread 1"
                 << std::flush;
       }
+
     VectorType pIn = it.Get();
     ++it;
     VectorType pOut = it.Get();
@@ -157,15 +163,19 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // Convert everything to voxel coordinates
     for(unsigned int i=0; i<3; i++)
       {
-      pSIn[i]  = (pSIn[i]  - imgOrigin[i]) * imgSpacingInv[i];
-      pSOut[i] = (pSOut[i] - imgOrigin[i]) * imgSpacingInv[i];
       pIn[i]   = (pIn[i]   - imgOrigin[i]) * imgSpacingInv[i];
       pOut[i]  = (pOut[i]  - imgOrigin[i]) * imgSpacingInv[i];
       dIn[i]   = dIn[i]  * imgSpacingInv[i];
       dOut[i]  = dOut[i] * imgSpacingInv[i];
       }
+    for(unsigned int i=0; i<2; i++)
+      {
+      // Only first 2 coordinates, absolute depth is essential for MLP
+      pSIn[i]  = (pSIn[i]  - imgOrigin[i]) * imgSpacingInv[i];
+      pSOut[i] = (pSOut[i] - imgOrigin[i]) * imgSpacingInv[i];
+      }
 
-    // Normalize direction with respet to z
+    // Normalize direction with respect to z
     dIn[0] /= dIn[2];
     dIn[1] /= dIn[2];
     //dIn[2] = 1.; SR: implicit in the following
@@ -173,9 +183,16 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
 
-    itk::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
-    mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+    // Init MLP before mm to voxel conversion of depth
+    //itk::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
+    //mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+    itk::SchulteMLPFunction::Pointer mlp;
+    mlp = itk::SchulteMLPFunction::New();
     mlp->Init(pSIn, pSOut, dIn, dOut);
+
+    // Finalize mm to voxel conversion
+    pSIn[2]  = (pSIn[2]  - imgOrigin[2]) * imgSpacingInv[2];
+    pSOut[2] = (pSOut[2] - imgOrigin[2]) * imgSpacingInv[2];
 
     for(unsigned int k=0; k<imgSize[2]; k+=1)
       {
@@ -195,7 +212,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         }
       else
         {
-        mlp->Evaluate(dk, xx, yy);
+        mlp->Evaluate(zmm[k], xx, yy);
         }
 
       xx = (xx-originInVox[0])*zmag[k]+originInVox[0];
