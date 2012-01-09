@@ -1,0 +1,18 @@
+package "pct"
+version "Create a file containing most likely path according to input entrance and exit positions and directions"
+
+option "config"        - "Config file"                                         string          no
+option "posIn"         - "Entrance 3D position"                                double multiple yes
+option "dirIn"         - "Entrance 3D direction"                               double multiple yes
+option "posOut"        - "Exit 3D position"                                    double multiple yes
+option "dirOut"        - "Exit 3D direction"                                   double multiple yes
+option "trajectory"    - "Output trajectory file name"                         string          yes
+option "intersections" - "Output intersections file name"                      string          yes
+option "quadricIn"     - "Parameters of the entrance quadric support function" double multiple yes
+option "quadricOut"    - "Parameters of the exit quadric support function"     double multiple yes
+option "type"          - "Type of most likely path (schulte or polynomial)"    string          no   default="schulte"
+
+section "Sampling parameters"
+option "origin"    - "Origin (default=centered)" double no
+option "dimension" - "Dimension"                 int    no default="256"
+option "spacing"   - "Spacing"                   double no default="1"

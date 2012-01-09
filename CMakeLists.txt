@@ -38,9 +38,10 @@ MACRO (ADD_PCT_EXECUTABLE EXE_NAME)
   TARGET_LINK_LIBRARIES(${EXE_NAME} ${ROOT_LIBRARIES})
 ENDMACRO (ADD_PCT_EXECUTABLE)
 
-# Executable
+# Executables
 ADD_PCT_EXECUTABLE(pctpairprotons pctpairprotons.cxx)
 ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
+ADD_PCT_EXECUTABLE(pctmostlikelypath pctmostlikelypath.cxx)
 ADD_PCT_EXECUTABLE(pctbinning pctbinning.cxx)
 ADD_PCT_EXECUTABLE(pctparkershortscanweighting pctparkershortscanweighting.cxx)
 ADD_PCT_EXECUTABLE(pctprojections pctprojections.cxx)

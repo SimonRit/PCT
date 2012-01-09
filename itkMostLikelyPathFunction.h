@@ -28,10 +28,10 @@ public:
   typedef Vector<TCoordRep, 3> VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  void Init(VectorType posIn, VectorType posOut, VectorType dirIn, VectorType dirOut);
+  virtual void Init(VectorType posIn, VectorType posOut, VectorType dirIn, VectorType dirOut){}
 
   /** Evaluate the coordinates (x,y) at depth z. */
-  void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y );
+  virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y ){}
 
 protected:
 
