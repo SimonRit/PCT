@@ -2,7 +2,7 @@
 #include <itkImageRegionIterator.h>
 
 #include "pctBetheBlochFunctor.h"
-//#include "itkThirdOrderPolynomialMLPFunction.h"
+#include "itkThirdOrderPolynomialMLPFunction.h"
 #include "itkSchulteMLPFunction.h"
 
 namespace itk
@@ -24,6 +24,17 @@ void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId )
 {
+  // Create MLP depending on type
+  itk::MostLikelyPathFunction<double>::Pointer mlp;
+  if(m_MostLikelyPathType == "polynomial")
+    mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+  else if (m_MostLikelyPathType == "schulte")
+    mlp = itk::SchulteMLPFunction::New();
+  else
+    {
+    itkGenericExceptionMacro("MLP must either be schulte or polynomial, not [" << m_MostLikelyPathType << ']');
+    }
+
   // Create thread image and corresponding stack to count events
   m_Counts[threadId] = CountImageType::New();
   m_Counts[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
@@ -184,10 +195,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     //dOut[2] = 1.; SR: implicit in the following
 
     // Init MLP before mm to voxel conversion of depth
-    //itk::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
-    //mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
-    itk::SchulteMLPFunction::Pointer mlp;
-    mlp = itk::SchulteMLPFunction::New();
     mlp->Init(pSIn, pSOut, dIn, dOut);
 
     // Finalize mm to voxel conversion

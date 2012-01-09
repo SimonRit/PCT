@@ -30,6 +30,7 @@ int main(int argc, char * argv[])
   projection->SetInput( constantImageSource->GetOutput() );
   projection->SetProtonPairsFileName( args_info.input_arg );
   projection->SetSourceDistance( args_info.source_arg );
+  projection->SetMostLikelyPathType(args_info.mlptype_arg );
 
   if(args_info.quadricIn_given)
     {

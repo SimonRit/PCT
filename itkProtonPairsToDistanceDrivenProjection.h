@@ -47,6 +47,10 @@ public:
   itkGetMacro(SourceDistance, double);
   itkSetMacro(SourceDistance, double);
 
+  /** Get/Set the most likely path type. Can be "schulte" or "polynomial" */
+  itkGetMacro(MostLikelyPathType, std::string);
+  itkSetMacro(MostLikelyPathType, std::string);
+
   /** Get/Set the boundaries of the object. */
   itkGetMacro(QuadricIn, RQIType::Pointer);
   itkSetMacro(QuadricIn, RQIType::Pointer);
@@ -77,6 +81,7 @@ private:
 
   std::string m_ProtonPairsFileName;
   double m_SourceDistance;
+  std::string m_MostLikelyPathType;
 
   /** Count event in each thread */
   CountImagePointer m_Count;

@@ -1,13 +1,14 @@
 package "pct"
 version "Create the 3D sequence (2D + distance) of proton radiographies"
 
-option "config"    - "Config file"                                               string    no
-option "input"		 i "Input file name containing the proton pairs"		           string    yes
-option "output"    o "Output file name"                                          string    yes
-option "count"     c "Image of count of proton pairs per pixel"                  string    no
-option "source"    s "Source position"                    double    no   default="0."
-option "quadricIn" - "Parameters of the quadric function defining object support for input rays" double multiple no
-option "quadricOut" - "Parameters of the quadric function defining object support for output rays" double multiple no
+option "config"     - "Config file"                                         string          no
+option "input"		  i "Input file name containing the proton pairs"		      string          yes
+option "output"     o "Output file name"                                    string          yes
+option "count"      c "Image of count of proton pairs per pixel"            string          no
+option "source"     s "Source position"                                     double          no  default="0."
+option "quadricIn"  - "Parameters of the entrance quadric support function" double multiple no
+option "quadricOut" - "Parameters of the exit quadric support function"     double multiple no
+option "mlptype"    - "Type of most likely path (schulte or polynomial)"    string          no  default="schulte"
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no
