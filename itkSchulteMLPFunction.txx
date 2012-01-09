@@ -20,7 +20,7 @@ SchulteMLPFunction
 
 void
 SchulteMLPFunction
-::Init(VectorType posIn, VectorType posOut, VectorType dirIn, VectorType dirOut)
+::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   m_uOrigin = posIn[2];
   //m_IntForSigmaSqTheta0  = Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(m_u0);

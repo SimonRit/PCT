@@ -4,7 +4,7 @@ namespace itk
 template < class TCoordRep >
 void
 ThirdOrderPolynomialMLPFunction<TCoordRep>
-::Init(VectorType posIn, VectorType posOut, VectorType dirIn, VectorType dirOut)
+::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   // Parameters of the 3rd order polynomial. The function goes from
   // z=0 to z=lastSliceZ and an offset in the z direction is stored.
