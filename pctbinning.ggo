@@ -9,6 +9,7 @@ option "source"     s "Source position"                                     doub
 option "quadricIn"  - "Parameters of the entrance quadric support function" double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function"     double multiple no
 option "mlptype"    - "Type of most likely path (schulte or polynomial)"    string          no  default="schulte"
+option "anglecut"   - "Cut parameter on the std deviation of proton angle"  double          no  default="3."
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no

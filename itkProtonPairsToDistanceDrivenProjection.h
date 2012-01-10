@@ -60,6 +60,10 @@ public:
   /** Get/Set the count of proton pairs per pixel. */
   itkGetMacro(Count, CountImagePointer);
 
+  /** Get/Set the cut parameter on sigma angle. */
+  itkGetMacro(SigmaAngleCut, double);
+  itkSetMacro(SigmaAngleCut, double);
+
 protected:
   ProtonPairsToDistanceDrivenProjection() {
     this->SetInPlace( true );
@@ -93,6 +97,9 @@ private:
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
   RQIType::Pointer m_QuadricOut;
+
+  /** Cut parameter on sigma angle (3 means keep all below 3*sigma) */
+  double m_SigmaAngleCut;
 };
 
 } // end namespace itk
