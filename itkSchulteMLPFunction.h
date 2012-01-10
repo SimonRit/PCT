@@ -142,16 +142,16 @@ private:
   double m_u2;
 
   // Entrance and exit parameters (equation 1)
-  itk::Vector<double, 2> m_x0;
-  itk::Vector<double, 2> m_x2;
-  itk::Vector<double, 2> m_y0;
-  itk::Vector<double, 2> m_y2;
+  Vector<double, 2> m_x0;
+  Vector<double, 2> m_x2;
+  Vector<double, 2> m_y0;
+  Vector<double, 2> m_y2;
 
   // Part of the rotation matrices which is constant for the trajectory
-  itk::Matrix<double, 2, 2> m_R0;
-  itk::Matrix<double, 2, 2> m_R1;
-  itk::Matrix<double, 2, 2> m_R0T;
-  itk::Matrix<double, 2, 2> m_R1T;
+  Matrix<double, 2, 2> m_R0;
+  Matrix<double, 2, 2> m_R1;
+  Matrix<double, 2, 2> m_R0T;
+  Matrix<double, 2, 2> m_R1T;
 
   // Part common to all positions along the trajectory
   //double m_IntForSigmaSqTheta0;  //Always 0. because m_u0=0.
