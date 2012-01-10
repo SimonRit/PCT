@@ -116,7 +116,15 @@ public:
   /** Evaluate the coordinates (x,y) at depth z. */
   void Evaluate( const double u1, double &x, double&y );
 
+#ifdef MLP_TIMING
+  /** Print timing information */
+  virtual void PrintTiming(std::ostream& os);
+#endif
+
 protected:
+
+  /// Implementation of 2x2 matrix inversion, faster than itk/vnl inversion
+  void InverseMatrix(Matrix<double, 2, 2> &mat);
 
   /// Constructor
   SchulteMLPFunction();
@@ -152,6 +160,12 @@ private:
   double m_IntForSigmaSqTheta2;
   double m_IntForSigmaSqTTheta2;
   double m_IntForSigmaSqT2;
+
+#ifdef MLP_TIMING
+  TimeProbe m_EvaluateProbe1;
+  TimeProbe m_EvaluateProbe2;
+#endif
+
 };
 
 } // end namespace itk

@@ -5,6 +5,11 @@
 #include <vector>
 #include <itkImageBase.h>
 
+//#define MLP_TIMING
+#ifdef MLP_TIMING
+#  include <itkTimeProbe.h>
+#endif
+
 namespace itk
 {
 
@@ -32,6 +37,11 @@ public:
 
   /** Evaluate the coordinates (x,y) at depth z. */
   virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y ){}
+
+#ifdef MLP_TIMING
+  /** Print timing information */
+  virtual void PrintTiming(std::ostream& os){}
+#endif
 
 protected:
 

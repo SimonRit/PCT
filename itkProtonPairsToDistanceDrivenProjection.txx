@@ -238,7 +238,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
   }
   if(threadId==0)
+    {
     std::cout << std::endl << "Done!" << std::endl;
+#ifdef MLP_TIMING
+    mlp->PrintTiming(std::cout);
+#endif
+    }
+
 }
 
 template <class TInputImage, class TOutputImage>
