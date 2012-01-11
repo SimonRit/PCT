@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
 
   // Projections reader
   typedef itk::ImageSeriesReader< ProjectionImageType > ReaderType;
-  typename ReaderType::Pointer reader = ReaderType::New();
+  ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
   if(args_info.verbose_flag)
