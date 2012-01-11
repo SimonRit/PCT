@@ -14,6 +14,14 @@ namespace Functor
 namespace SchulteMLP
 {
 
+static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
+static const double a0 =  7.507e-4 * aunit;
+static const double a1 =  3.320e-5 * aunit / (CLHEP::cm);
+static const double a2 = -4.171e-7 * aunit / (CLHEP::cm2);
+static const double a3 =  4.488e-7 * aunit / (CLHEP::cm3);
+static const double a4 = -3.739e-8 * aunit / (CLHEP::cm3 * CLHEP::cm);
+static const double a5 =  1.455e-9 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+
 // [Schulte, Med Phys, 2008], constant part of equations 7, 8 and 9
 class ConstantPartOfIntegrals
 {
@@ -36,14 +44,13 @@ public:
     {
     // Multiplied with polynomial integral
     // Table 2, (a) in [Williams, 2004] as well as numbers in [Li, 2006]
-    static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
-    static const double a0 =  7.507e-4      * aunit;
-    static const double a1 =  3.320e-5 / 2. * aunit / (CLHEP::cm);
-    static const double a2 = -4.171e-7 / 3. * aunit / (CLHEP::cm2);
-    static const double a3 =  4.488e-7 / 4. * aunit / (CLHEP::cm3);
-    static const double a4 = -3.739e-8 / 5. * aunit / (CLHEP::cm3 * CLHEP::cm);
-    static const double a5 =  1.455e-9 / 6. * aunit / (CLHEP::cm3 * CLHEP::cm2);
-    return u*(a0+u*(a1+u*(a2+u*(a3+u*(a4+u*a5)))));
+    static const double a0Theta = a0;
+    static const double a1Theta = a1 / 2.;
+    static const double a2Theta = a2 / 3.;
+    static const double a3Theta = a3 / 4.;
+    static const double a4Theta = a4 / 5.;
+    static const double a5Theta = a5 / 6.;
+    return u*(a0Theta+u*(a1Theta+u*(a2Theta+u*(a3Theta+u*(a4Theta+u*a5Theta)))));
     }
 };
 
@@ -55,14 +62,13 @@ public:
     {
     // Multiplied with polynomial integral
     // Table 2, (a) in [Williams, 2004] as well as numbers in [Li, 2006]
-    static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
-    static const double a0 =  7.507e-4 / 2. * aunit;
-    static const double a1 =  3.320e-5 / 3. * aunit / (CLHEP::cm);
-    static const double a2 = -4.171e-7 / 4. * aunit / (CLHEP::cm2);
-    static const double a3 =  4.488e-7 / 5. * aunit / (CLHEP::cm3);
-    static const double a4 = -3.739e-8 / 6. * aunit / (CLHEP::cm3 * CLHEP::cm);
-    static const double a5 =  1.455e-9 / 7. * aunit / (CLHEP::cm3 * CLHEP::cm2);
-    return u*u*(a0+u*(a1+u*(a2+u*(a3+u*(a4+u*a5)))));
+    static const double a0TTheta = a0 / 2.;
+    static const double a1TTheta = a1 / 3.;
+    static const double a2TTheta = a2 / 4.;
+    static const double a3TTheta = a3 / 5.;
+    static const double a4TTheta = a4 / 6.;
+    static const double a5TTheta = a5 / 7.;
+    return u*u*(a0TTheta+u*(a1TTheta+u*(a2TTheta+u*(a3TTheta+u*(a4TTheta+u*a5TTheta)))));
     }
 };
 
@@ -74,14 +80,13 @@ public:
     {
     // Multiplied with polynomial integral
     // Table 2, (a) in [Williams, 2004] as well as numbers in [Li, 2006]
-    static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
-    static const double a0 =  7.507e-4 / 3. * aunit;
-    static const double a1 =  3.320e-5 / 4. * aunit / (CLHEP::cm);
-    static const double a2 = -4.171e-7 / 5. * aunit / (CLHEP::cm2);
-    static const double a3 =  4.488e-7 / 6. * aunit / (CLHEP::cm3);
-    static const double a4 = -3.739e-8 / 7. * aunit / (CLHEP::cm3 * CLHEP::cm);
-    static const double a5 =  1.455e-9 / 8. * aunit / (CLHEP::cm3 * CLHEP::cm2);
-    return u*u*u*(a0+u*(a1+u*(a2+u*(a3+u*(a4+u*a5)))));
+    static const double a0T = a0 / 3.;
+    static const double a1T = a1 / 4.;
+    static const double a2T = a2 / 5.;
+    static const double a3T = a3 / 6.;
+    static const double a4T = a4 / 7.;
+    static const double a5T = a5 / 8.;
+    return u*u*u*(a0T+u*(a1T+u*(a2T+u*(a3T+u*(a4T+u*a5T)))));
     }
 };
 
