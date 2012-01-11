@@ -34,14 +34,14 @@ SchulteMLPFunction
 
   // Parameters vectors
   m_x0[0] = posIn[0];
-  m_x0[1] = atan(dirIn[0]);  //dirIn[2] is implicitely 1.
+  m_x0[1] = vcl_atan(dirIn[0]);  //dirIn[2] is implicitely 1.
   m_x2[0] = posOut[0];
-  m_x2[1] = atan(dirOut[0]); //dirOut[2] is implicitely 1.
+  m_x2[1] = vcl_atan(dirOut[0]); //dirOut[2] is implicitely 1.
 
   m_y0[0] = posIn[1];
-  m_y0[1] = atan(dirIn[1]);  //dirIn[2] is implicitely 1.
+  m_y0[1] = vcl_atan(dirIn[1]);  //dirIn[2] is implicitely 1.
   m_y2[0] = posOut[1];
-  m_y2[1] = atan(dirOut[1]); //dirOut[2] is implicitely 1.
+  m_y2[1] = vcl_atan(dirOut[1]); //dirOut[2] is implicitely 1.
 }
 
 void
