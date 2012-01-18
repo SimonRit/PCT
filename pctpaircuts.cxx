@@ -23,12 +23,15 @@ int main(int argc, char * argv[])
   typedef itk::ConstantImageSource< ProjectionImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer sumEnergy   = ConstantImageSourceType::New();
   ConstantImageSourceType::Pointer sumEnergySq = ConstantImageSourceType::New();
+  ConstantImageSourceType::Pointer sumAngle    = ConstantImageSourceType::New();
   ConstantImageSourceType::Pointer sumAngleSq  = ConstantImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctpaircuts>(sumEnergy, args_info);
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctpaircuts>(sumEnergySq, args_info);
+  rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctpaircuts>(sumAngle, args_info);
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctpaircuts>(sumAngleSq, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( sumEnergy->Update() );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( sumEnergySq->Update() );
+  TRY_AND_EXIT_ON_ITK_EXCEPTION( sumAngle->Update() );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( sumAngleSq->Update() );
 
   typedef itk::Image< unsigned int, 2 > CountImageType;
@@ -59,6 +62,7 @@ int main(int argc, char * argv[])
   // Data pointers
   float *pSumEnergy     = sumEnergy->GetOutput()->GetBufferPointer();
   float *pSumEnergySq   = sumEnergySq->GetOutput()->GetBufferPointer();
+  float *pSumAngle      = sumAngle->GetOutput()->GetBufferPointer();
   float *pSumAngleSq    = sumAngleSq->GetOutput()->GetBufferPointer();
   unsigned int *pCounts = counts->GetOutput()->GetBufferPointer();
 
@@ -89,20 +93,24 @@ int main(int argc, char * argv[])
       static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
 
       const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0];
-      const int i = int(xx+0.5);
+      const int i = itk::Math::Round(xx);
       if(i<0 || i>=(int)imgSize[0])
         continue;
 
       const double yy = (pIn[1]*mag-imgOrigin[1]) * imgSpacingInv[1];
-      const int j = int(yy+0.5);
+      const int j = itk::Math::Round(yy);
       if(j<0 || j>=(int)imgSize[1])
         continue;
 
       const unsigned long idx = i+j*imgSize[0];
-      const double angle = vcl_acos(dIn * dOut);
+
+      dIn  /= dIn[2];
+      dOut /= dOut[2];
+      double angle = atan(dIn[0]) - atan(dOut[0]); //vcl_acos(std::min(1.,dot));
       const double energy = data[1];
       pSumEnergy  [idx] += energy;
       pSumEnergySq[idx] += energy*energy;
+      pSumAngle   [idx] += angle;
       pSumAngleSq [idx] += angle*angle;
       pCounts     [idx]++;
     }
@@ -118,9 +126,10 @@ int main(int argc, char * argv[])
       {
       pSumEnergy  [idx] /= pCounts[idx];
       pSumEnergySq[idx] /= pCounts[idx];
+      pSumAngle   [idx] /= pCounts[idx];
       pSumAngleSq [idx] /= pCounts[idx];
       pSumEnergySq[idx] = sqrt( pSumEnergySq[idx]-pSumEnergy[idx]*pSumEnergy[idx] );
-      pSumAngleSq[idx]  = sqrt( pSumAngleSq [idx] );
+      pSumAngleSq[idx]  = sqrt( pSumAngleSq [idx]-pSumAngle [idx]*pSumAngle [idx] );
       }
     }
   for(unsigned int idx=0; idx<npixels; idx++)
@@ -206,6 +215,13 @@ int main(int argc, char * argv[])
 
   // Optional outputs
   typedef itk::ImageFileWriter<ProjectionImageType> PWriterType;
+  if(args_info.mangle_given)
+    {
+    PWriterType::Pointer w = PWriterType::New();
+    w->SetInput(sumAngle->GetOutput());
+    w->SetFileName(args_info.mangle_arg);
+    TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
+    }
   if(args_info.sangle_given)
     {
     PWriterType::Pointer w = PWriterType::New();

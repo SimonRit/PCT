@@ -14,5 +14,6 @@ option "spacing"   - "Spacing"                   double multiple no default="1"
 section "Output cut images"
 option "menergy"   - "Mean energy file name"  string no
 option "senergy"   - "Sigma energy file name" string no
+option "mangle"    - "Mean angle file name"   string no
 option "sangle"    - "Sigma angle file name"  string no
 option "count"     - "Count file name"        string no
