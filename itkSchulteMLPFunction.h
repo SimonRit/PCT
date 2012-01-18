@@ -15,12 +15,29 @@ namespace SchulteMLP
 {
 
 static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
-static const double a0 =  7.507e-4 * aunit;
-static const double a1 =  3.320e-5 * aunit / (CLHEP::cm);
-static const double a2 = -4.171e-7 * aunit / (CLHEP::cm2);
-static const double a3 =  4.488e-7 * aunit / (CLHEP::cm3);
-static const double a4 = -3.739e-8 * aunit / (CLHEP::cm3 * CLHEP::cm);
-static const double a5 =  1.455e-9 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#define RIT_COEFF
+#if defined(WILLIAMS_COEFF) // Were apparently .01 off
+  static const double a0 =  7.507e-4 * aunit;
+  static const double a1 =  3.320e-5 * aunit / (CLHEP::cm);
+  static const double a2 = -4.171e-7 * aunit / (CLHEP::cm2);
+  static const double a3 =  4.488e-7 * aunit / (CLHEP::cm3);
+  static const double a4 = -3.739e-8 * aunit / (CLHEP::cm3 * CLHEP::cm);
+  static const double a5 =  1.455e-9 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#elif defined(SCHULTE_COEFF)
+  static const double a0 =  7.457e-06 * aunit;
+  static const double a1 =  4.548e-07 * aunit / (CLHEP::cm);
+  static const double a2 = -5.777e-08 * aunit / (CLHEP::cm2);
+  static const double a3 =  1.301e-08 * aunit / (CLHEP::cm3);
+  static const double a4 = -9.228e-10 * aunit / (CLHEP::cm3 * CLHEP::cm);
+  static const double a5 =  2.687e-11 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#elif defined(RIT_COEFF)
+  static const double a0 =  7.444724e-06 * aunit;
+  static const double a1 =  5.463937e-07 * aunit / (CLHEP::cm);
+  static const double a2 = -9.986645e-08 * aunit / (CLHEP::cm2);
+  static const double a3 =  2.026409e-08 * aunit / (CLHEP::cm3);
+  static const double a4 = -1.420501e-09 * aunit / (CLHEP::cm3 * CLHEP::cm);
+  static const double a5 =  3.899100e-11 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#endif
 
 // [Schulte, Med Phys, 2008], constant part of equations 7, 8 and 9
 class ConstantPartOfIntegrals
@@ -31,7 +48,7 @@ public:
     // Constant out of integral, use [Schulte, 2008] and not [Williams, 2004]
     static const double c = 13.6*CLHEP::MeV * 13.6*CLHEP::MeV / (36.1*CLHEP::cm);
     static const double invX0 = 1./(36.1*CLHEP::cm);
-    double v = 1+0.038*log((uy-ux)*invX0);
+    double v = 1.+0.038*vcl_log((uy-ux)*invX0);
     return c*v*v;
     }
 };
