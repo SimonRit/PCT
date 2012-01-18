@@ -173,6 +173,21 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         }
       }
 
+    // Compute cut on exit angle with respect to straight line
+    quadricOut->SetRayOrigin(pIn);
+    double length = 0.;
+    if(quadricOut->Evaluate(dIn))
+      {
+      VectorType p = pIn  + dIn  * quadricOut ->GetFarthestDistance();
+      if(p[2]<pIn[2] || p[2]>pOut[2])
+        p = pIn  + dIn  * quadricOut ->GetNearestDistance();
+      length = (pSIn  - p).GetNorm();
+      }
+    const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
+    double sigmaAngleCutVal = sigmaAngleCutSq *
+                              Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
+                              Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(length);
+
     // Convert everything to voxel coordinates
     for(unsigned int i=0; i<3; i++)
       {
@@ -195,6 +210,16 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[0] /= dOut[2];
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
+
+    // Apply cut
+    double anglex = vcl_atan(dOut[0])-vcl_atan(dIn[0]);
+    anglex *= anglex;
+    if(sigmaAngleCutVal!=0. && anglex>sigmaAngleCutVal)
+      continue;
+    double angley = vcl_atan(dOut[1])-vcl_atan(dIn[1]);
+    angley *= angley;
+    if(sigmaAngleCutVal!=0. && angley>sigmaAngleCutVal)
+      continue;
 
     // Init MLP before mm to voxel conversion of depth
     mlp->Init(pSIn, pSOut, dIn, dOut);
