@@ -165,9 +165,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       if(quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
         {
         pSIn  = pIn  + dIn  * quadricIn ->GetNearestDistance();
-        if(pSIn[2]<pIn[2])
+        if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
           pSIn  = pIn  + dIn  * quadricIn ->GetFarthestDistance();
-        pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
+        pSOut = pOut + dOut * quadricOut->GetNearestDistance();
+        if(pSOut[2]<pIn[2] || pSOut[2]>pOut[2])
+          pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
         }
       }
 
