@@ -1,0 +1,68 @@
+/* Constants */
+E0: 13.6$
+X0: 36.1$
+u0: 0$
+
+/*
+a0: 7.457e-4$
+a1: 4.548e-5$
+a2: -5.777e-6$
+a3: 1.301e-6$
+a4: -9.228e-8$
+a5: 2.687e-9$
+*/
+
+a0: 7.457e-6$
+a1: 4.548e-7$
+a2: -5.777e-8$
+a3: 1.301e-8$
+a4: -9.228e-10$
+a5: 2.687e-11$
+
+/*
+a0: 7.507e-4$
+a1: 3.320e-5$
+a2: -4.171e-7$
+a3: 4.488e-7$
+a4: -3.739e-8$
+a5: 1.455e-9$
+*/
+/* Equation 1 */
+t0:0$
+theta0:0$
+y0: matrix([t0],[theta0])$
+y2: matrix([t2],[theta2])$
+
+/* Equation 29 */
+InvBetaSquarePSquare: a0 + a1*u + a2*u**2 + a3*u**3 + a4*u**4 + a5*u**5$
+
+/* Equation 7-9, then 6 */
+SigmaSquareT1: E0**2 * (1+0.038*log((u1-u0)/X0))**2 * integrate( (u1-u)**2 * InvBetaSquarePSquare / X0, u, u0, u1)$
+SigmaSquareTheta1: E0**2 * (1+0.038*log((u1-u0)/X0))**2 * integrate( InvBetaSquarePSquare / X0, u, u0, u1)$
+SigmaSquareTTheta1: E0**2 * (1+0.038*log((u1-u0)/X0))**2 * integrate( (u1-u) * InvBetaSquarePSquare / X0, u, u0, u1)$
+Sigma1: matrix([SigmaSquareT1, SigmaSquareTTheta1], [SigmaSquareTTheta1, SigmaSquareTheta1] )$
+
+/* Equation 16-18, then 15 */
+SigmaSquareT2: E0**2 * integrate( (u2-u)**2 * InvBetaSquarePSquare / X0, u, u1, u2)$
+SigmaSquareTheta2: E0**2 * integrate( InvBetaSquarePSquare / X0, u, u1, u2)$
+SigmaSquareTTheta2: E0**2 * integrate( (u2-u) * InvBetaSquarePSquare / X0, u, u1, u2)$
+Sigma2: expand(matrix([SigmaSquareT2, SigmaSquareTTheta2], [SigmaSquareTTheta2, SigmaSquareTheta2] )), numer;
+
+/* Equation 11, 14 */
+R0: matrix([1, u1-u0], [0, 1])$
+R1: matrix([1, u2-u1], [0, 1])$
+
+/* Equation 24 */
+yMLP: (invert( invert(Sigma1)+ transpose(R1).invert(Sigma2).R1 )) .
+      (invert(Sigma1).R0.y0 + transpose(R1).invert(Sigma2).y2)$
+/*factor(getelmx(yMLP, 1, 1))$*/
+/*ratsimp (getelmx(yMLP, 1, 1))$*/
+/*expand(getelmx(yMLP, 1, 1)), numer$*/
+/*load("mactex-utilities")$*/
+getelmx(yMLP, 1, 1)$
+tex(%, "itkOptSchulteMLPFunction.tex")$
+
+u1: 20;
+sqrt(SigmaSquareTheta1), numer;
+sqrt(SigmaSquareT1), numer;
+
