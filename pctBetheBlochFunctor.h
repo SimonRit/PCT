@@ -43,8 +43,8 @@ public:
   TOutput GetValue(const TInput e, const double I = 61.77 * CLHEP::eV) const
     {
     TOutput betasq = CLHEP::proton_mass_c2/(e + CLHEP::proton_mass_c2);
-    betasq = vcl_abs(1.-betasq*betasq);
-    return K * (log(2*CLHEP::electron_mass_c2/I * betasq/(1-betasq))-betasq) / betasq;
+    betasq = 1.-betasq*betasq;
+    return K * (log(2.*CLHEP::electron_mass_c2/I * betasq/(1-betasq))-betasq) / betasq;
     }
 };
 
@@ -61,7 +61,8 @@ public:
     m_LUT[0] = 0.;
     for(unsigned int i=1; i<VMaximumkeVEnergy; i++)
       {
-      m_LUT[i] = m_LUT[i-1] + 1. / m_S.GetValue((TOutput)i);
+      static const double dE = CLHEP::keV;
+      m_LUT[i] = m_LUT[i-1] + dE / m_S.GetValue((TOutput)i*CLHEP::keV);
       }
     }
   ~IntegratedBetheBlochProtonStoppingPowerInverse() {}
