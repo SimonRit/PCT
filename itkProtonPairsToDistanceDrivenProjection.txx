@@ -128,7 +128,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   const double zPlaneOutInVox = (zPlaneOutInMM-imgOrigin[2]) * imgSpacingInv[2];
   for(unsigned int i=0; i<imgSize[2]; i++)
     {
-    zmm[i] = i*imgSpacingInv[2]+imgOrigin[2];
+    zmm[i] = i*imgSpacing[2]+imgOrigin[2];
     zmag[i] = (zPlaneOutInVox-sourcePosInVox)/(i-sourcePosInVox);
     }
 
@@ -188,21 +188,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
                               Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
                               Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(length);
 
-    // Convert everything to voxel coordinates
-    for(unsigned int i=0; i<3; i++)
-      {
-      pIn[i]   = (pIn[i]   - imgOrigin[i]) * imgSpacingInv[i];
-      pOut[i]  = (pOut[i]  - imgOrigin[i]) * imgSpacingInv[i];
-      dIn[i]   = dIn[i]  * imgSpacingInv[i];
-      dOut[i]  = dOut[i] * imgSpacingInv[i];
-      }
-    for(unsigned int i=0; i<2; i++)
-      {
-      // Only first 2 coordinates, absolute depth is essential for MLP
-      pSIn[i]  = (pSIn[i]  - imgOrigin[i]) * imgSpacingInv[i];
-      pSOut[i] = (pSOut[i] - imgOrigin[i]) * imgSpacingInv[i];
-      }
-
     // Normalize direction with respect to z
     dIn[0] /= dIn[2];
     dIn[1] /= dIn[2];
@@ -221,17 +206,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     if(sigmaAngleCutVal!=0. && angley>sigmaAngleCutVal)
       continue;
 
-    // Init MLP before mm to voxel conversion of depth
+    // Init MLP before mm to voxel conversion
     mlp->Init(pSIn, pSOut, dIn, dOut);
-
-    // Finalize mm to voxel conversion
-    pSIn[2]  = (pSIn[2]  - imgOrigin[2]) * imgSpacingInv[2];
-    pSOut[2] = (pSOut[2] - imgOrigin[2]) * imgSpacingInv[2];
 
     for(unsigned int k=0; k<imgSize[2]; k+=1)
       {
       double xx, yy;
-      const double dk = k; //SR make sure to convert it once only
+      const double dk = zmm[k];
       if(dk<=pSIn[2])
         {
         const double z = (dk-pIn[2]);
@@ -248,6 +229,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         {
         mlp->Evaluate(zmm[k], xx, yy);
         }
+      xx = (xx - imgOrigin[0]) * imgSpacingInv[0];
+      yy = (yy - imgOrigin[1]) * imgSpacingInv[1];
 
       xx = (xx-originInVox[0])*zmag[k]+originInVox[0];
       const int i = int(xx+0.5);
