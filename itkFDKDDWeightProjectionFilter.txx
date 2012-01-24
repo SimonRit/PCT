@@ -70,8 +70,8 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
                        j++, point[1] += pointIncrement[1])
         {
         point[0] = pointBase[0]
-                   + m_Geometry->GetSourceOffsetsX()[k]
-                   - m_Geometry->GetProjectionOffsetsX()[k];
+                   + m_Geometry->GetSourceOffsetsX()[l]
+                   - m_Geometry->GetProjectionOffsetsX()[l];
         const double sdd2y2 = sdd2 + point[1]*point[1];
         for(unsigned int i=outputRegionForThread.GetIndex(0);
                          i<outputRegionForThread.GetIndex(0)+outputRegionForThread.GetSize(0);
