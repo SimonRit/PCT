@@ -85,7 +85,6 @@ FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
 
   for(unsigned int i=0; i<nProj; i++)
     {
-DD(i)
     // After the first bp update, we need to use its output as input.
     if(i)
       {
