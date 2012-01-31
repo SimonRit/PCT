@@ -134,8 +134,8 @@ int main(int argc, char * argv[])
     }
   for(unsigned int idx=0; idx<npixels; idx++)
     {
-    pSumEnergySq[idx] *= 3;
-    pSumAngleSq[idx]  *= 3;
+    pSumEnergySq[idx] *= args_info.energycut_arg;
+    pSumAngleSq[idx]  *= args_info.anglecut_arg;
     }
 
   std::cout << "Select pairs..." << std::endl;
@@ -178,8 +178,8 @@ int main(int argc, char * argv[])
         continue;
 
       const unsigned long idx = i+j*imgSize[0];
-      const double angle = vcl_acos(dIn * dOut);
-      if( vcl_abs(angle)<pSumAngleSq [idx] &&
+      const double angle = atan(dIn[0]) - atan(dOut[0]); //vcl_acos(std::min(1.,dot));
+      if( vcl_abs(angle  -pSumAngle[idx] )<pSumAngleSq [idx] &&
           vcl_abs(data[1]-pSumEnergy[idx])<pSumEnergySq[idx] )
         {
         pairs.push_back(pIn);
