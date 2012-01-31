@@ -233,12 +233,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       yy = (yy - imgOrigin[1]) * imgSpacingInv[1];
 
       xx = (xx-originInVox[0])*zmag[k]+originInVox[0];
-      const int i = int(xx+0.5);
+      const int i = itk::Math::Round(xx+0.5);
       if(i<0 || i>=(int)imgSize[0])
         continue;
 
       yy = (yy-originInVox[1])*zmag[k]+originInVox[1];
-      const int j = int(yy+0.5);
+      const int j = itk::Math::Round(yy+0.5);
       if(j<0 || j>=(int)imgSize[1])
         continue;
 
