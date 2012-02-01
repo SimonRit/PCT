@@ -67,20 +67,16 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   reader->Update();
 
   // Image information constants
-  typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
-  typename OutputImageType::PointType   imgOrigin  = this->GetInput()->GetOrigin();
-  typename OutputImageType::SpacingType imgSpacing = this->GetInput()->GetSpacing();
-  unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
+  const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
+  const typename OutputImageType::PointType   imgOrigin  = this->GetInput()->GetOrigin();
+  const typename OutputImageType::SpacingType imgSpacing = this->GetInput()->GetSpacing();
+  const unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
   unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
   itk::Vector<float, 3> imgSpacingInv;
-  typename OutputImageType::PointType originInVox;
   for(unsigned int i=0; i<3; i++)
-    {
     imgSpacingInv[i] = 1./imgSpacing[i];
-    originInVox[i] = -imgOrigin[i]*imgSpacingInv[i];
-    }
 
   pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> convFunc;
 
@@ -122,14 +118,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   // Create zmm and magnitude lut
   std::vector<double> zmm(imgSize[2]);
   std::vector<double> zmag(imgSize[2]);
-  const double sourcePosInVox = (m_SourceDistance-imgOrigin[2]) * imgSpacingInv[2];
   const double zPlaneOutInMM = (*(reader->GetOutput()->GetBufferPointer()+1))[2];
-
-  const double zPlaneOutInVox = (zPlaneOutInMM-imgOrigin[2]) * imgSpacingInv[2];
   for(unsigned int i=0; i<imgSize[2]; i++)
     {
     zmm[i] = i*imgSpacing[2]+imgOrigin[2];
-    zmag[i] = (zPlaneOutInVox-sourcePosInVox)/(i-sourcePosInVox);
+    zmag[i] = (zPlaneOutInMM-m_SourceDistance)/(zmm[i]-m_SourceDistance);
     }
 
   // Process pairs
@@ -209,7 +202,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // Init MLP before mm to voxel conversion
     mlp->Init(pSIn, pSOut, dIn, dOut);
 
-    for(unsigned int k=0; k<imgSize[2]; k+=1)
+    for(unsigned int k=0; k<imgSize[2]; k++)
       {
       double xx, yy;
       const double dk = zmm[k];
@@ -229,22 +222,21 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         {
         mlp->Evaluate(zmm[k], xx, yy);
         }
-      xx = (xx - imgOrigin[0]) * imgSpacingInv[0];
-      yy = (yy - imgOrigin[1]) * imgSpacingInv[1];
 
-      xx = (xx-originInVox[0])*zmag[k]+originInVox[0];
-      const int i = itk::Math::Round(xx);
-      if(i<0 || i>=(int)imgSize[0])
-        continue;
+      // Source at (0,0,args_info.source_arg), mag then to voxel
+      xx = (xx*zmag[k] - imgOrigin[0]) * imgSpacingInv[0];
+      yy = (yy*zmag[k] - imgOrigin[1]) * imgSpacingInv[1];
 
-      yy = (yy-originInVox[1])*zmag[k]+originInVox[1];
-      const int j = itk::Math::Round(yy);
-      if(j<0 || j>=(int)imgSize[1])
-        continue;
-
-      unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
-      imgData[ idx ] += value;
-      imgCountData[ idx ]++;
+      // Lattice conversion
+      const int i = itk::Math::Round<int,double>(xx);
+      const int j = itk::Math::Round<int,double>(yy);
+      if(i>=0 && i<(int)imgSize[0] &&
+         j>=0 && j<(int)imgSize[1])
+        {
+        const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
+        imgData[ idx ] += value;
+        imgCountData[ idx ]++;
+        }
       }
   }
   if(threadId==0)
