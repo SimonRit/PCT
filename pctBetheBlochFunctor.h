@@ -71,15 +71,15 @@ public:
   TOutput GetValue(const TInput e) const
     {
     // SR: linear interpolation instead?
-    return m_LUT[itk::Math::Round(e / CLHEP::keV)];
+    return m_LUT[itk::Math::Round<int,TInput>(e / CLHEP::keV)];
     }
 
   /** Get the integral from e1 to e2. */
   TOutput GetValue(const TInput e1, const TInput e2) const
     {
     // SR: linear interpolation instead?
-    return m_LUT[itk::Math::Round(e2 / CLHEP::keV)] -
-           m_LUT[itk::Math::Round(e1 / CLHEP::keV)];
+    return m_LUT[itk::Math::Round<int,TInput>(e2 / CLHEP::keV)] -
+           m_LUT[itk::Math::Round<int,TInput>(e1 / CLHEP::keV)];
     }
 
 private:
