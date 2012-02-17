@@ -1,0 +1,16 @@
+# Mother of all
+/gate/world/daughters/name           WatCyl
+/gate/world/daughters/insert         cylinder
+/gate/WatCyl/geometry/setRmin         0 mm
+/gate/WatCyl/geometry/setRmax         100 mm
+/gate/WatCyl/geometry/setHeight       10 m
+/gate/WatCyl/setMaterial              Water
+
+/gate/WatCyl/daughters/name           AlCyl
+/gate/WatCyl/daughters/insert         cylinder
+/gate/AlCyl/geometry/setRmin         0 mm
+/gate/AlCyl/geometry/setRmax         20 mm
+/gate/AlCyl/geometry/setHeight       10 m
+/gate/AlCyl/placement/setTranslation 0 80 0 mm
+/gate/AlCyl/setMaterial              Aluminium
+

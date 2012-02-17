@@ -1,0 +1,50 @@
+# Geometry
+/gate/geometry/setMaterialDatabase  data/GateMaterials.db
+/gate/world/setMaterial             Air
+/gate/world/geometry/setXLength     4 m 
+/gate/world/geometry/setYLength     4 m 
+/gate/world/geometry/setZLength     4 m 
+
+# Phantom
+/control/execute                 mac/ctp528.mac
+/gate/Catphan/moves/insert       rotation 
+/gate/Catphan/rotation/setSpeed  1 deg/s 
+/gate/Catphan/rotation/setAxis   0 0 1 
+
+# Beam
+/control/execute mac/beam.mac
+
+# Physics list
+/control/execute mac/physics-proton-binarycascade.mac
+
+# Phase spaces
+/control/alias DetectorName PhaseSpaceIn
+/control/execute mac/detector.mac
+/gate/Plane{DetectorName}/placement/setTranslation 600 0 0 mm
+
+/control/alias DetectorName PhaseSpaceOut
+/control/execute mac/detector.mac
+/gate/Plane{DetectorName}/placement/setTranslation -600 0 0 mm
+
+# Particles stats 
+/gate/actor/addActor  SimulationStatisticActor stat
+/gate/actor/stat/save output/protonct.txt
+
+# DEBUG
+#/control/execute mac/visu.mac
+#/gate/output/verbose 4
+#/gate/verbose Physic 1 
+
+# Main
+/gate/run/initialize
+
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+
+/gate/application/setTimeSlice              1 s
+/gate/application/setTimeStart              0 s
+/gate/application/setTimeStop               360 s
+
+/gate/application/setTotalNumberOfPrimaries 72000000
+/gate/application/start
+
