@@ -1,0 +1,7 @@
+package "pct"
+version "Create the 3D sequence (2D + distance) of proton radiographies"
+
+option "config"     - "Config file"                                                  string no
+option "length"     l "Length of traversed material in mm"                           double yes
+option "parameter"  p "Parameter choice" values="energyMean","energySD","positionSD" enum   yes
+option "energy"     e "Initial energy in MeV"                                        double no
