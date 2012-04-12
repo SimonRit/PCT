@@ -57,12 +57,19 @@ class IntegratedBetheBlochProtonStoppingPowerInverse
 public:
   IntegratedBetheBlochProtonStoppingPowerInverse()
     {
-    // Create lookup table for integer values
+    // Create lookup table for integer values of energy
     m_LUT[0] = 0.;
+    m_Length.push_back(0.);
     for(unsigned int i=1; i<VMaximumkeVEnergy; i++)
       {
-      static const double dE = CLHEP::keV;
+      static const double dE = 1.*CLHEP::keV;
       m_LUT[i] = m_LUT[i-1] + dE / m_S.GetValue((TOutput)i*CLHEP::keV);
+
+      // Create inverse lut, i.e., get energy from length in water
+      for(unsigned j=m_Length.size(); j<unsigned(m_LUT[i]*CLHEP::mm)+1; j++)
+        {
+        m_Length.push_back( dE*(i + double(j-m_LUT[i]*CLHEP::mm) / ((m_LUT[i]-m_LUT[i-1])*CLHEP::mm) ) );
+        }
       }
     }
   ~IntegratedBetheBlochProtonStoppingPowerInverse() {}
@@ -78,13 +85,28 @@ public:
   TOutput GetValue(const TInput e1, const TInput e2) const
     {
     // SR: linear interpolation instead?
-    return m_LUT[itk::Math::Round<int,TInput>(e2 / CLHEP::keV)] -
-           m_LUT[itk::Math::Round<int,TInput>(e1 / CLHEP::keV)];
+    return m_LUT[itk::Math::Round<int,TInput>(e2/CLHEP::keV)] -
+           m_LUT[itk::Math::Round<int,TInput>(e1/CLHEP::keV)];
+    }
+
+  /** Get the energy required to traverse length l in water. */
+  TOutput GetEnergy(const TInput l) const
+    {
+    // SR: linear interpolation instead?
+    return m_Length[itk::Math::Round<int,TInput>(l/CLHEP::mm)];
+    }
+
+  /** Get the residual energy after length l in water with initial energy e0. */
+  TOutput GetEnergy(const TInput l, const TInput e0) const
+    {
+    // SR: linear interpolation instead?
+    return GetEnergy( GetValue(e0)-l );
     }
 
 private:
   BetheBlochProtonStoppingPower<TOutput, TOutput> m_S;
   TOutput m_LUT[VMaximumkeVEnergy];
+  std::vector<TOutput> m_Length;
 };
 } // end namespace Functor
 } // end namespace pct
