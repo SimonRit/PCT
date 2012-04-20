@@ -4,7 +4,6 @@
 /gate/source/mybeam/gps/ene/type       Mono
 #/gate/source/mybeam/gps/ene/type       Gauss
 #/gate/source/mybeam/gps/ene/sigma      0.5 MeV
-/gate/source/mybeam/gps/pos/type       Point
 /gate/source/mybeam/gps/pos/halfx      8 mm
 /gate/source/mybeam/gps/pos/halfy      1 mm
 /gate/source/mybeam/gps/pos/centre     1060 0 0 mm
