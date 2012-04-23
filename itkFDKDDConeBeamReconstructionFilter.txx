@@ -118,7 +118,7 @@ FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
 }
 
 template<class TInputImage, class TOutputImage, class TFFTPrecision>
-ThreeDCircularProjectionGeometry::Pointer
+rtk::ThreeDCircularProjectionGeometry::Pointer
 FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
 ::GetGeometry()
 {
@@ -128,7 +128,7 @@ FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
 template<class TInputImage, class TOutputImage, class TFFTPrecision>
 void
 FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
-::SetGeometry(const ThreeDCircularProjectionGeometry::Pointer _arg)
+::SetGeometry(const rtk::ThreeDCircularProjectionGeometry::Pointer _arg)
 {
   itkDebugMacro("setting GeometryPointer to " << _arg);
   if (this->GetGeometry() != _arg)

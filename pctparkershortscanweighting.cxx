@@ -1,8 +1,8 @@
 #include "pctparkershortscanweighting_ggo.h"
 #include "rtkGgoFunctions.h"
 
-#include "itkThreeDCircularProjectionGeometryXMLFile.h"
-#include "itkProjectionsReader.h"
+#include <rtkThreeDCircularProjectionGeometryXMLFile.h>
+#include <rtkProjectionsReader.h>
 #include "itkDDParkerShortScanImageFilter.h"
 
 #include <itkImageFileWriter.h>
@@ -31,7 +31,7 @@ int main(int argc, char * argv[])
               << std::endl;
 
   // Projections reader
-  typedef itk::ProjectionsReader< OutputImageType > ReaderType;
+  typedef rtk::ProjectionsReader< OutputImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->GenerateOutputInformation() )
@@ -42,8 +42,8 @@ int main(int argc, char * argv[])
               << args_info.geometry_arg
               << "..."
               << std::endl;
-  itk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
-  geometryReader = itk::ThreeDCircularProjectionGeometryXMLFileReader::New();
+  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
+  geometryReader = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
   geometryReader->SetFilename(args_info.geometry_arg);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 

@@ -3,7 +3,7 @@
 
 #include "rtkConfiguration.h"
 
-#include <itkRayQuadricIntersectionFunction.h>
+#include <rtkRayQuadricIntersectionFunction.h>
 #include <itkInPlaceImageFilter.h>
 
 namespace itk
@@ -31,7 +31,7 @@ public:
   typedef typename OutputImageType::Pointer            OutputImagePointer;
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
 
-  typedef RayQuadricIntersectionFunction<double,3>     RQIType;
+  typedef rtk::RayQuadricIntersectionFunction<double,3> RQIType;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);

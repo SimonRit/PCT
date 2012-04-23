@@ -2,7 +2,7 @@
 
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
-#include <itkConstantImageSource.h>
+#include <rtkConstantImageSource.h>
 
 #include "itkProtonPairsToDistanceDrivenProjection.h"
 
@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
   // Create a stack of empty projection images
-  typedef itk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
+  typedef rtk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer constantImageSource = ConstantImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctbinning>(constantImageSource, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( constantImageSource->Update() );

@@ -3,7 +3,7 @@
 
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkLinearInterpolateImageFunction.h>
-#include <itkThreeDCircularProjectionGeometry.h>
+#include <rtkThreeDCircularProjectionGeometry.h>
 #include <itkImageFileWriter.h>
 
 namespace itk
@@ -20,8 +20,8 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   const unsigned int Dimension = TInputImage::ImageDimension;
   const unsigned int nProj = m_ProjectionStack->GetLargestPossibleRegion().GetSize(Dimension);
   const unsigned int iFirstProj = m_ProjectionStack->GetLargestPossibleRegion().GetIndex(Dimension);
-  ThreeDCircularProjectionGeometry * geometry;
-  geometry = dynamic_cast<ThreeDCircularProjectionGeometry *>(this->GetGeometry().GetPointer());
+  rtk::ThreeDCircularProjectionGeometry * geometry;
+  geometry = dynamic_cast<rtk::ThreeDCircularProjectionGeometry *>(this->GetGeometry().GetPointer());
 
   // Create interpolator, could be any interpolation
   typedef itk::LinearInterpolateImageFunction< ProjectionImageType, double > InterpolatorType;
@@ -141,7 +141,7 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
 }
 
 template <class TInputImage, class TOutputImage>
-typename BackProjectionImageFilter<TInputImage,TOutputImage>::ProjectionMatrixType
+typename rtk::BackProjectionImageFilter<TInputImage,TOutputImage>::ProjectionMatrixType
 FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
 ::GetIndexToIndexProjectionMatrix(const unsigned int iProj, const ProjectionImageType *proj)
 {

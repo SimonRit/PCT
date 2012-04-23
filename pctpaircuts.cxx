@@ -2,7 +2,7 @@
 
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
-#include <itkConstantImageSource.h>
+#include <rtkConstantImageSource.h>
 
 #include "itkProtonPairsToDistanceDrivenProjection.h"
 
@@ -20,7 +20,7 @@ int main(int argc, char * argv[])
   typedef itk::Image< ProjectionPixelType, 2 > ProjectionImageType;
 
   // Create a stack of empty projection images and associated proton count
-  typedef itk::ConstantImageSource< ProjectionImageType > ConstantImageSourceType;
+  typedef rtk::ConstantImageSource< ProjectionImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer sumEnergy   = ConstantImageSourceType::New();
   ConstantImageSourceType::Pointer sumEnergySq = ConstantImageSourceType::New();
   ConstantImageSourceType::Pointer sumAngleSq  = ConstantImageSourceType::New();
@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( sumAngleSq->Update() );
 
   typedef itk::Image< unsigned int, 2 > CountImageType;
-  typedef itk::ConstantImageSource< CountImageType > CountImageSourceType;
+  typedef rtk::ConstantImageSource< CountImageType > CountImageSourceType;
   CountImageSourceType::Pointer counts = CountImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<CountImageSourceType, args_info_pctpaircuts>(counts, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( counts->Update() );

@@ -1,7 +1,7 @@
 #include "pctprojections_ggo.h"
 #include "rtkMacro.h"
 
-#include "itkProjectionsReader.h"
+#include <rtkProjectionsReader.h>
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -23,7 +23,7 @@ int main(int argc, char * argv[])
   names->SetSubMatch(0);
 
   // Projections reader
-  typedef itk::ProjectionsReader< OutputImageType > ReaderType;
+  typedef rtk::ProjectionsReader< OutputImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
 

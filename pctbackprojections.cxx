@@ -1,9 +1,9 @@
 #include "pctbackprojections_ggo.h"
 #include "rtkGgoFunctions.h"
 
-#include "itkThreeDCircularProjectionGeometryXMLFile.h"
+#include "rtkThreeDCircularProjectionGeometryXMLFile.h"
 #include "itkFDKDDBackProjectionImageFilter.h"
-#include "itkJosephBackProjectionImageFilter.h"
+#include "rtkJosephBackProjectionImageFilter.h"
 
 #include <itkRegularExpressionSeriesFileNames.h>
 #include <itkImageFileReader.h>
@@ -27,15 +27,15 @@ int main(int argc, char * argv[])
               << args_info.geometry_arg
               << "..."
               << std::flush;
-  itk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
-  geometryReader = itk::ThreeDCircularProjectionGeometryXMLFileReader::New();
+  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
+  geometryReader = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
   geometryReader->SetFilename(args_info.geometry_arg);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
   if(args_info.verbose_flag)
     std::cout << " done." << std::endl;
 
   // Create an empty volume
-  typedef itk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
+  typedef rtk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer constantImageSource = ConstantImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctbackprojections>(constantImageSource, args_info);
 

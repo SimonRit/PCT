@@ -2,21 +2,21 @@
 #define __itkFDKDDBackProjectionImageFilter_h
 
 #include "itkInPlaceImageFilter.h"
-#include "itkBackProjectionImageFilter.h"
+#include "rtkBackProjectionImageFilter.h"
 
 namespace itk
 {
 
 template <class TInputImage, class TOutputImage>
 class ITK_EXPORT FDKDDBackProjectionImageFilter :
-  public BackProjectionImageFilter<TInputImage,TOutputImage>
+  public rtk::BackProjectionImageFilter<TInputImage,TOutputImage>
 {
 public:
   /** Standard class typedefs. */
-  typedef FDKDDBackProjectionImageFilter                      Self;
-  typedef BackProjectionImageFilter<TInputImage,TOutputImage> Superclass;
-  typedef SmartPointer<Self>                                  Pointer;
-  typedef SmartPointer<const Self>                            ConstPointer;
+  typedef FDKDDBackProjectionImageFilter                           Self;
+  typedef rtk::BackProjectionImageFilter<TInputImage,TOutputImage> Superclass;
+  typedef itk::SmartPointer<Self>                                  Pointer;
+  typedef itk::SmartPointer<const Self>                            ConstPointer;
 
   typedef typename Superclass::ProjectionMatrixType           ProjectionMatrixType;                                                                                                      typedef typename TOutputImage::RegionType                                          OutputImageRegionType;
   typedef TInputImage                                         ProjectionImageType;
@@ -29,7 +29,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(FDKDDBackProjectionImageFilter, ImageToImageFilter);
+  itkTypeMacro(FDKDDBackProjectionImageFilter, rtk::BackProjectionImageFilter);
 
   virtual ProjectionImagePointer GetDDProjection(const unsigned int iProj);
 

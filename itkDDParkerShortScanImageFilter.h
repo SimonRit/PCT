@@ -2,7 +2,7 @@
 #define __itkDDParkerShortScanImageFilter_h
 
 #include <itkInPlaceImageFilter.h>
-#include "itkThreeDCircularProjectionGeometry.h"
+#include <rtkThreeDCircularProjectionGeometry.h>
 #include "rtkConfiguration.h"
 
 /** \class DDParkerShortScanImageFilter
@@ -38,8 +38,8 @@ public:
   typedef typename OutputImageType::RegionType            OutputImageRegionType;
   typedef itk::Image<typename TOutputImage::PixelType, 1> WeightImageType;
 
-  typedef ThreeDCircularProjectionGeometry GeometryType;
-  typedef GeometryType::Pointer            GeometryPointer;
+  typedef rtk::ThreeDCircularProjectionGeometry GeometryType;
+  typedef GeometryType::Pointer                 GeometryPointer;
 
   /** Standard New method. */
   itkNewMacro(Self);

@@ -1,8 +1,8 @@
 #ifndef __itkFDKDDWeightProjectionFilter_h
 #define __itkFDKDDWeightProjectionFilter_h
 
-#include "itkInPlaceImageFilter.h"
-#include "itkThreeDCircularProjectionGeometry.h"
+#include <itkInPlaceImageFilter.h>
+#include <rtkThreeDCircularProjectionGeometry.h>
 
 /** \class FDKDDWeightProjectionFilter
  * \brief Weighting of projections to correct for the divergence in
@@ -43,8 +43,8 @@ public:
   itkTypeMacro(FDKDDWeightProjectionFilter, ImageToImageFilter);
 
   /** Get/ Set geometry structure */
-  itkGetMacro(Geometry, ThreeDCircularProjectionGeometry::Pointer);
-  itkSetMacro(Geometry, ThreeDCircularProjectionGeometry::Pointer);
+  itkGetMacro(Geometry, rtk::ThreeDCircularProjectionGeometry::Pointer);
+  itkSetMacro(Geometry, rtk::ThreeDCircularProjectionGeometry::Pointer);
 
 protected:
   FDKDDWeightProjectionFilter()  {}
@@ -62,7 +62,7 @@ private:
   std::vector<double> m_AngularWeightsAndRampFactor;
 
   /** Geometrical description of the system */
-  ThreeDCircularProjectionGeometry::Pointer m_Geometry;
+  rtk::ThreeDCircularProjectionGeometry::Pointer m_Geometry;
 }; // end of class
 
 } // end namespace itk

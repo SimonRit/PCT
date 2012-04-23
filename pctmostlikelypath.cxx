@@ -2,7 +2,7 @@
 
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
-#include <itkRayQuadricIntersectionFunction.h>
+#include <rtkRayQuadricIntersectionFunction.h>
 
 #include "itkSchulteMLPFunction.h"
 #include "itkThirdOrderPolynomialMLPFunction.h"
@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
   intersections->SetRegions(region);
   intersections->Allocate();
 
-  typedef itk::RayQuadricIntersectionFunction<double,3>     RQIType;
+  typedef rtk::RayQuadricIntersectionFunction<double,3>     RQIType;
   RQIType::Pointer quadricIn = RQIType::New();
   quadricIn->SetA(args_info.quadricIn_arg[0]);
   quadricIn->SetB(args_info.quadricIn_arg[1]);

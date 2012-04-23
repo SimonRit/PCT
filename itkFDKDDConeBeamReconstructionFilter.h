@@ -2,7 +2,7 @@
 #define __itkFDKDDConeBeamReconstructionFilter_h
 
 #include "itkFDKDDWeightProjectionFilter.h"
-#include "itkFFTRampImageFilter.h"
+#include <rtkFFTRampImageFilter.h>
 #include "itkFDKDDBackProjectionImageFilter.h"
 
 #include <itkExtractImageFilter.h>
@@ -37,7 +37,7 @@ public:
   /** Typedefs of each subfilter of this composite filter */
   typedef itk::ExtractImageFilter< ProjectionStackType, ProjectionStackType >                ExtractFilterType;
   typedef itk::FDKDDWeightProjectionFilter< ProjectionStackType, ProjectionStackType >       WeightFilterType;
-  typedef itk::FFTRampImageFilter< ProjectionStackType, ProjectionStackType, TFFTPrecision > RampFilterType;
+  typedef rtk::FFTRampImageFilter< ProjectionStackType, ProjectionStackType, TFFTPrecision > RampFilterType;
   typedef itk::FDKDDBackProjectionImageFilter< OutputImageType, OutputImageType >            BackProjectionFilterType;
 
   /** Standard New method. */
@@ -47,8 +47,8 @@ public:
   itkTypeMacro(FDKDDConeBeamReconstructionFilter, ImageToImageFilter);
 
   /** Get / Set the object pointer to projection geometry */
-  virtual ThreeDCircularProjectionGeometry::Pointer GetGeometry();
-  virtual void SetGeometry(const ThreeDCircularProjectionGeometry::Pointer _arg);
+  virtual rtk::ThreeDCircularProjectionGeometry::Pointer GetGeometry();
+  virtual void SetGeometry(const rtk::ThreeDCircularProjectionGeometry::Pointer _arg);
 
   /** Get pointer to the ramp filter used by the feldkamp reconstruction */
   typename RampFilterType::Pointer GetRampFilter() { return m_RampFilter; }

@@ -1,8 +1,8 @@
 #include "pctfdk_ggo.h"
 #include "rtkGgoFunctions.h"
 
-#include "itkThreeDCircularProjectionGeometryXMLFile.h"
-#include "itkProjectionsReader.h"
+#include "rtkThreeDCircularProjectionGeometryXMLFile.h"
+#include "rtkProjectionsReader.h"
 #include "itkDDParkerShortScanImageFilter.h"
 #include "itkFDKDDConeBeamReconstructionFilter.h"
 
@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
 
   // Projections reader
   typedef itk::Image< OutputPixelType, Dimension+1 > ProjectionImageType;
-  typedef itk::ProjectionsReader< ProjectionImageType > ReaderType;
+  typedef rtk::ProjectionsReader< ProjectionImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
 
@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
               << args_info.geometry_arg
               << "..."
               << std::endl;
-  itk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
-  geometryReader = itk::ThreeDCircularProjectionGeometryXMLFileReader::New();
+  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
+  geometryReader = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
   geometryReader->SetFilename(args_info.geometry_arg);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 
@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
   pssf->InPlaceOff();
 
   // Create reconstructed image
-  typedef itk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
+  typedef rtk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer constantImageSource = ConstantImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctfdk>(constantImageSource, args_info);
 
