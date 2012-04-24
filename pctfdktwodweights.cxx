@@ -3,7 +3,7 @@
 
 #include <rtkThreeDCircularProjectionGeometryXMLFile.h>
 #include <rtkProjectionsReader.h>
-#include "itkFDKDDWeightProjectionFilter.h"
+#include "pctFDKDDWeightProjectionFilter.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 
   // Weights filter
-  typedef itk::FDKDDWeightProjectionFilter< ProjectionImageType > WeightType;
+  typedef pct::FDKDDWeightProjectionFilter< ProjectionImageType > WeightType;
   WeightType::Pointer wf = WeightType::New();
   wf->SetInput( reader->GetOutput() );
   wf->SetGeometry( geometryReader->GetOutputObject() );

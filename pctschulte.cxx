@@ -3,7 +3,7 @@
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
 
-#include "itkSchulteMLPFunction.h"
+#include "pctSchulteMLPFunction.h"
 #include "pctBetheBlochFunctor.h"
 
 int main(int argc, char * argv[])
@@ -13,16 +13,16 @@ int main(int argc, char * argv[])
   // For position and angle straggling, compute sigma1 in Schulte 2008
   double u = args_info.length_arg;
 
-  const double intForSigmaSqTheta1  = itk::Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(u);
-  const double intForSigmaSqTTheta1 = itk::Functor::SchulteMLP::IntegralForSigmaSqTTheta::GetValue(u);
-  const double intForSigmaSqT1      = itk::Functor::SchulteMLP::IntegralForSigmaSqT     ::GetValue(u);
+  const double intForSigmaSqTheta1  = pct::Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(u);
+  const double intForSigmaSqTTheta1 = pct::Functor::SchulteMLP::IntegralForSigmaSqTTheta::GetValue(u);
+  const double intForSigmaSqT1      = pct::Functor::SchulteMLP::IntegralForSigmaSqT     ::GetValue(u);
 
   itk::Matrix<double, 2, 2> Sigma1;
   Sigma1(1,1) = intForSigmaSqTheta1;
   Sigma1(0,1) = u * Sigma1(1,1) - intForSigmaSqTTheta1;
   Sigma1(1,0) = Sigma1(0,1);
   Sigma1(0,0) = u * ( 2*Sigma1(0,1) - u*Sigma1(1,1) ) + intForSigmaSqT1;
-  Sigma1 *= itk::Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,u);
+  Sigma1 *= pct::Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,u);
 
   // For mean energy
   pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe;

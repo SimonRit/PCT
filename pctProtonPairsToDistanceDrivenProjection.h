@@ -1,24 +1,24 @@
-#ifndef __itkProtonPairsToDistanceDrivenProjection_h
-#define __itkProtonPairsToDistanceDrivenProjection_h
+#ifndef __pctProtonPairsToDistanceDrivenProjection_h
+#define __pctProtonPairsToDistanceDrivenProjection_h
 
 #include "rtkConfiguration.h"
 
 #include <rtkRayQuadricIntersectionFunction.h>
 #include <itkInPlaceImageFilter.h>
 
-namespace itk
+namespace pct
 {
 
 template <class TInputImage, class TOutputImage>
 class ITK_EXPORT ProtonPairsToDistanceDrivenProjection :
-  public InPlaceImageFilter<TInputImage,TOutputImage>
+  public itk::InPlaceImageFilter<TInputImage,TOutputImage>
 {
 public:
   /** Standard class typedefs. */
-  typedef ProtonPairsToDistanceDrivenProjection        Self;
-  typedef InPlaceImageFilter<TInputImage,TOutputImage> Superclass;
-  typedef SmartPointer<Self>                           Pointer;
-  typedef SmartPointer<const Self>                     ConstPointer;
+  typedef ProtonPairsToDistanceDrivenProjection             Self;
+  typedef itk::InPlaceImageFilter<TInputImage,TOutputImage> Superclass;
+  typedef itk::SmartPointer<Self>                           Pointer;
+  typedef itk::SmartPointer<const Self>                     ConstPointer;
 
   typedef itk::Vector<float, 3>                        ProtonPairsPixelType;
   typedef itk::Image<ProtonPairsPixelType,2>           ProtonPairsImageType;
@@ -37,7 +37,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ProtonPairsToDistanceDrivenProjection, InPlaceImageFilter);
+  itkTypeMacro(ProtonPairsToDistanceDrivenProjection, itk::InPlaceImageFilter);
 
   /** Get/Set image of proton pairs. */
   itkGetMacro(ProtonPairsFileName, std::string);
@@ -102,10 +102,10 @@ private:
   double m_SigmaAngleCut;
 };
 
-} // end namespace itk
+} // end namespace pct
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkProtonPairsToDistanceDrivenProjection.txx"
+#include "pctProtonPairsToDistanceDrivenProjection.txx"
 #endif
 
 #endif

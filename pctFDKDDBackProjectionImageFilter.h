@@ -1,10 +1,10 @@
-#ifndef __itkFDKDDBackProjectionImageFilter_h
-#define __itkFDKDDBackProjectionImageFilter_h
+#ifndef __pctFDKDDBackProjectionImageFilter_h
+#define __pctFDKDDBackProjectionImageFilter_h
 
-#include "itkInPlaceImageFilter.h"
-#include "rtkBackProjectionImageFilter.h"
+#include <itkInPlaceImageFilter.h>
+#include <rtkBackProjectionImageFilter.h>
 
-namespace itk
+namespace pct
 {
 
 template <class TInputImage, class TOutputImage>
@@ -22,7 +22,7 @@ public:
   typedef TInputImage                                         ProjectionImageType;
   typedef typename ProjectionImageType::Pointer               ProjectionImagePointer;
   typedef typename ProjectionImageType::PixelType             ProjectionPixelType;
-  typedef Image<float, 4>                                     ProjectionStackType;
+  typedef itk::Image<float, 4>                                ProjectionStackType;
   typedef ProjectionStackType::Pointer                        ProjectionStackPointer;
 
   /** Method for creation through the object factory. */
@@ -57,10 +57,10 @@ private:
   void operator=(const Self&);               //purposely not implemented
 };
 
-} // end namespace itk
+} // end namespace pct
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkFDKDDBackProjectionImageFilter.txx"
+#include "pctFDKDDBackProjectionImageFilter.txx"
 #endif
 
 #endif

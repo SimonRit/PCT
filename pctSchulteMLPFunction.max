@@ -60,7 +60,7 @@ yMLP: (invert( invert(Sigma1)+ transpose(R1).invert(Sigma2).R1 )) .
 /*expand(getelmx(yMLP, 1, 1)), numer$*/
 /*load("mactex-utilities")$*/
 getelmx(yMLP, 1, 1)$
-tex(%, "itkOptSchulteMLPFunction.tex")$
+tex(%, "pctOptSchulteMLPFunction.tex")$
 
 u1: 20;
 sqrt(SigmaSquareTheta1), numer;

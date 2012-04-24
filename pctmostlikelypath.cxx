@@ -4,8 +4,8 @@
 #include <rtkGgoFunctions.h>
 #include <rtkRayQuadricIntersectionFunction.h>
 
-#include "itkSchulteMLPFunction.h"
-#include "itkThirdOrderPolynomialMLPFunction.h"
+#include "pctSchulteMLPFunction.h"
+#include "pctThirdOrderPolynomialMLPFunction.h"
 
 #include <itkImageFileWriter.h>
 
@@ -86,12 +86,12 @@ int main(int argc, char * argv[])
   dOut[1] /= dOut[2];
   //dOut[2] = 1.; SR: implicit in the following
 
-  //itk::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
-  itk::MostLikelyPathFunction<double>::Pointer mlp;
+  //pct::ThirdOrderPolynomialMLPFunction<double>::Pointer mlp;
+  pct::MostLikelyPathFunction<double>::Pointer mlp;
   if(args_info.type_arg==std::string("schulte"))
-    mlp = itk::SchulteMLPFunction::New();
+    mlp = pct::SchulteMLPFunction::New();
   else if(args_info.type_arg==std::string("polynomial"))
-    mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+    mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
   else
     {
     std::cerr << "Unknown mlp type: " << args_info.type_arg << std::endl;

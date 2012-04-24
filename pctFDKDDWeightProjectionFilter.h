@@ -1,5 +1,5 @@
-#ifndef __itkFDKDDWeightProjectionFilter_h
-#define __itkFDKDDWeightProjectionFilter_h
+#ifndef __pctFDKDDWeightProjectionFilter_h
+#define __pctFDKDDWeightProjectionFilter_h
 
 #include <itkInPlaceImageFilter.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
@@ -17,19 +17,19 @@
  * accounted for.
  * \author Simon Rit
  */
-namespace itk
+namespace pct
 {
 
 template<class TInputImage, class TOutputImage=TInputImage>
 class ITK_EXPORT FDKDDWeightProjectionFilter :
-  public InPlaceImageFilter<TInputImage, TOutputImage>
+  public itk::InPlaceImageFilter<TInputImage, TOutputImage>
 {
 public:
   /** Standard class typedefs. */
   typedef FDKDDWeightProjectionFilter Self;
-  typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  typedef itk::ImageToImageFilter<TInputImage, TOutputImage> Superclass;
+  typedef itk::SmartPointer<Self>       Pointer;
+  typedef itk::SmartPointer<const Self> ConstPointer;
 
   /** Some convenient typedefs. */
   typedef TInputImage                          InputImageType;
@@ -40,7 +40,7 @@ public:
   itkNewMacro(Self);
 
   /** Runtime information support. */
-  itkTypeMacro(FDKDDWeightProjectionFilter, ImageToImageFilter);
+  itkTypeMacro(FDKDDWeightProjectionFilter, itk::ImageToImageFilter);
 
   /** Get/ Set geometry structure */
   itkGetMacro(Geometry, rtk::ThreeDCircularProjectionGeometry::Pointer);
@@ -65,10 +65,10 @@ private:
   rtk::ThreeDCircularProjectionGeometry::Pointer m_Geometry;
 }; // end of class
 
-} // end namespace itk
+} // end namespace pct
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkFDKDDWeightProjectionFilter.txx"
+#include "pctFDKDDWeightProjectionFilter.txx"
 #endif
 
 #endif

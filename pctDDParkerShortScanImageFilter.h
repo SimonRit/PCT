@@ -1,5 +1,5 @@
-#ifndef __itkDDParkerShortScanImageFilter_h
-#define __itkDDParkerShortScanImageFilter_h
+#ifndef __pctDDParkerShortScanImageFilter_h
+#define __pctDDParkerShortScanImageFilter_h
 
 #include <itkInPlaceImageFilter.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
@@ -16,21 +16,21 @@
  *
  * \author Simon Rit
  */
-namespace itk
+namespace pct
 {
 
 template<class TInputImage, class TOutputImage=TInputImage>
 class ITK_EXPORT DDParkerShortScanImageFilter :
-  public InPlaceImageFilter<TInputImage, TOutputImage>
+  public itk::InPlaceImageFilter<TInputImage, TOutputImage>
 {
 public:
   /** Standard class typedefs. */
   typedef DDParkerShortScanImageFilter Self;
 
-  typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
+  typedef itk::ImageToImageFilter<TInputImage, TOutputImage> Superclass;
 
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  typedef itk::SmartPointer<Self>       Pointer;
+  typedef itk::SmartPointer<const Self> ConstPointer;
 
   /** Some convenient typedefs. */
   typedef TInputImage                                     InputImageType;
@@ -45,7 +45,7 @@ public:
   itkNewMacro(Self);
 
   /** Runtime information support. */
-  itkTypeMacro(DDParkerShortScanImageFilter, ImageToImageFilter);
+  itkTypeMacro(DDParkerShortScanImageFilter, itk::ImageToImageFilter);
 
   /** Get / Set the object pointer to projection geometry */
   itkGetMacro(Geometry, GeometryPointer);
@@ -71,10 +71,10 @@ private:
   double m_SuperiorCorner;
 }; // end of class
 
-} // end namespace itk
+} // end namespace pct
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDDParkerShortScanImageFilter.txx"
+#include "pctDDParkerShortScanImageFilter.txx"
 #endif
 
 #endif

@@ -1,10 +1,10 @@
-#ifndef __itkDDParkerShortScanImageFilter_txx
-#define __itkDDParkerShortScanImageFilter_txx
+#ifndef __pctDDParkerShortScanImageFilter_txx
+#define __pctDDParkerShortScanImageFilter_txx
 
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkMacro.h>
 
-namespace itk
+namespace pct
 {
 
 template <class TInputImage, class TOutputImage>
@@ -27,7 +27,7 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
   itOut.GoToBegin();
 
   // Not a short scan if less than 20 degrees max gap, => nothing to do
-  if( angularGaps[maxAngularGapPos] < Math::pi / 9 )
+  if( angularGaps[maxAngularGapPos] < itk::Math::pi / 9 )
     {
     if(this->GetInput() != this->GetOutput() ) // If not in place, copy is
                                                // required
@@ -82,7 +82,7 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
   //Delta
   double delta = 0.5 * (lastAngle - firstAngle - 180);
   delta = delta-360*floor(delta/360); // between -360 and 360
-  delta *= Math::pi / 180;            // degrees to radians
+  delta *= itk::Math::pi / 180;       // degrees to radians
 
   double invsdd = 1/m_Geometry->GetSourceToDetectorDistances()[itIn.GetIndex()[3]];
   if( delta < atan(0.5 * detectorWidth * invsdd) )
@@ -106,18 +106,18 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
     beta = beta - firstAngle;
     if (beta<0)
       beta += 360;
-    beta *= Math::pi / 180;
+    beta *= itk::Math::pi / 180;
 
     itWeights.GoToBegin();
     while(!itWeights.IsAtEnd() )
       {
       double alpha = atan( -1 * point[0] * invsdd );
       if(beta <= 2*delta-2*alpha)
-        itWeights.Set( 2. * pow(sin( (Math::pi*beta) / (4*(delta-alpha) ) ), 2.) );
-      else if(beta <= Math::pi-2*alpha)
+        itWeights.Set( 2. * pow(sin( (itk::Math::pi*beta) / (4*(delta-alpha) ) ), 2.) );
+      else if(beta <= itk::Math::pi-2*alpha)
         itWeights.Set( 2. );
-      else if(beta <= Math::pi+2*delta)
-        itWeights.Set( 2. * pow(sin( (Math::pi*(Math::pi+2*delta-beta) ) / (4*(delta+alpha) ) ), 2.) );
+      else if(beta <= itk::Math::pi+2*delta)
+        itWeights.Set( 2. * pow(sin( (itk::Math::pi*(itk::Math::pi+2*delta-beta) ) / (4*(delta+alpha) ) ), 2.) );
       else
         itWeights.Set( 0. );
 
@@ -143,5 +143,5 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
     }
 }
 
-} // end namespace itk
+} // end namespace pct
 #endif

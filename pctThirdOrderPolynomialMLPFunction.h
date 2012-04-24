@@ -1,9 +1,9 @@
-#ifndef __itkThirdOrderPolynomialMLPFunction_h
-#define __itkThirdOrderPolynomialMLPFunction_h
+#ifndef __pctThirdOrderPolynomialMLPFunction_h
+#define __pctThirdOrderPolynomialMLPFunction_h
 
-#include "itkMostLikelyPathFunction.h"
+#include "pctMostLikelyPathFunction.h"
 
-namespace itk
+namespace pct
 {
 
 /** \class ThirdOrderPolynomialMLPFunction
@@ -19,8 +19,8 @@ public:
   /** Standard class typedefs. */
   typedef ThirdOrderPolynomialMLPFunction                       Self;
   typedef MostLikelyPathFunction<TCoordRep>                     Superclass;
-  typedef SmartPointer<Self>                                    Pointer;
-  typedef SmartPointer<const Self>                              ConstPointer;
+  typedef itk::SmartPointer<Self>                               Pointer;
+  typedef itk::SmartPointer<const Self>                         ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -52,8 +52,8 @@ private:
   TCoordRep zoffset;
 };
 
-} // namespace itk
+} // namespace pct
 
-#include "itkThirdOrderPolynomialMLPFunction.txx"
+#include "pctThirdOrderPolynomialMLPFunction.txx"
 
 #endif

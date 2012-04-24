@@ -1,11 +1,11 @@
-#ifndef __itkFDKDDWeightProjectionFilter_txx
-#define __itkFDKDDWeightProjectionFilter_txx
+#ifndef __pctFDKDDWeightProjectionFilter_txx
+#define __pctFDKDDWeightProjectionFilter_txx
 
 #include <itkImageRegionIterator.h>
 #include <itkImageFileWriter.h>
 #include <itkMeanProjectionImageFilter.h>
 
-namespace itk
+namespace pct
 {
 template <class TInputImage, class TOutputImage>
 void
@@ -42,9 +42,9 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
     pointIncrement[i] -= pointBase[i];
 
   // Iterators
-  typedef ImageRegionConstIterator<InputImageType> InputConstIterator;
+  typedef itk::ImageRegionConstIterator<InputImageType> InputConstIterator;
   InputConstIterator itI(this->GetInput(), outputRegionForThread);
-  typedef ImageRegionIterator<OutputImageType> OutputIterator;
+  typedef itk::ImageRegionIterator<OutputImageType> OutputIterator;
   OutputIterator itO(this->GetOutput(), outputRegionForThread);
   itI.GoToBegin();
   itO.GoToBegin();
@@ -84,5 +84,5 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
     }
 }
 
-} // end namespace itk
+} // end namespace pct
 #endif

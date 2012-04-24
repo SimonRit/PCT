@@ -2,10 +2,10 @@
 #include <itkImageRegionIterator.h>
 
 #include "pctBetheBlochFunctor.h"
-#include "itkThirdOrderPolynomialMLPFunction.h"
-#include "itkSchulteMLPFunction.h"
+#include "pctThirdOrderPolynomialMLPFunction.h"
+#include "pctSchulteMLPFunction.h"
 
-namespace itk
+namespace pct
 {
 
 template <class TInputImage, class TOutputImage>
@@ -25,11 +25,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId )
 {
   // Create MLP depending on type
-  itk::MostLikelyPathFunction<double>::Pointer mlp;
+  pct::MostLikelyPathFunction<double>::Pointer mlp;
   if(m_MostLikelyPathType == "polynomial")
-    mlp = itk::ThirdOrderPolynomialMLPFunction<double>::New();
+    mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
   else if (m_MostLikelyPathType == "schulte")
-    mlp = itk::SchulteMLPFunction::New();
+    mlp = pct::SchulteMLPFunction::New();
   else
     {
     itkGenericExceptionMacro("MLP must either be schulte or polynomial, not [" << m_MostLikelyPathType << ']');
@@ -126,7 +126,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
 
   // Process pairs
-  ImageRegionIterator<ProtonPairsImageType> it(reader->GetOutput(), region);
+  itk::ImageRegionIterator<ProtonPairsImageType> it(reader->GetOutput(), region);
   while(!it.IsAtEnd())
   {
     if(threadId==0 && it.GetIndex()[1]%10000==0)

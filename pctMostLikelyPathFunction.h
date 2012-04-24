@@ -1,5 +1,5 @@
-#ifndef __itkMostLikelyPathFunction_h
-#define __itkMostLikelyPathFunction_h
+#ifndef __pctMostLikelyPathFunction_h
+#define __pctMostLikelyPathFunction_h
 
 #include <itkNumericTraits.h>
 #include <vector>
@@ -10,7 +10,7 @@
 #  include <itkTimeProbe.h>
 #endif
 
-namespace itk
+namespace pct
 {
 
 /** \class MostLikelyPathFunction
@@ -20,17 +20,17 @@ namespace itk
  */
 template <class TCoordRep = double>
 class ITK_EXPORT MostLikelyPathFunction :
-    public LightObject
+    public itk::LightObject
 {
 public:
   /** Standard class typedefs. */
-  typedef MostLikelyPathFunction                                Self;
-  typedef LightObject                                           Superclass;
-  typedef SmartPointer<Self>                                    Pointer;
-  typedef SmartPointer<const Self>                              ConstPointer;
+  typedef MostLikelyPathFunction         Self;
+  typedef itk::LightObject               Superclass;
+  typedef itk::SmartPointer<Self>        Pointer;
+  typedef itk::SmartPointer<const Self>  ConstPointer;
 
   /** Useful defines. */
-  typedef Vector<TCoordRep, 3> VectorType;
+  typedef itk::Vector<TCoordRep, 3> VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut){}
@@ -56,6 +56,6 @@ private:
   void operator=( const Self& ); //purposely not implemented
 };
 
-} // namespace itk
+} // namespace pct
 
 #endif

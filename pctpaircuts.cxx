@@ -4,7 +4,7 @@
 #include <rtkGgoFunctions.h>
 #include <rtkConstantImageSource.h>
 
-#include "itkProtonPairsToDistanceDrivenProjection.h"
+#include "pctProtonPairsToDistanceDrivenProjection.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>

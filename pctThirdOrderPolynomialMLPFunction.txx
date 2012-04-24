@@ -1,4 +1,4 @@
-namespace itk
+namespace pct
 {
 
 template < class TCoordRep >

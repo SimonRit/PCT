@@ -1,4 +1,4 @@
-function [] = itkSchulteMLPFunction()
+function [] = pctSchulteMLPFunction()
     clc;
     figure(1);
     CompBetaPSquare();

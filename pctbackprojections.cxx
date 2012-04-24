@@ -2,7 +2,7 @@
 #include "rtkGgoFunctions.h"
 
 #include "rtkThreeDCircularProjectionGeometryXMLFile.h"
-#include "itkFDKDDBackProjectionImageFilter.h"
+#include "pctFDKDDBackProjectionImageFilter.h"
 #include "rtkJosephBackProjectionImageFilter.h"
 
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -63,7 +63,7 @@ int main(int argc, char * argv[])
   // Create back projection image filter
   if(args_info.verbose_flag)
     std::cout << "Backprojecting volume..." << std::flush;
-  typedef itk::FDKDDBackProjectionImageFilter<OutputImageType, OutputImageType> BPType;
+  typedef pct::FDKDDBackProjectionImageFilter<OutputImageType, OutputImageType> BPType;
   BPType::Pointer bp = BPType::New();
   bp->SetInput( constantImageSource->GetOutput() );
   bp->SetProjectionStack( reader->GetOutput() );

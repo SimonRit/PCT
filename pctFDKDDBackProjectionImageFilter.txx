@@ -1,12 +1,12 @@
-#ifndef __itkFDKDDBackProjectionImageFilter_txx
-#define __itkFDKDDBackProjectionImageFilter_txx
+#ifndef __pctFDKDDBackProjectionImageFilter_txx
+#define __pctFDKDDBackProjectionImageFilter_txx
 
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkLinearInterpolateImageFunction.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
 #include <itkImageFileWriter.h>
 
-namespace itk
+namespace pct
 {
 
 /**
@@ -28,9 +28,9 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
   // Iterators on volume input and output
-  typedef ImageRegionConstIterator<TInputImage> InputRegionIterator;
+  typedef itk::ImageRegionConstIterator<TInputImage> InputRegionIterator;
   InputRegionIterator itIn(this->GetInput(), outputRegionForThread);
-  typedef ImageRegionIteratorWithIndex<TOutputImage> OutputRegionIterator;
+  typedef itk::ImageRegionIteratorWithIndex<TOutputImage> OutputRegionIterator;
   OutputRegionIterator itOut(this->GetOutput(), outputRegionForThread);
 
   // Initialize output region with input region in case the filter is not in
@@ -49,11 +49,11 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   // Rotation center (assumed to be at 0 yet)
   typename TInputImage::PointType rotCenterPoint;
   rotCenterPoint.Fill(0.0);
-  ContinuousIndex<double, Dimension> rotCenterIndex;
+  itk::ContinuousIndex<double, Dimension> rotCenterIndex;
   this->GetInput(0)->TransformPhysicalPointToContinuousIndex(rotCenterPoint, rotCenterIndex);
 
   // Continuous index at which we interpolate
-  ContinuousIndex<double, Dimension> pointProj;
+  itk::ContinuousIndex<double, Dimension> pointProj;
 
   // Go over each projection
   for(unsigned int iProj=iFirstProj; iProj<iFirstProj+nProj; iProj++)
@@ -165,6 +165,6 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
                               matrixVol.GetVnlMatrix() );
 }
 
-} // end namespace itk
+} // end namespace pct
 
 #endif

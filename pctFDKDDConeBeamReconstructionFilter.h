@@ -1,9 +1,9 @@
-#ifndef __itkFDKDDConeBeamReconstructionFilter_h
-#define __itkFDKDDConeBeamReconstructionFilter_h
+#ifndef __pctFDKDDConeBeamReconstructionFilter_h
+#define __pctFDKDDConeBeamReconstructionFilter_h
 
-#include "itkFDKDDWeightProjectionFilter.h"
+#include "pctFDKDDWeightProjectionFilter.h"
 #include <rtkFFTRampImageFilter.h>
-#include "itkFDKDDBackProjectionImageFilter.h"
+#include "pctFDKDDBackProjectionImageFilter.h"
 
 #include <itkExtractImageFilter.h>
 #include <itkTimeProbe.h>
@@ -13,38 +13,38 @@
  *
  * \author Simon Rit
  */
-namespace itk
+namespace pct
 {
 
 template<class TInputImage, class TOutputImage=TInputImage, class TFFTPrecision=double>
 class ITK_EXPORT FDKDDConeBeamReconstructionFilter :
-  public ImageToImageFilter<TInputImage, TOutputImage>
+  public itk::ImageToImageFilter<TInputImage, TOutputImage>
 {
 public:
   /** Standard class typedefs. */
-  typedef FDKDDConeBeamReconstructionFilter             Self;
-  typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef FDKDDConeBeamReconstructionFilter                  Self;
+  typedef itk::ImageToImageFilter<TInputImage, TOutputImage> Superclass;
+  typedef itk::SmartPointer<Self>                            Pointer;
+  typedef itk::SmartPointer<const Self>                      ConstPointer;
 
   /** Some convenient typedefs. */
   typedef TInputImage  InputImageType;
   typedef TOutputImage OutputImageType;
 
-  typedef Image<float, 4>                                     ProjectionStackType;
-  typedef ProjectionStackType::Pointer                        ProjectionStackPointer;
+  typedef itk::Image<float, 4>                               ProjectionStackType;
+  typedef ProjectionStackType::Pointer                       ProjectionStackPointer;
 
   /** Typedefs of each subfilter of this composite filter */
   typedef itk::ExtractImageFilter< ProjectionStackType, ProjectionStackType >                ExtractFilterType;
-  typedef itk::FDKDDWeightProjectionFilter< ProjectionStackType, ProjectionStackType >       WeightFilterType;
+  typedef pct::FDKDDWeightProjectionFilter< ProjectionStackType, ProjectionStackType >       WeightFilterType;
   typedef rtk::FFTRampImageFilter< ProjectionStackType, ProjectionStackType, TFFTPrecision > RampFilterType;
-  typedef itk::FDKDDBackProjectionImageFilter< OutputImageType, OutputImageType >            BackProjectionFilterType;
+  typedef pct::FDKDDBackProjectionImageFilter< OutputImageType, OutputImageType >            BackProjectionFilterType;
 
   /** Standard New method. */
   itkNewMacro(Self);
 
   /** Runtime information support. */
-  itkTypeMacro(FDKDDConeBeamReconstructionFilter, ImageToImageFilter);
+  itkTypeMacro(FDKDDConeBeamReconstructionFilter, itk::ImageToImageFilter);
 
   /** Get / Set the object pointer to projection geometry */
   virtual rtk::ThreeDCircularProjectionGeometry::Pointer GetGeometry();
@@ -92,10 +92,10 @@ private:
   ProjectionStackPointer m_ProjectionStack;
 }; // end of class
 
-} // end namespace itk
+} // end namespace pct
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkFDKDDConeBeamReconstructionFilter.txx"
+#include "pctFDKDDConeBeamReconstructionFilter.txx"
 #endif
 
 #endif

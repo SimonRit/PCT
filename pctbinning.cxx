@@ -4,7 +4,7 @@
 #include <rtkGgoFunctions.h>
 #include <rtkConstantImageSource.h>
 
-#include "itkProtonPairsToDistanceDrivenProjection.h"
+#include "pctProtonPairsToDistanceDrivenProjection.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( constantImageSource->Update() );
 
   // Projection filter
-  typedef itk::ProtonPairsToDistanceDrivenProjection<OutputImageType, OutputImageType> ProjectionFilter;
+  typedef pct::ProtonPairsToDistanceDrivenProjection<OutputImageType, OutputImageType> ProjectionFilter;
   ProjectionFilter::Pointer projection = ProjectionFilter::New();
   projection->SetInput( constantImageSource->GetOutput() );
   projection->SetProtonPairsFileName( args_info.input_arg );

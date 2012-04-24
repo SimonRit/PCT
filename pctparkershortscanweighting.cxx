@@ -3,7 +3,7 @@
 
 #include <rtkThreeDCircularProjectionGeometryXMLFile.h>
 #include <rtkProjectionsReader.h>
-#include "itkDDParkerShortScanImageFilter.h"
+#include "pctDDParkerShortScanImageFilter.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 
   // Short scan image filter
-  typedef itk::DDParkerShortScanImageFilter< OutputImageType > PSSFType;
+  typedef pct::DDParkerShortScanImageFilter< OutputImageType > PSSFType;
   PSSFType::Pointer pssf = PSSFType::New();
   pssf->SetInput( reader->GetOutput() );
   pssf->SetGeometry( geometryReader->GetOutputObject() );

@@ -1,11 +1,11 @@
-#ifndef __itkSchulteMLPFunction_h
-#define __itkSchulteMLPFunction_h
+#ifndef __pctSchulteMLPFunction_h
+#define __pctSchulteMLPFunction_h
 
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "itkMostLikelyPathFunction.h"
+#include "pctMostLikelyPathFunction.h"
 
-namespace itk
+namespace pct
 {
 
 namespace Functor
@@ -123,8 +123,8 @@ public:
   /** Standard class typedefs. */
   typedef SchulteMLPFunction                       Self;
   typedef MostLikelyPathFunction<double>           Superclass;
-  typedef SmartPointer<Self>                       Pointer;
-  typedef SmartPointer<const Self>                 ConstPointer;
+  typedef itk::SmartPointer<Self>                  Pointer;
+  typedef itk::SmartPointer<const Self>            ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -146,7 +146,7 @@ public:
 protected:
 
   /// Implementation of 2x2 matrix inversion, faster than itk/vnl inversion
-  void InverseMatrix(Matrix<double, 2, 2> &mat);
+  void InverseMatrix(itk::Matrix<double, 2, 2> &mat);
 
   /// Constructor
   SchulteMLPFunction();
@@ -164,16 +164,16 @@ private:
   double m_u2;
 
   // Entrance and exit parameters (equation 1)
-  Vector<double, 2> m_x0;
-  Vector<double, 2> m_x2;
-  Vector<double, 2> m_y0;
-  Vector<double, 2> m_y2;
+  itk::Vector<double, 2> m_x0;
+  itk::Vector<double, 2> m_x2;
+  itk::Vector<double, 2> m_y0;
+  itk::Vector<double, 2> m_y2;
 
   // Part of the rotation matrices which is constant for the trajectory
-  Matrix<double, 2, 2> m_R0;
-  Matrix<double, 2, 2> m_R1;
-  Matrix<double, 2, 2> m_R0T;
-  Matrix<double, 2, 2> m_R1T;
+  itk::Matrix<double, 2, 2> m_R0;
+  itk::Matrix<double, 2, 2> m_R1;
+  itk::Matrix<double, 2, 2> m_R0T;
+  itk::Matrix<double, 2, 2> m_R1T;
 
   // Part common to all positions along the trajectory
   //double m_IntForSigmaSqTheta0;  //Always 0. because m_u0=0.
@@ -190,8 +190,8 @@ private:
 
 };
 
-} // end namespace itk
+} // end namespace pct
 
-#include "itkSchulteMLPFunction.txx"
+#include "pctSchulteMLPFunction.txx"
 
 #endif

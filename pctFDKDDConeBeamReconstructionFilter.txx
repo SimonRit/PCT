@@ -1,4 +1,4 @@
-namespace itk
+namespace pct
 {
 
 template<class TInputImage, class TOutputImage, class TFFTPrecision>
@@ -153,4 +153,4 @@ FDKDDConeBeamReconstructionFilter<TInputImage, TOutputImage, TFFTPrecision>
      << ' ' << m_BackProjectionProbe.GetUnit() << std::endl;
 }
 
-} // end namespace itk
+} // end namespace pct

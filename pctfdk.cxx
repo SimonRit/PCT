@@ -3,8 +3,8 @@
 
 #include "rtkThreeDCircularProjectionGeometryXMLFile.h"
 #include "rtkProjectionsReader.h"
-#include "itkDDParkerShortScanImageFilter.h"
-#include "itkFDKDDConeBeamReconstructionFilter.h"
+#include "pctDDParkerShortScanImageFilter.h"
+#include "pctFDKDDConeBeamReconstructionFilter.h"
 
 #include <itkRegularExpressionSeriesFileNames.h>
 #include <itkImageFileWriter.h>
@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
 
   // Short scan image filter
-  typedef itk::DDParkerShortScanImageFilter< ProjectionImageType > PSSFType;
+  typedef pct::DDParkerShortScanImageFilter< ProjectionImageType > PSSFType;
   PSSFType::Pointer pssf = PSSFType::New();
   pssf->SetInput( reader->GetOutput() );
   pssf->SetGeometry( geometryReader->GetOutputObject() );
@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
   rtk::SetConstantImageSourceFromGgo<ConstantImageSourceType, args_info_pctfdk>(constantImageSource, args_info);
 
   // FDK reconstruction filtering
-  typedef itk::FDKDDConeBeamReconstructionFilter< OutputImageType > FDKCPUType;
+  typedef pct::FDKDDConeBeamReconstructionFilter< OutputImageType > FDKCPUType;
   FDKCPUType::Pointer feldkamp = FDKCPUType::New();
   feldkamp->SetInput( 0, constantImageSource->GetOutput() );
   feldkamp->SetProjectionStack( pssf->GetOutput() );
