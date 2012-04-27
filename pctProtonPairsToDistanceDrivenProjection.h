@@ -64,6 +64,10 @@ public:
   itkGetMacro(SigmaAngleCut, double);
   itkSetMacro(SigmaAngleCut, double);
 
+  /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
+  itkGetMacro(IonizationPotential, double);
+  itkSetMacro(IonizationPotential, double);
+
 protected:
   ProtonPairsToDistanceDrivenProjection() {
     this->SetInPlace( true );
@@ -100,6 +104,9 @@ private:
 
   /** Cut parameter on sigma angle (3 means keep all below 3*sigma) */
   double m_SigmaAngleCut;
+
+  /** Ionization potential used in the Bethe Bloch equation */
+  double m_IonizationPotential;
 };
 
 } // end namespace pct

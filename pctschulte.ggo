@@ -5,3 +5,4 @@ option "config"     - "Config file"                                             
 option "length"     l "Length of traversed material in mm"                           double yes
 option "parameter"  p "Parameter choice" values="energyMean","energySD","positionSD" enum   yes
 option "energy"     e "Initial energy in MeV"                                        double no
+option "ionpot"     - "Ionization potential used in the reconstruction in eV"        double no  default="68.9984"

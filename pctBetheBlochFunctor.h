@@ -55,7 +55,7 @@ template< class TInput, class TOutput, unsigned int VMaximumkeVEnergy=500000 >
 class IntegratedBetheBlochProtonStoppingPowerInverse
 {
 public:
-  IntegratedBetheBlochProtonStoppingPowerInverse()
+  IntegratedBetheBlochProtonStoppingPowerInverse(const double I)
     {
     // Create lookup table for integer values of energy
     m_LUT[0] = 0.;
@@ -63,7 +63,7 @@ public:
     for(unsigned int i=1; i<VMaximumkeVEnergy; i++)
       {
       static const double dE = 1.*CLHEP::keV;
-      m_LUT[i] = m_LUT[i-1] + dE / m_S.GetValue((TOutput)i*CLHEP::keV);
+      m_LUT[i] = m_LUT[i-1] + dE / m_S.GetValue((TOutput)i*CLHEP::keV, I);
 
       // Create inverse lut, i.e., get energy from length in water
       for(unsigned j=m_Length.size(); j<unsigned(m_LUT[i]*CLHEP::mm)+1; j++)

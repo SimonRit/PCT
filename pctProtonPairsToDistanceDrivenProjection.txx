@@ -78,7 +78,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   for(unsigned int i=0; i<3; i++)
     imgSpacingInv[i] = 1./imgSpacing[i];
 
-  pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> convFunc;
+  Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> convFunc(m_IonizationPotential);
 
   // Corrections
   typedef itk::Vector<double,3> VectorType;
