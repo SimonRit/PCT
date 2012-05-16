@@ -9,7 +9,8 @@
 #include <itksys/SystemTools.hxx>
 
 // Root includes
-#include <TChain.h>
+#include <TFile.h>
+#include <TTree.h>
 #include <TROOT.h>
 
 #define MAX_RUNS 1024
@@ -31,7 +32,7 @@ struct ParticleInfo
   };
 
 
-bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandatory=true)
+bool SetTreeBranch(TTree *tree, std::string branchName, void *add, bool mandatory=true)
 {
   unsigned int found = 0;
   tree->SetBranchStatus(branchName.c_str(), 1, &found);
@@ -49,7 +50,7 @@ bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandato
   return found;
 }
 
-void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd, TChain *tree)
+void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd, TTree *tree)
 {
   tree->GetListOfBranches(); // force reading of chain
   if(!SetTreeBranch(tree, "ParticleName", pi.name, false))
@@ -116,10 +117,13 @@ int main(int argc, char * argv[])
   GGO(pctpairprotons, args_info);
 
   // Create root trees
-  TChain *treeIn = new TChain("PhaseSpace");
-  TChain *treeOut = new TChain("PhaseSpace");
-  treeIn->AddFile(args_info.inputIn_arg);
-  treeOut->AddFile(args_info.inputOut_arg);
+  TFile *fileIn = new TFile(args_info.inputIn_arg);
+  fileIn->ReadKeys();
+  TTree * treeIn = (TTree*)fileIn->Get("PhaseSpace");
+
+  TFile *fileOut = new TFile(args_info.inputOut_arg);
+  fileOut->ReadKeys();
+  TTree * treeOut = (TTree*)fileOut->Get("PhaseSpace");
 
   // Branch particles
   struct ParticleInfo piIn, piOut;
