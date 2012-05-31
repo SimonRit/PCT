@@ -229,7 +229,10 @@ int main(int argc, char * argv[])
       pdOut.direction[2] *= -1.;
       pairs[piIn.runID].push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
       }
-    iIn++;
+
+    // There may be multiple protons to pair with an input proton so only
+    // increment the output counter. Note that there may also be multiple input
+    // protons associated to an output proton but this is ignored.
     iOut++;
     }
 
