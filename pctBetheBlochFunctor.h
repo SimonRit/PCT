@@ -40,7 +40,7 @@ public:
   /** Actual computation. By default, the ionization potential of ionization
    * is the one of water given in [Li, MIC-NSS, 2003].
    */
-  TOutput GetValue(const TInput e, const double I = 68.9984 * CLHEP::eV) const
+  TOutput GetValue(const TInput e, const double I) const
     {
     TOutput betasq = CLHEP::proton_mass_c2/(e + CLHEP::proton_mass_c2);
     betasq = 1.-betasq*betasq;
