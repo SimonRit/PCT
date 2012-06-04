@@ -32,6 +32,7 @@ int main(int argc, char * argv[])
   projection->SetSourceDistance( args_info.source_arg );
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
   projection->SetSigmaAngleCut( args_info.anglecut_arg );
+  projection->SetSigmaEnergyCut( args_info.energycut_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
 
   if(args_info.quadricIn_given)

@@ -4,6 +4,7 @@
 #include "pctBetheBlochFunctor.h"
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
+#include "pctEnergyStragglingFunctor.h"
 
 namespace pct
 {
@@ -145,7 +146,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType dOut = it.Get();
     ++it;
-    const double value = convFunc.GetValue(it.Get()[1], it.Get()[0]);
+    const double eIn = it.Get()[0];
+    const double eOut = it.Get()[1];
+    const double value = convFunc.GetValue(eOut, eIn);
     ++it;
 
     // Move straight to entrance and exit shapes
@@ -166,7 +169,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         }
       }
 
-    // Compute cut on exit angle with respect to straight line
+    // Compute cut on exit angle and energy with respect to straight line
     quadricOut->SetRayOrigin(pIn);
     double length = 0.;
     if(quadricOut->Evaluate(dIn))
@@ -176,6 +179,15 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         p = pIn  + dIn  * quadricOut ->GetNearestDistance();
       length = (pSIn  - p).GetNorm();
       }
+
+    // Energy cut (also requires the expected energy mean)
+    double energyMean = convFunc.GetEnergy(length, eIn);
+    double sigmaEnergyCutVal = m_SigmaEnergyCut *
+                               Functor::EnergyStragglingFunctor<double,double>::GetValue(length);
+    if(sigmaEnergyCutVal!=0. && vcl_abs(eOut-energyMean)>sigmaEnergyCutVal)
+      continue;
+
+    // Angle cut
     const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
     double sigmaAngleCutVal = sigmaAngleCutSq *
                               Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
@@ -189,7 +201,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
 
-    // Apply cut
+    // Apply angle cut
     double anglex = vcl_atan(dOut[0])-vcl_atan(dIn[0]);
     anglex *= anglex;
     if(sigmaAngleCutVal!=0. && anglex>sigmaAngleCutVal)

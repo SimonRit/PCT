@@ -64,6 +64,10 @@ public:
   itkGetMacro(SigmaAngleCut, double);
   itkSetMacro(SigmaAngleCut, double);
 
+  /** Get/Set the cut parameter on sigma energy. */
+  itkGetMacro(SigmaEnergyCut, double);
+  itkSetMacro(SigmaEnergyCut, double);
+
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
@@ -104,6 +108,9 @@ private:
 
   /** Cut parameter on sigma angle (3 means keep all below 3*sigma) */
   double m_SigmaAngleCut;
+
+  /** Cut parameter on sigma energy (3 means keep all below 3*sigma) */
+  double m_SigmaEnergyCut;
 
   /** Ionization potential used in the Bethe Bloch equation */
   double m_IonizationPotential;
