@@ -5,6 +5,7 @@
 
 #include "pctSchulteMLPFunction.h"
 #include "pctBetheBlochFunctor.h"
+#include "pctEnergyStragglingFunctor.h"
 
 int main(int argc, char * argv[])
 {
@@ -37,11 +38,15 @@ int main(int argc, char * argv[])
     return EXIT_SUCCESS;
 
     case(parameter_arg_energySD):
-    //TODO
+    std::cout << pct::Functor::EnergyStragglingFunctor<float, double>::GetValue(args_info.length_arg*CLHEP::mm)/CLHEP::MeV << std::endl;
+    return EXIT_SUCCESS;
 
     case(parameter_arg_positionSD):
     std::cout << sqrt(Sigma1(0,0)) << std::endl;
     return EXIT_SUCCESS;
+
+    default:
+    return EXIT_FAILURE;
     }
 
 //  std::cout << u/CLHEP::mm << '\t' << sqrt(Sigma1(0,0))/CLHEP::mm << std::endl;
