@@ -181,17 +181,14 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
 
     // Energy cut (also requires the expected energy mean)
-    double energyMean = convFunc.GetEnergy(length, eIn);
-    double sigmaEnergyCutVal = m_SigmaEnergyCut *
-                               Functor::EnergyStragglingFunctor<double,double>::GetValue(length);
-    if(sigmaEnergyCutVal!=0. && vcl_abs(eOut-energyMean)>sigmaEnergyCutVal)
-      continue;
-
-    // Angle cut
-    const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
-    double sigmaAngleCutVal = sigmaAngleCutSq *
-                              Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
-                              Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(length);
+    if(m_SigmaEnergyCut!=0.)
+      {
+      double energyMean = convFunc.GetEnergy(length, eIn);
+      double sigmaEnergyCutVal = m_SigmaEnergyCut *
+                                 Functor::EnergyStragglingFunctor<double,double>::GetValue(length);
+      if(vcl_abs(eOut-energyMean)>sigmaEnergyCutVal)
+        continue;
+      }
 
     // Normalize direction with respect to z
     dIn[0] /= dIn[2];
@@ -201,15 +198,23 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
 
-    // Apply angle cut
-    double anglex = vcl_atan(dOut[0])-vcl_atan(dIn[0]);
-    anglex *= anglex;
-    if(sigmaAngleCutVal!=0. && anglex>sigmaAngleCutVal)
-      continue;
-    double angley = vcl_atan(dOut[1])-vcl_atan(dIn[1]);
-    angley *= angley;
-    if(sigmaAngleCutVal!=0. && angley>sigmaAngleCutVal)
-      continue;
+    // Angle cut
+    if(m_SigmaAngleCut!=0.)
+      {
+      const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
+      double sigmaAngleCutVal = sigmaAngleCutSq *
+                                Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
+                                Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(length);
+
+      double anglex = vcl_atan(dOut[0])-vcl_atan(dIn[0]);
+      anglex *= anglex;
+      if(anglex>sigmaAngleCutVal)
+        continue;
+      double angley = vcl_atan(dOut[1])-vcl_atan(dIn[1]);
+      angley *= angley;
+      if(angley>sigmaAngleCutVal)
+        continue;
+      }
 
     // Init MLP before mm to voxel conversion
     mlp->Init(pSIn, pSOut, dIn, dOut);
