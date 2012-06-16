@@ -12,7 +12,7 @@
 #include <TChain.h>
 #include <TROOT.h>
 
-#define MAX_RUNS 1024
+#define MAX_RUNS 4096
 
 struct ParticleData
   {
