@@ -18,6 +18,8 @@ int main(int argc, char * argv[])
   const unsigned int Dimension = 3;
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
+  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( std::min(8, itk::MultiThreader::GetGlobalMaximumNumberOfThreads() ) );
+
   // Create a stack of empty projection images
   typedef rtk::ConstantImageSource< OutputImageType > ConstantImageSourceType;
   ConstantImageSourceType::Pointer constantImageSource = ConstantImageSourceType::New();

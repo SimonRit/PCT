@@ -18,6 +18,8 @@ int main(int argc, char * argv[])
 
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
+  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( std::min(8, itk::MultiThreader::GetGlobalMaximumNumberOfThreads() ) );
+
   // Generate file names
   itk::RegularExpressionSeriesFileNames::Pointer names = itk::RegularExpressionSeriesFileNames::New();
   names->SetDirectory(args_info.path_arg);
