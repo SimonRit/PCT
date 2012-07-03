@@ -6,25 +6,26 @@
 /gate/world/geometry/setZLength     4 m 
 
 # Phantom
-/control/execute                 mac/ctp528.mac
-/gate/Catphan/moves/insert       rotation 
-/gate/Catphan/rotation/setSpeed  1 deg/s 
-/gate/Catphan/rotation/setAxis   0 0 1 
+/control/execute                mac/spiral.mac
+/gate/Spiral/moves/insert       rotation
+/gate/Spiral/rotation/setSpeed  1 deg/s
+/gate/Spiral/rotation/setAxis   0 0 1
 
 # Beam
 /control/execute mac/beam.mac
 
 # Physics list
-/control/execute mac/physics-proton-binarycascade.mac
+/control/execute mac/physicslist_EM_std.mac
+/control/execute mac/physicslist_HAD_std.mac
 
 # Phase spaces
 /control/alias DetectorName PhaseSpaceIn
 /control/execute mac/detector.mac
-/gate/Plane{DetectorName}/placement/setTranslation 600 0 0 mm
+/gate/Plane{DetectorName}/placement/setTranslation 110 0 0 mm
 
 /control/alias DetectorName PhaseSpaceOut
 /control/execute mac/detector.mac
-/gate/Plane{DetectorName}/placement/setTranslation -600 0 0 mm
+/gate/Plane{DetectorName}/placement/setTranslation -110 0 0 mm
 
 # Particles stats 
 /gate/actor/addActor  SimulationStatisticActor stat
@@ -33,7 +34,7 @@
 # DEBUG
 #/control/execute mac/visu.mac
 #/gate/output/verbose 4
-#/gate/verbose Physic 1 
+#/gate/verbose 4 
 
 # Main
 /gate/run/initialize
@@ -41,10 +42,10 @@
 /gate/random/setEngineName MersenneTwister
 /gate/random/setEngineSeed auto
 
-/gate/application/setTimeSlice              1 s
+/gate/application/setTimeSlice              0.25 s
 /gate/application/setTimeStart              0 s
 /gate/application/setTimeStop               360 s
 
-/gate/application/setTotalNumberOfPrimaries 72000000
+/gate/application/setTotalNumberOfPrimaries 720000
 /gate/application/start
 

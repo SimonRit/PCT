@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# DIRECTORY
+# FIRST
+# LAST
+#PBS -r n
+#PBS -l walltime=100:00:00,nodes=1:ppn=8
+#PBS -j oe
+
+cd $DIRECTORY
+for NUM in $(seq -f %04.0f $FIRST $LAST)
+do
+  /home/srit/src/pct/lin64-dg/pctpaircuts \
+    -i pairs${NUM}.mhd \
+    -o pairs${NUM}c.mha \
+    --spacing 8,8 \
+    --dimension 32,2 \
+    --source -1000 \
+    --anglecut 3. \
+    --energycut 3.
+  /home/srit/src/pct/lin64-dg/pctbinning \
+    -i pairs${NUM}.mhd \
+    -o proj${NUM}.mhd \
+    --spacing=0.25,4,1 \
+    --dimension 1000,2,2000 \
+    --source -1000 \
+    --quadricIn="1,0,1,0,0,0,0,0,0,-10000" \
+    --ionpot 68.998 \
+    --energycut 0. \
+    --anglecut 0.
+#    --count count${NUM}.mha
+  /home/srit/src/pct/lin64-dg/pctbinning \
+    -i pairs${NUM}c.mha \
+    -o proj${NUM}c.mhd \
+    --spacing=0.25,4,1 \
+    --dimension 1000,2,2000 \
+    --source -1000 \
+    --quadricIn="1,0,1,0,0,0,0,0,0,-10000" \
+    --ionpot 68.998 \
+    --energycut 0. \
+    --anglecut 0.
+#    --count count${NUM}c.mha
+  /home/srit/src/pct/lin64-dg/pctbinning \
+    -i pairs${NUM}.mhd \
+    -o proj${NUM}c2.mhd \
+    --spacing=0.25,4,1 \
+    --dimension 1000,2,2000 \
+    --source -1000 \
+    --quadricIn="1,0,1,0,0,0,0,0,0,-10000" \
+    --ionpot 68.998 \
+    --energycut 3. \
+    --anglecut 3.
+  /home/srit/src/pct/lin64-dg/pctbinning \
+    -i pairs${NUM}.mhd \
+    -o proj${NUM}c3.mhd \
+    --spacing=0.25,4,1 \
+    --dimension 1000,2,2000 \
+    --source -1000 \
+    --quadricIn="1,0,1,0,0,0,0,0,0,-10000" \
+    --ionpot 68.998 \
+    --energycut 0. \
+    --anglecut 3.
+#    --count count${NUM}c2.mha
+done

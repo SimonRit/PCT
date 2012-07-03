@@ -1,0 +1,285 @@
+# Mother of all
+/gate/world/daughters/name              Spiral
+/gate/world/daughters/insert            cylinder
+/gate/Spiral/geometry/setRmin           0 cm
+/gate/Spiral/geometry/setRmax           10 cm
+/gate/Spiral/geometry/setHeight         40 cm
+/gate/Spiral/setMaterial                Water
+/gate/Spiral/vis/setColor               yellow
+/gate/Spiral/vis/setVisible             1
+
+# Insert at radius 0.00 mm and angle 0.00 degree
+/gate/Spiral/daughters/name             SpiralInsert01
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert01/geometry/setRmin         0 mm
+/gate/SpiralInsert01/geometry/setRmax         1 mm
+/gate/SpiralInsert01/geometry/setHeight       40 cm
+/gate/SpiralInsert01/setMaterial              Aluminium
+/gate/SpiralInsert01/placement/setTranslation 0.0000 0.0000 0 mm
+/gate/SpiralInsert01/vis/setColor             yellow
+/gate/SpiralInsert01/vis/setVisible           1
+
+# Insert at radius 4.00 mm and angle 139.00 degree
+/gate/Spiral/daughters/name             SpiralInsert02
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert02/geometry/setRmin         0 mm
+/gate/SpiralInsert02/geometry/setRmax         1 mm
+/gate/SpiralInsert02/geometry/setHeight       40 cm
+/gate/SpiralInsert02/setMaterial              Aluminium
+/gate/SpiralInsert02/placement/setTranslation -3.0188 2.6242 0 mm
+/gate/SpiralInsert02/vis/setColor             yellow
+/gate/SpiralInsert02/vis/setVisible           1
+
+# Insert at radius 8.00 mm and angle 278.00 degree
+/gate/Spiral/daughters/name             SpiralInsert03
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert03/geometry/setRmin         0 mm
+/gate/SpiralInsert03/geometry/setRmax         1 mm
+/gate/SpiralInsert03/geometry/setHeight       40 cm
+/gate/SpiralInsert03/setMaterial              Aluminium
+/gate/SpiralInsert03/placement/setTranslation 1.1134 -7.9221 0 mm
+/gate/SpiralInsert03/vis/setColor             yellow
+/gate/SpiralInsert03/vis/setVisible           1
+
+# Insert at radius 12.00 mm and angle 417.00 degree
+/gate/Spiral/daughters/name             SpiralInsert04
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert04/geometry/setRmin         0 mm
+/gate/SpiralInsert04/geometry/setRmax         1 mm
+/gate/SpiralInsert04/geometry/setHeight       40 cm
+/gate/SpiralInsert04/setMaterial              Aluminium
+/gate/SpiralInsert04/placement/setTranslation 6.5357 10.0640 0 mm
+/gate/SpiralInsert04/vis/setColor             yellow
+/gate/SpiralInsert04/vis/setVisible           1
+
+# Insert at radius 16.00 mm and angle 556.00 degree
+/gate/Spiral/daughters/name             SpiralInsert05
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert05/geometry/setRmin         0 mm
+/gate/SpiralInsert05/geometry/setRmax         1 mm
+/gate/SpiralInsert05/geometry/setHeight       40 cm
+/gate/SpiralInsert05/setMaterial              Aluminium
+/gate/SpiralInsert05/placement/setTranslation -15.3802 -4.4102 0 mm
+/gate/SpiralInsert05/vis/setColor             yellow
+/gate/SpiralInsert05/vis/setVisible           1
+
+# Insert at radius 20.00 mm and angle 695.00 degree
+/gate/Spiral/daughters/name             SpiralInsert06
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert06/geometry/setRmin         0 mm
+/gate/SpiralInsert06/geometry/setRmax         1 mm
+/gate/SpiralInsert06/geometry/setHeight       40 cm
+/gate/SpiralInsert06/setMaterial              Aluminium
+/gate/SpiralInsert06/placement/setTranslation 18.1262 -8.4524 0 mm
+/gate/SpiralInsert06/vis/setColor             yellow
+/gate/SpiralInsert06/vis/setVisible           1
+
+# Insert at radius 24.00 mm and angle 834.00 degree
+/gate/Spiral/daughters/name             SpiralInsert07
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert07/geometry/setRmin         0 mm
+/gate/SpiralInsert07/geometry/setRmax         1 mm
+/gate/SpiralInsert07/geometry/setHeight       40 cm
+/gate/SpiralInsert07/setMaterial              Aluminium
+/gate/SpiralInsert07/placement/setTranslation -9.7617 21.9251 0 mm
+/gate/SpiralInsert07/vis/setColor             yellow
+/gate/SpiralInsert07/vis/setVisible           1
+
+# Insert at radius 28.00 mm and angle 973.00 degree
+/gate/Spiral/daughters/name             SpiralInsert08
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert08/geometry/setRmin         0 mm
+/gate/SpiralInsert08/geometry/setRmax         1 mm
+/gate/SpiralInsert08/geometry/setHeight       40 cm
+/gate/SpiralInsert08/setMaterial              Aluminium
+/gate/SpiralInsert08/placement/setTranslation -8.1864 -26.7765 0 mm
+/gate/SpiralInsert08/vis/setColor             yellow
+/gate/SpiralInsert08/vis/setVisible           1
+
+# Insert at radius 32.00 mm and angle 1112.00 degree
+/gate/Spiral/daughters/name             SpiralInsert09
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert09/geometry/setRmin         0 mm
+/gate/SpiralInsert09/geometry/setRmax         1 mm
+/gate/SpiralInsert09/geometry/setHeight       40 cm
+/gate/SpiralInsert09/setMaterial              Aluminium
+/gate/SpiralInsert09/placement/setTranslation 27.1375 16.9574 0 mm
+/gate/SpiralInsert09/vis/setColor             yellow
+/gate/SpiralInsert09/vis/setVisible           1
+
+# Insert at radius 36.00 mm and angle 1251.00 degree
+/gate/Spiral/daughters/name             SpiralInsert10
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert10/geometry/setRmin         0 mm
+/gate/SpiralInsert10/geometry/setRmax         1 mm
+/gate/SpiralInsert10/geometry/setHeight       40 cm
+/gate/SpiralInsert10/setMaterial              Aluminium
+/gate/SpiralInsert10/placement/setTranslation -35.5568 5.6316 0 mm
+/gate/SpiralInsert10/vis/setColor             yellow
+/gate/SpiralInsert10/vis/setVisible           1
+
+# Insert at radius 40.00 mm and angle 1390.00 degree
+/gate/Spiral/daughters/name             SpiralInsert11
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert11/geometry/setRmin         0 mm
+/gate/SpiralInsert11/geometry/setRmax         1 mm
+/gate/SpiralInsert11/geometry/setHeight       40 cm
+/gate/SpiralInsert11/setMaterial              Aluminium
+/gate/SpiralInsert11/placement/setTranslation 25.7115 -30.6418 0 mm
+/gate/SpiralInsert11/vis/setColor             yellow
+/gate/SpiralInsert11/vis/setVisible           1
+
+# Insert at radius 44.00 mm and angle 1529.00 degree
+/gate/Spiral/daughters/name             SpiralInsert12
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert12/geometry/setRmin         0 mm
+/gate/SpiralInsert12/geometry/setRmax         1 mm
+/gate/SpiralInsert12/geometry/setHeight       40 cm
+/gate/SpiralInsert12/setMaterial              Aluminium
+/gate/SpiralInsert12/placement/setTranslation 0.7679 43.9933 0 mm
+/gate/SpiralInsert12/vis/setColor             yellow
+/gate/SpiralInsert12/vis/setVisible           1
+
+# Insert at radius 48.00 mm and angle 1668.00 degree
+/gate/Spiral/daughters/name             SpiralInsert13
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert13/geometry/setRmin         0 mm
+/gate/SpiralInsert13/geometry/setRmax         1 mm
+/gate/SpiralInsert13/geometry/setHeight       40 cm
+/gate/SpiralInsert13/setMaterial              Aluminium
+/gate/SpiralInsert13/placement/setTranslation -32.1183 -35.6710 0 mm
+/gate/SpiralInsert13/vis/setColor             yellow
+/gate/SpiralInsert13/vis/setVisible           1
+
+# Insert at radius 52.00 mm and angle 1807.00 degree
+/gate/Spiral/daughters/name             SpiralInsert14
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert14/geometry/setRmin         0 mm
+/gate/SpiralInsert14/geometry/setRmax         1 mm
+/gate/SpiralInsert14/geometry/setHeight       40 cm
+/gate/SpiralInsert14/setMaterial              Aluminium
+/gate/SpiralInsert14/placement/setTranslation 51.6124 6.3372 0 mm
+/gate/SpiralInsert14/vis/setColor             yellow
+/gate/SpiralInsert14/vis/setVisible           1
+
+# Insert at radius 56.00 mm and angle 1946.00 degree
+/gate/Spiral/daughters/name             SpiralInsert15
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert15/geometry/setRmin         0 mm
+/gate/SpiralInsert15/geometry/setRmax         1 mm
+/gate/SpiralInsert15/geometry/setHeight       40 cm
+/gate/SpiralInsert15/setMaterial              Aluminium
+/gate/SpiralInsert15/placement/setTranslation -46.4261 31.3148 0 mm
+/gate/SpiralInsert15/vis/setColor             yellow
+/gate/SpiralInsert15/vis/setVisible           1
+
+# Insert at radius 60.00 mm and angle 2085.00 degree
+/gate/Spiral/daughters/name             SpiralInsert16
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert16/geometry/setRmin         0 mm
+/gate/SpiralInsert16/geometry/setRmax         1 mm
+/gate/SpiralInsert16/geometry/setHeight       40 cm
+/gate/SpiralInsert16/setMaterial              Aluminium
+/gate/SpiralInsert16/placement/setTranslation 15.5291 -57.9555 0 mm
+/gate/SpiralInsert16/vis/setColor             yellow
+/gate/SpiralInsert16/vis/setVisible           1
+
+# Insert at radius 64.00 mm and angle 2224.00 degree
+/gate/Spiral/daughters/name             SpiralInsert17
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert17/geometry/setRmin         0 mm
+/gate/SpiralInsert17/geometry/setRmax         1 mm
+/gate/SpiralInsert17/geometry/setHeight       40 cm
+/gate/SpiralInsert17/setMaterial              Aluminium
+/gate/SpiralInsert17/placement/setTranslation 28.0558 57.5228 0 mm
+/gate/SpiralInsert17/vis/setColor             yellow
+/gate/SpiralInsert17/vis/setVisible           1
+
+# Insert at radius 68.00 mm and angle 2363.00 degree
+/gate/Spiral/daughters/name             SpiralInsert18
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert18/geometry/setRmin         0 mm
+/gate/SpiralInsert18/geometry/setRmax         1 mm
+/gate/SpiralInsert18/geometry/setHeight       40 cm
+/gate/SpiralInsert18/setMaterial              Aluminium
+/gate/SpiralInsert18/placement/setTranslation -62.5943 -26.5697 0 mm
+/gate/SpiralInsert18/vis/setColor             yellow
+/gate/SpiralInsert18/vis/setVisible           1
+
+# Insert at radius 72.00 mm and angle 2502.00 degree
+/gate/Spiral/daughters/name             SpiralInsert19
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert19/geometry/setRmin         0 mm
+/gate/SpiralInsert19/geometry/setRmax         1 mm
+/gate/SpiralInsert19/geometry/setHeight       40 cm
+/gate/SpiralInsert19/setMaterial              Aluminium
+/gate/SpiralInsert19/placement/setTranslation 68.4761 -22.2492 0 mm
+/gate/SpiralInsert19/vis/setColor             yellow
+/gate/SpiralInsert19/vis/setVisible           1
+
+# Insert at radius 76.00 mm and angle 2641.00 degree
+/gate/Spiral/daughters/name             SpiralInsert20
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert20/geometry/setRmin         0 mm
+/gate/SpiralInsert20/geometry/setRmax         1 mm
+/gate/SpiralInsert20/geometry/setHeight       40 cm
+/gate/SpiralInsert20/setMaterial              Aluminium
+/gate/SpiralInsert20/placement/setTranslation -39.1429 65.1447 0 mm
+/gate/SpiralInsert20/vis/setColor             yellow
+/gate/SpiralInsert20/vis/setVisible           1
+
+# Insert at radius 80.00 mm and angle 2780.00 degree
+/gate/Spiral/daughters/name             SpiralInsert21
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert21/geometry/setRmin         0 mm
+/gate/SpiralInsert21/geometry/setRmax         1 mm
+/gate/SpiralInsert21/geometry/setHeight       40 cm
+/gate/SpiralInsert21/setMaterial              Aluminium
+/gate/SpiralInsert21/placement/setTranslation -13.8919 -78.7846 0 mm
+/gate/SpiralInsert21/vis/setColor             yellow
+/gate/SpiralInsert21/vis/setVisible           1
+
+# Insert at radius 84.00 mm and angle 2919.00 degree
+/gate/Spiral/daughters/name             SpiralInsert22
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert22/geometry/setRmin         0 mm
+/gate/SpiralInsert22/geometry/setRmax         1 mm
+/gate/SpiralInsert22/geometry/setHeight       40 cm
+/gate/SpiralInsert22/setMaterial              Aluminium
+/gate/SpiralInsert22/placement/setTranslation 65.2803 52.8629 0 mm
+/gate/SpiralInsert22/vis/setColor             yellow
+/gate/SpiralInsert22/vis/setVisible           1
+
+# Insert at radius 88.00 mm and angle 3058.00 degree
+/gate/Spiral/daughters/name             SpiralInsert23
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert23/geometry/setRmin         0 mm
+/gate/SpiralInsert23/geometry/setRmax         1 mm
+/gate/SpiralInsert23/geometry/setHeight       40 cm
+/gate/SpiralInsert23/setMaterial              Aluminium
+/gate/SpiralInsert23/placement/setTranslation -87.9464 3.0712 0 mm
+/gate/SpiralInsert23/vis/setColor             yellow
+/gate/SpiralInsert23/vis/setVisible           1
+
+# Insert at radius 92.00 mm and angle 3197.00 degree
+/gate/Spiral/daughters/name             SpiralInsert24
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert24/geometry/setRmin         0 mm
+/gate/SpiralInsert24/geometry/setRmax         1 mm
+/gate/SpiralInsert24/geometry/setHeight       40 cm
+/gate/SpiralInsert24/setMaterial              Aluminium
+/gate/SpiralInsert24/placement/setTranslation 67.2845 -62.7438 0 mm
+/gate/SpiralInsert24/vis/setColor             yellow
+/gate/SpiralInsert24/vis/setVisible           1
+
+# Insert at radius 96.00 mm and angle 3336.00 degree
+/gate/Spiral/daughters/name             SpiralInsert25
+/gate/Spiral/daughters/insert           cylinder
+/gate/SpiralInsert25/geometry/setRmin         0 mm
+/gate/SpiralInsert25/geometry/setRmax         1 mm
+/gate/SpiralInsert25/geometry/setHeight       40 cm
+/gate/SpiralInsert25/setMaterial              Aluminium
+/gate/SpiralInsert25/placement/setTranslation -10.0347 95.4741 0 mm
+/gate/SpiralInsert25/vis/setColor             yellow
+/gate/SpiralInsert25/vis/setVisible           1
+

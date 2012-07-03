@@ -4,7 +4,7 @@
 /gate/Catphan/geometry/setRmin           0 mm
 /gate/Catphan/geometry/setRmax           100 mm
 #/gate/Catphan/geometry/setHeight         40 mm
-/gate/Catphan/geometry/setHeight         10 m
+/gate/Catphan/geometry/setHeight         400 m
 /gate/Catphan/setMaterial                Water
 
 # Beads

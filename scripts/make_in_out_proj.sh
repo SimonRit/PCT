@@ -1,11 +1,11 @@
 mkdir in out 2>/dev/null
-DIMX=$(grep DimSize proj000.mhd | sed "s/DimSize = \(.*\) \(.*\) .*/\1/g")
-DIMY=$(grep DimSize proj000.mhd | sed "s/DimSize = \(.*\) \(.*\) .*/\2/g")
-ORIGINZ=$(grep Offset proj000.mhd | sed "s/Offset = \(.*\) \(.*\) \(.*\)/\3/g")
-SPACINGZ=$(grep ElementSpacing proj000.mhd | sed "s/ElementSpacing = \(.*\) \(.*\) \(.*\)/\3/g")
+DIMX=$(grep DimSize proj0000.mhd | sed "s/DimSize = \(.*\) \(.*\) .*/\1/g")
+DIMY=$(grep DimSize proj0000.mhd | sed "s/DimSize = \(.*\) \(.*\) .*/\2/g")
+ORIGINZ=$(grep Offset proj0000.mhd | sed "s/Offset = \(.*\) \(.*\) \(.*\)/\3/g")
+SPACINGZ=$(grep ElementSpacing proj0000.mhd | sed "s/ElementSpacing = \(.*\) \(.*\) \(.*\)/\3/g")
 SLICEIN=$(echo "scale=0 ; (-100 - ${ORIGINZ})/${SPACINGZ}" | bc)
 SLICEOUT=$(echo "scale=0 ; (100 - ${ORIGINZ})/${SPACINGZ}" | bc)
-for i in proj???.mhd
+for i in proj????.mhd
 do
     echo HeaderSize = $((4*${DIMX}*${DIMY}*${SLICEIN}))  > in/${i}
     echo HeaderSize = $((4*${DIMX}*${DIMY}*${SLICEOUT})) > out/${i}
