@@ -245,7 +245,7 @@ int main(int argc, char * argv[])
       {
       std::ostringstream os;
       os << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
-         << std::setw(3) << std::setfill ('0') << i
+         << std::setw(4) << std::setfill ('0') << i
          << itksys::SystemTools::GetFilenameLastExtension(args_info.output_arg);
       WritePairs(pairs[i], os.str());
       }
