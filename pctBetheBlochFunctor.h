@@ -51,24 +51,26 @@ public:
 /** \class IntegratedBetheBlochProtonStoppingPowerInverse
  * \brief Numerical for integral used in proton CT.
  */
-template< class TInput, class TOutput, unsigned int VMaximumkeVEnergy=500000 >
+template< class TInput, class TOutput >
 class IntegratedBetheBlochProtonStoppingPowerInverse
 {
 public:
-  IntegratedBetheBlochProtonStoppingPowerInverse(const double I)
+  IntegratedBetheBlochProtonStoppingPowerInverse(const double I, const double maxEnergy, const double binSize = 1.*CLHEP::keV):
+      m_BinSize(binSize)
     {
+    m_NumberOfBins = itk::Math::Ceil<unsigned int, double>(maxEnergy/m_BinSize);
+    m_LUT.resize(m_NumberOfBins);
     // Create lookup table for integer values of energy
     m_LUT[0] = 0.;
     m_Length.push_back(0.);
-    for(unsigned int i=1; i<VMaximumkeVEnergy; i++)
+    for(unsigned int i=1; i<m_NumberOfBins; i++)
       {
-      static const double dE = 1.*CLHEP::keV;
-      m_LUT[i] = m_LUT[i-1] + dE / m_S.GetValue((TOutput)i*CLHEP::keV, I);
+      m_LUT[i] = m_LUT[i-1] + binSize / m_S.GetValue(TOutput(i)*binSize, I);
 
       // Create inverse lut, i.e., get energy from length in water
       for(unsigned j=m_Length.size(); j<unsigned(m_LUT[i]*CLHEP::mm)+1; j++)
         {
-        m_Length.push_back( dE*(i + double(j-m_LUT[i]*CLHEP::mm) / ((m_LUT[i]-m_LUT[i-1])*CLHEP::mm) ) );
+        m_Length.push_back( binSize*(i + double(j-m_LUT[i]*CLHEP::mm) / ((m_LUT[i]-m_LUT[i-1])*CLHEP::mm) ) );
         }
       }
     }
@@ -78,15 +80,15 @@ public:
   TOutput GetValue(const TInput e) const
     {
     // SR: linear interpolation instead?
-    return m_LUT[itk::Math::Round<int,TInput>(e / CLHEP::keV)];
+    return m_LUT[itk::Math::Round<int,TInput>(e / m_BinSize)];
     }
 
   /** Get the integral from e1 to e2. */
   TOutput GetValue(const TInput e1, const TInput e2) const
     {
     // SR: linear interpolation instead?
-    return m_LUT[itk::Math::Round<int,TInput>(e2/CLHEP::keV)] -
-           m_LUT[itk::Math::Round<int,TInput>(e1/CLHEP::keV)];
+    return m_LUT[itk::Math::Round<int,TInput>(e2/m_BinSize)] -
+           m_LUT[itk::Math::Round<int,TInput>(e1/m_BinSize)];
     }
 
   /** Get the energy required to traverse length l in water. */
@@ -105,8 +107,11 @@ public:
 
 private:
   BetheBlochProtonStoppingPower<TOutput, TOutput> m_S;
-  TOutput m_LUT[VMaximumkeVEnergy];
   std::vector<TOutput> m_Length;
+
+  double m_BinSize;
+  unsigned int m_NumberOfBins;
+  std::vector<TOutput> m_LUT;
 };
 } // end namespace Functor
 } // end namespace pct

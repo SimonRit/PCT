@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
   Sigma1 *= pct::Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,u);
 
   // For mean energy
-  pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe( args_info.ionpot_arg * CLHEP::eV );
+  pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe( args_info.ionpot_arg * CLHEP::eV, 500 * CLHEP::MeV );
 
   switch(args_info.parameter_arg)
     {
