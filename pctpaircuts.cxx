@@ -10,6 +10,12 @@
 #include <itkRegularExpressionSeriesFileNames.h>
 #include <itkTimeProbe.h>
 
+#include <RooRealVar.h>
+#include <RooDataSet.h>
+#include <RooGaussian.h>
+#include <RooPlot.h>
+#include <TCanvas.h>
+
 #define PAIRS_IN_RAM 1000000
 
 int main(int argc, char * argv[])
@@ -18,6 +24,7 @@ int main(int argc, char * argv[])
 
   typedef float ProjectionPixelType;
   typedef itk::Image< ProjectionPixelType, 2 > ProjectionImageType;
+  typedef itk::Vector<double, 2> VectorTwoDType;
 
   // Create a stack of empty projection images and associated proton count
   typedef rtk::ConstantImageSource< ProjectionImageType > ConstantImageSourceType;
@@ -36,6 +43,11 @@ int main(int argc, char * argv[])
   CountImageSourceType::Pointer counts = CountImageSourceType::New();
   rtk::SetConstantImageSourceFromGgo<CountImageSourceType, args_info_pctpaircuts>(counts, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( counts->Update() );
+
+  // Robust case containers
+  const size_t npixels = sumEnergy->GetOutput()->GetBufferedRegion().GetNumberOfPixels();
+  std::vector< std::vector<double> > energies(npixels);
+  std::vector< std::vector<double> > angles(npixels);
 
   // Read pairs
   typedef itk::Vector<float, 3> VectorType;
@@ -75,15 +87,15 @@ int main(int argc, char * argv[])
     itk::ImageRegionIterator<PairsImageType> it(reader->GetOutput(), region);
     for(size_t p=region.GetIndex(1); p<region.GetIndex(1)+region.GetSize(1); p++)
       {
-      VectorType pIn = it.Get();
+      const VectorType pIn = it.Get();
       ++it;
-      VectorType pOut = it.Get();
+      const VectorType pOut = it.Get();
       ++it;
-      VectorType dIn = it.Get();
+      const VectorType dIn = it.Get();
       ++it;
-      VectorType dOut = it.Get();
+      const VectorType dOut = it.Get();
       ++it;
-      VectorType data = it.Get();
+      const VectorType data = it.Get();
       ++it;
 
       static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
@@ -100,11 +112,32 @@ int main(int argc, char * argv[])
 
       const unsigned long idx = i+j*imgSize[0];
 
-      const double angle = vcl_acos(std::min(1.,double(dIn*dOut)));
-      const double energy = data[1]-data[0];
-      pSumEnergy  [idx] += energy;
-      pSumEnergySq[idx] += energy*energy;
-      pSumAngleSq [idx] += angle*angle;
+      VectorTwoDType dInX, dInY, dOutX, dOutY;
+      dInX[0] = dIn[0];
+      dInX[1] = dIn[2];
+      dInY[0] = dIn[1];
+      dInY[1] = dIn[2];
+      dOutX[0] = dOut[0];
+      dOutX[1] = dOut[2];
+      dOutY[0] = dOut[1];
+      dOutY[1] = dOut[2];
+      const double anglex = vcl_acos( std::min(1.,dInX*dOutX) / ( dInX.GetNorm() * dOutX.GetNorm() ) );
+      const double angley = vcl_acos( std::min(1.,dInY*dOutY) / ( dInY.GetNorm() * dOutY.GetNorm() ) );
+      const double energy = data[0]-data[1];
+
+      if(args_info.robust_flag || (args_info.plotpix_given && idx==(unsigned long)args_info.plotpix_arg ) )
+        {
+        energies[idx].push_back(energy);
+        angles  [idx].push_back(anglex);
+        angles  [idx].push_back(angley);
+        }
+      if(!args_info.robust_flag)
+        {
+        pSumEnergy  [idx] += energy;
+        pSumEnergySq[idx] += energy*energy;
+        pSumAngleSq [idx] += anglex*anglex;
+        pSumAngleSq [idx] += angley*angley;
+        }
       pCounts     [idx]++;
       }
   }
@@ -112,18 +145,59 @@ int main(int argc, char * argv[])
   std::cout << "Finalize cuts..." << std::endl;
 
   // Now compute the cuts and the average
-  size_t npixels = sumEnergy->GetOutput()->GetBufferedRegion().GetNumberOfPixels();
-  for(unsigned int idx=0; idx<npixels; idx++)
+  if(args_info.robust_flag)
     {
-    if(pCounts[idx])
+    for(unsigned int idx=0; idx<npixels; idx++)
       {
-      pSumEnergy  [idx] /= pCounts[idx];
-      pSumEnergySq[idx] /= pCounts[idx];
-      pSumAngleSq [idx] /= pCounts[idx];
-      pSumEnergySq[idx] = sqrt( pSumEnergySq[idx]-pSumEnergy[idx]*pSumEnergy[idx] );
-      pSumAngleSq [idx] = sqrt( pSumAngleSq [idx] );
+      if(pCounts[idx]==1)
+        {
+        // Just one event in this pixel, keep it!
+        pSumEnergy  [idx] = energies[idx][0];
+        pSumEnergySq[idx] = 0.1;
+        pSumAngleSq [idx] = angles[idx][0];;
+        }
+      else if(pCounts[idx])
+        {
+        // Energy: median and 30.85% with interpolation
+        double medianPos = pCounts[idx]*0.5;
+        unsigned int medianSupPos = itk::Math::Ceil<unsigned int, double>(medianPos);
+        std::partial_sort(energies[idx].begin(), energies[idx].begin()+medianSupPos+1, energies[idx].end());
+        double medianDiff = medianSupPos-medianPos;
+        pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+
+                            *(energies[idx].begin()+medianSupPos-1)*medianDiff;
+
+        double sigmaEPos = pCounts[idx]*0.3085;
+        unsigned int sigmaESupPos = itk::Math::Ceil<unsigned int, double>(sigmaEPos);
+        double sigmaEDiff = sigmaESupPos-sigmaEPos;
+        pSumEnergySq[idx] = 2.*(pSumEnergy[idx]-( *(energies[idx].begin()+sigmaESupPos)*(1.-sigmaEDiff)+
+                                                  *(energies[idx].begin()+sigmaESupPos-1)*sigmaEDiff) );
+
+        // Angle: 38.30% with interpolation (median is 0. and we only have positive values)
+        double sigmaAPos = angles[idx].size()*0.3830;
+        unsigned int sigmaASupPos = itk::Math::Ceil<unsigned int, double>(sigmaAPos);
+        std::partial_sort(angles[idx].begin(), angles[idx].begin()+sigmaASupPos+1, angles[idx].end());
+        double sigmaADiff = sigmaASupPos-sigmaAPos;
+        pSumAngleSq[idx] = 2.*(*(angles[idx].begin()+sigmaASupPos)*(1.-sigmaADiff)+
+                               *(angles[idx].begin()+sigmaASupPos-1)*sigmaADiff);
+        }
       }
     }
+  else
+    {
+    for(unsigned int idx=0; idx<npixels; idx++)
+      {
+      if(pCounts[idx])
+        {
+        pSumEnergy  [idx] /= pCounts[idx];
+        pSumEnergySq[idx] /= pCounts[idx];
+        pSumAngleSq [idx] /= 2*pCounts[idx];
+        pSumEnergySq[idx] = sqrt( pSumEnergySq[idx]-pSumEnergy[idx]*pSumEnergy[idx] );
+        pSumAngleSq [idx] = sqrt( pSumAngleSq [idx] );
+        }
+      }
+    }
+
+  // Weight standard deviations with parameters
   for(unsigned int idx=0; idx<npixels; idx++)
     {
     pSumEnergySq[idx] *= args_info.energycut_arg;
@@ -146,15 +220,15 @@ int main(int argc, char * argv[])
     itk::ImageRegionIterator<PairsImageType> it(reader->GetOutput(), region);
     for(size_t p=region.GetIndex(1); p<region.GetIndex(1)+region.GetSize(1); p++)
       {
-      VectorType pIn = it.Get();
+      const VectorType pIn = it.Get();
       ++it;
-      VectorType pOut = it.Get();
+      const VectorType pOut = it.Get();
       ++it;
-      VectorType dIn = it.Get();
+      const VectorType dIn = it.Get();
       ++it;
-      VectorType dOut = it.Get();
+      const VectorType dOut = it.Get();
       ++it;
-      VectorType data = it.Get();
+      const VectorType data = it.Get();
       ++it;
 
       static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
@@ -170,10 +244,23 @@ int main(int argc, char * argv[])
         continue;
 
       const unsigned long idx = i+j*imgSize[0];
-      const double angle = vcl_acos(std::min(1.,double(dIn*dOut)));
-      const double energy = data[1]-data[0];
-      if( vcl_abs(angle )<pSumAngleSq [idx] &&
-          vcl_abs(energy-pSumEnergy[idx])<pSumEnergySq[idx] )
+
+      VectorTwoDType dInX, dInY, dOutX, dOutY;
+      dInX[0] = dIn[0];
+      dInX[1] = dIn[2];
+      dInY[0] = dIn[1];
+      dInY[1] = dIn[2];
+      dOutX[0] = dOut[0];
+      dOutX[1] = dOut[2];
+      dOutY[0] = dOut[1];
+      dOutY[1] = dOut[2];
+      const double anglex = vcl_acos( std::min(1.,dInX*dOutX) / ( dInX.GetNorm() * dOutX.GetNorm() ) );
+      const double angley = vcl_acos( std::min(1.,dInY*dOutY) / ( dInY.GetNorm() * dOutY.GetNorm() ) );
+      const double energy = data[0]-data[1];
+
+      if( anglex <= pSumAngleSq [idx] &&
+          angley <= pSumAngleSq [idx] &&
+          vcl_abs(energy-pSumEnergy[idx]) <= pSumEnergySq[idx] )
         {
         pairs.push_back(pIn);
         pairs.push_back(pOut);
@@ -237,5 +324,68 @@ int main(int argc, char * argv[])
     w->SetFileName(args_info.count_arg);
     TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
     }
+  if(args_info.plotpix_given)
+    {
+    // Energy plot
+    const unsigned int p = args_info.plotpix_arg;
+    if(pSumEnergySq[p]==0.)
+      std::cout << "Can not create energy.pdf, sigma is 0." << std::endl;
+    else
+      {
+      RooRealVar rooEnergy("Energy","Energy loss",0.,500.*CLHEP::MeV, "MeV");
+      RooDataSet rooEnergyData("data", "data", RooArgSet(rooEnergy));
+      for(unsigned int i=0; i<pCounts[p]; i++)
+        {
+        rooEnergy = energies[p][i]/CLHEP::MeV;
+        rooEnergyData.add(RooArgSet(rooEnergy));
+        }
+
+      TCanvas tEnergyCanvas("energyCanvas","Energy canvas",0,0,1000,500);
+      RooPlot* rooEnergyPlot = rooEnergy.frame(pSumEnergy[p]-2*pSumEnergySq[p],
+                                               pSumEnergy[p]+2*pSumEnergySq[p]);
+      rooEnergyData.plotOn(rooEnergyPlot);
+
+      RooRealVar rooMeanEnergy("rooMeanEnergy","mean of energy gaussian",pSumEnergy[p],0.,500.*CLHEP::MeV) ;
+      RooRealVar rooSigmaEnergy("rooSigmaEnergy","width of energy gaussian",pSumEnergySq[p]/args_info.energycut_arg,0.,500.*CLHEP::MeV);
+      RooGaussian rooGaussEnergy("rooGaussEnergy","energy gaussian PDF",rooEnergy,rooMeanEnergy,rooSigmaEnergy) ;
+
+      rooGaussEnergy.plotOn(rooEnergyPlot, RooFit::LineColor(kBlue));
+      //rooGaussEnergy.fitTo(rooEnergyData);
+      //rooGaussEnergy.plotOn(rooEnergyPlot, LineColor(kRed));
+
+      rooEnergyPlot->Draw();
+      tEnergyCanvas.SaveAs("energy.pdf");
+      }
+
+    // Angle plot
+    if(pSumAngleSq[p]==0.)
+      std::cout << "Can not create angle.pdf, sigma is 0." << std::endl;
+    else
+      {
+      RooRealVar rooAngle("Angle","Angle deviation",0.,2.*itk::Math::pi, "rad");
+      RooDataSet rooAngleData("data", "data", RooArgSet(rooAngle));
+      for(unsigned int i=0; i<angles[p].size(); i++)
+        {
+        rooAngle = angles[p][i];
+        rooAngleData.add(RooArgSet(rooAngle));
+        }
+
+      TCanvas tAngleCanvas("angleCanvas","Angle canvas",0,0,1000,500);
+      RooPlot* rooAnglePlot = rooAngle.frame(0., 2*pSumAngleSq[p]);
+      rooAngleData.plotOn(rooAnglePlot);
+
+      RooRealVar rooMeanAngle("rooMeanAngle","mean of angle gaussian",0.,0.,500.*CLHEP::MeV);
+      RooRealVar rooSigmaAngle("rooSigmaAngle","width of angle gaussian",pSumAngleSq[p]/args_info.anglecut_arg,0.,500.*CLHEP::MeV);
+      RooGaussian rooGaussAngle("rooGaussAngle","angle gaussian PDF",rooAngle,rooMeanAngle,rooSigmaAngle);
+
+      rooGaussAngle.plotOn(rooAnglePlot, RooFit::LineColor(kBlue));
+      //rooGaussAngle.fitTo(rooAngleData);
+      //rooGaussAngle.plotOn(rooAnglePlot, LineColor(kRed));
+
+      rooAnglePlot->Draw();
+      tAngleCanvas.SaveAs("angle.pdf");
+      }
+    }
+
   return EXIT_SUCCESS;
 }
