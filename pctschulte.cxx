@@ -7,6 +7,8 @@
 #include "pctBetheBlochFunctor.h"
 #include "pctEnergyStragglingFunctor.h"
 
+#include <fstream>
+
 int main(int argc, char * argv[])
 {
   GGO(pctschulte, args_info);
@@ -27,6 +29,21 @@ int main(int argc, char * argv[])
 
   // For mean energy
   pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe( args_info.ionpot_arg * CLHEP::eV, 500 * CLHEP::MeV );
+
+  if(args_info.dEdx_given)
+    {
+    std::ofstream os(args_info.dEdx_arg);
+    pct::Functor::BetheBlochProtonStoppingPower<double, double> bb;
+    os << "E (MeV), dEdX (MeV.cm²/g)" << std::endl;
+    for(double E=250; E>=5.; E-=5.)
+      {
+      os << E/CLHEP::MeV;
+      os << ',';
+      os << bb.GetValue(E*CLHEP::MeV, args_info.ionpot_arg*CLHEP::eV)/(1000.*CLHEP::kg/CLHEP::m3) * CLHEP::g/(CLHEP::MeV*CLHEP::cm2);
+      os << std::endl;
+      }
+    os.close();
+    }
 
   switch(args_info.parameter_arg)
     {

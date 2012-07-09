@@ -6,3 +6,4 @@ option "length"     l "Length of traversed material in mm"                      
 option "parameter"  p "Parameter choice" values="energyMean","energySD","positionSD" enum   yes
 option "energy"     e "Initial energy in MeV"                                        double no
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"        double no  default="68.9984"
+option "dEdx"       - "Produce a table with the dEdX from 250:5:5"                   string no
