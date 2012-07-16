@@ -68,7 +68,7 @@ public:
 #ifdef PCT_GEANT4
     return m_G4BetheBlochModel->LowEnergyLimit();
 #else
-    return 1*CLHEP::kEv; //Arbitrary
+    return 1*CLHEP::keV; //Arbitrary
 #endif
     }
 private:
