@@ -2,6 +2,7 @@
 #define __pctProtonPairsToDistanceDrivenProjection_h
 
 #include "rtkConfiguration.h"
+#include "pctBetheBlochFunctor.h"
 
 #include <rtkRayQuadricIntersectionFunction.h>
 #include <itkInPlaceImageFilter.h>
@@ -114,6 +115,9 @@ private:
 
   /** Ionization potential used in the Bethe Bloch equation */
   double m_IonizationPotential;
+
+  /** The functor to convert energy loss to attenuation */
+  Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
 };
 
 } // end namespace pct

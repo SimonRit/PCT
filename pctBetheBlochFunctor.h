@@ -7,6 +7,14 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include <itkImage.h>
 
+#ifdef PCT_GEANT4
+#  include "geant4/pctGeant4.h"
+#  include <G4Material.hh>
+#  include <G4Proton.hh>
+#  include <G4BetheBlochModel.hh>
+#  include <G4NistManager.hh>
+#endif
+
 namespace pct
 {
 
@@ -20,13 +28,6 @@ namespace pct
  * The CLHEP system of units is used.
  */
 
-/** Physical constants */
-static const double K = 4. * CLHEP::pi *
-                        CLHEP::classic_electr_radius *
-                        CLHEP::classic_electr_radius *
-                        CLHEP::electron_mass_c2 *
-                        3.343e+23 / CLHEP::cm3;
-
 namespace Functor
 {
 
@@ -34,18 +35,47 @@ template< class TInput, class TOutput >
 class BetheBlochProtonStoppingPower
 {
 public:
-  BetheBlochProtonStoppingPower() {}
+#ifdef PCT_GEANT4
+  BetheBlochProtonStoppingPower():m_Geant4( pctGeant4::GetInstance() ),
+                                  m_G4BetheBlochModel(new G4BetheBlochModel) {}
+#endif
   ~BetheBlochProtonStoppingPower() {}
 
-  /** Actual computation. By default, the ionization potential of ionization
-   * is the one of water given in [Li, MIC-NSS, 2003].
-   */
   TOutput GetValue(const TInput e, const double I) const
     {
+#ifdef PCT_GEANT4
+    G4Proton * proton = G4Proton::Proton();
+    return m_G4BetheBlochModel->ComputeDEDXPerVolume( G4NistManager::Instance()->FindOrBuildMaterial("G4_WATER"), //G4Material::GetMaterial("Water"),
+                                                     G4Proton::Proton(),
+                                                     G4double(e),
+                                                     G4double(1*CLHEP::km));
+#else
+    /** Physical constants */
+    static const double K = 4. * CLHEP::pi *
+                            CLHEP::classic_electr_radius *
+                            CLHEP::classic_electr_radius *
+                            CLHEP::electron_mass_c2 *
+                            3.343e+23 / CLHEP::cm3;
+
     TOutput betasq = CLHEP::proton_mass_c2/(e + CLHEP::proton_mass_c2);
     betasq = 1.-betasq*betasq;
     return K * (log(2.*CLHEP::electron_mass_c2/I * betasq/(1-betasq))-betasq) / betasq;
+#endif
     }
+
+  TOutput GetLowEnergyLimit()
+    {
+#ifdef PCT_GEANT4
+    return m_G4BetheBlochModel->LowEnergyLimit();
+#else
+    return 1*CLHEP::kEv; //Arbitrary
+#endif
+    }
+private:
+#ifdef PCT_GEANT4
+    pctGeant4 *m_Geant4;
+    G4BetheBlochModel *m_G4BetheBlochModel;
+#endif
 };
 
 /** \class IntegratedBetheBlochProtonStoppingPowerInverse
@@ -58,15 +88,18 @@ public:
   IntegratedBetheBlochProtonStoppingPowerInverse(const double I, const double maxEnergy, const double binSize = 1.*CLHEP::keV):
       m_BinSize(binSize)
     {
-    m_NumberOfBins = itk::Math::Ceil<unsigned int, double>(maxEnergy/m_BinSize);
-    m_LUT.resize(m_NumberOfBins);
+    unsigned int lowBinLimit, numberOfBins;
+    lowBinLimit = itk::Math::Ceil<unsigned int, double>(m_S.GetLowEnergyLimit() / m_BinSize);
+    numberOfBins = itk::Math::Ceil<unsigned int, double>(maxEnergy/m_BinSize);
+    m_LUT.resize(numberOfBins);
     // Create lookup table for integer values of energy
-    m_LUT[0] = 0.;
-    m_Length.push_back(0.);
-    for(unsigned int i=1; i<m_NumberOfBins; i++)
+    for(unsigned int i=0; i<lowBinLimit; i++)
+      {
+      m_LUT[i] = 0.;
+      }
+    for(unsigned int i=lowBinLimit; i<numberOfBins; i++)
       {
       m_LUT[i] = m_LUT[i-1] + binSize / m_S.GetValue(TOutput(i)*binSize, I);
-
       // Create inverse lut, i.e., get energy from length in water
       for(unsigned j=m_Length.size(); j<unsigned(m_LUT[i]*CLHEP::mm)+1; j++)
         {
@@ -110,7 +143,6 @@ private:
   std::vector<TOutput> m_Length;
 
   double m_BinSize;
-  unsigned int m_NumberOfBins;
   std::vector<TOutput> m_LUT;
 };
 } // end namespace Functor

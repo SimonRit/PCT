@@ -1,7 +1,6 @@
 #include <itkImageFileReader.h>
 #include <itkImageRegionIterator.h>
 
-#include "pctBetheBlochFunctor.h"
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
@@ -18,6 +17,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts.resize( this->GetNumberOfThreads() );
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
+  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 500*CLHEP::MeV, 0.1*CLHEP::keV);
 }
 
 template <class TInputImage, class TOutputImage>
@@ -79,7 +79,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   for(unsigned int i=0; i<3; i++)
     imgSpacingInv[i] = 1./imgSpacing[i];
 
-  Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> convFunc(m_IonizationPotential, 500*CLHEP::MeV);
 
   // Corrections
   typedef itk::Vector<double,3> VectorType;
@@ -148,7 +147,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     const double eIn = it.Get()[0];
     const double eOut = it.Get()[1];
-    const double value = convFunc.GetValue(eOut, eIn);
+    const double value = m_ConvFunc->GetValue(eOut, eIn);
     ++it;
 
     // Move straight to entrance and exit shapes
@@ -183,7 +182,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // Energy cut (also requires the expected energy mean)
     if(m_SigmaEnergyCut!=0.)
       {
-      double energyMean = convFunc.GetEnergy(length, eIn);
+      double energyMean = m_ConvFunc->GetEnergy(length, eIn);
       double sigmaEnergyCutVal = m_SigmaEnergyCut *
                                  Functor::EnergyStragglingFunctor<double,double>::GetValue(length);
       if(vcl_abs(eOut-energyMean)>sigmaEnergyCutVal)
