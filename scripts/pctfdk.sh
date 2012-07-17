@@ -9,7 +9,7 @@ OPTIONS='--lowmem
     --verbose'
 
 rtksimulatedgeometry \
-    -n 1440 \
+    -n 720 \
     -f 0 \
     -a -360 \
     -o geometry.rtk \
