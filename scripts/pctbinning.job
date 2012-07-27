@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # DIRECTORY
 # FIRST
@@ -13,17 +13,17 @@ do
   /home/srit/src/pct/lin64-dg/pctpaircuts \
     -i pairs${NUM}.mhd \
     -o pairs${NUM}c.mha \
-    --spacing 8,8 \
-    --dimension 32,2 \
+    --spacing 0.5,2 \
+    --dimension 500,2 \
     --source -1000 \
     --anglecut 3. \
-    --energycut 3. \
-    --robust
+    --energycut 3.
   /home/srit/src/pct/lin64-dg/pctbinning \
     -i pairs${NUM}c.mha \
     -o proj${NUM}.mhd \
-    --spacing=0.25,4,0.25 \
-    --dimension 1000,2,1000 \
+    --spacing=0.5,1,0.5 \
+    --dimension 500,2,500 \
     --source -1000 \
-    --quadricIn="1,0,1,0,0,0,0,0,0,-10000" 
+    --quadricIn="1,0,1,0,0,0,0,0,0,-10000"
+  rm pairs${NUM}c.mha 
 done

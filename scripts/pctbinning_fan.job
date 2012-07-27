@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# DIRECTORY
+# FIRST
+# LAST
+#PBS -r n
+#PBS -l walltime=100:00:00,nodes=1:ppn=32,mem=32Gb
+#PBS -j oe
+#PBS -N pctbinning.fan
+
+NUM=0000
+cd /home/srit/data/gate/fan/results.TiLV
+/home/srit/src/pct/lin64-dg/pctpaircuts \
+  -i pairs${NUM}.mhd \
+  -o pairs${NUM}c.mha \
+  --spacing 0.1,3 \
+  --dimension 2500,1 \
+  --source -1000 \
+  --anglecut 3. \
+  --energycut 3.
+/home/srit/src/pct/lin64-dg/pctbinning \
+  -i pairs${NUM}c.mha \
+  -o proj${NUM}c.mhd \
+  --spacing=0.1,2,0.1 \
+  --dimension 2500,1,2500 \
+  --source -1000 \
+  --quadricIn="1,0,1,0,0,0,0,0,0,-10000" \
+  --ionpot 68.998 \
+  --energycut 0. \
+  --anglecut 0.
+

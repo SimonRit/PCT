@@ -1,8 +1,8 @@
 #!/bin/sh -x
 
 OPTIONS='--lowmem
-    --dimension 1000,1,1000
-    --spacing 0.25
+    --dimension 2100,1,2100
+    --spacing 0.1
     --pad 0.
     --hann 0.
     -r proj.*.mhd
