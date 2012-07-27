@@ -5,10 +5,12 @@
 #include <rtkConstantImageSource.h>
 
 #include "pctProtonPairsToDistanceDrivenProjection.h"
+#include "SmallHoleFiller.h"
 
 #include <itkImageFileWriter.h>
 #include <itkRegularExpressionSeriesFileNames.h>
 #include <itkTimeProbe.h>
+#include <itkChangeInformationImageFilter.h>
 
 int main(int argc, char * argv[])
 {
@@ -70,11 +72,26 @@ int main(int argc, char * argv[])
 
   TRY_AND_EXIT_ON_ITK_EXCEPTION( projection->Update() );
 
+  SmallHoleFiller< OutputImageType > filler;
+  filler.SetImage( projection->GetOutput() );
+  filler.SetHolePixel(0.);
+  filler.Fill();
+
+  typedef itk::ChangeInformationImageFilter< OutputImageType > CIIType;
+  CIIType::Pointer cii = CIIType::New();
+  cii->SetInput(filler.GetOutput());
+  cii->ChangeOriginOn();
+  cii->ChangeDirectionOn();
+  cii->ChangeSpacingOn();
+  cii->SetOutputDirection( projection->GetOutput()->GetDirection() );
+  cii->SetOutputOrigin(    projection->GetOutput()->GetOrigin() );
+  cii->SetOutputSpacing(   projection->GetOutput()->GetSpacing() );
+
   // Write
   typedef itk::ImageFileWriter<  OutputImageType > WriterType;
   WriterType::Pointer writer = WriterType::New();
   writer->SetFileName( args_info.output_arg );
-  writer->SetInput( projection->GetOutput() );
+  writer->SetInput( cii->GetOutput() );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
 
   if(args_info.count_given)
