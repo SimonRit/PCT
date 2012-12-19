@@ -29,7 +29,7 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId)
+::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId)
 {
   // Prepare point increment (TransformIndexToPhysicalPoint too slow)
   typename InputImageType::PointType pointBase, pointIncrement;

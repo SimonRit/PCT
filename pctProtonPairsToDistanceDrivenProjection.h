@@ -81,7 +81,7 @@ protected:
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
   virtual void BeforeThreadedGenerateData();
-  virtual void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId );
+  virtual void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId );
   virtual void AfterThreadedGenerateData();
 
   /** The two inputs should not be in the same space so there is nothing

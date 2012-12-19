@@ -41,10 +41,9 @@ public:
 #endif
   ~BetheBlochProtonStoppingPower() {}
 
-  TOutput GetValue(const TInput e, const double I) const
+  TOutput GetValue(const TInput e, const double itkNotUsed(I) ) const
     {
 #ifdef PCT_GEANT4
-    G4Proton * proton = G4Proton::Proton();
     return m_G4BetheBlochModel->ComputeDEDXPerVolume( G4NistManager::Instance()->FindOrBuildMaterial("G4_WATER"), //G4Material::GetMaterial("Water"),
                                                      G4Proton::Proton(),
                                                      G4double(e),

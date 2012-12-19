@@ -23,7 +23,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
-::ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId )
+::ThreadedGenerateData( const OutputImageRegionType& itkNotUsed(outputRegionForThread), rtk::ThreadIdType threadId)
 {
   // Create MLP depending on type
   pct::MostLikelyPathFunction<double>::Pointer mlp;

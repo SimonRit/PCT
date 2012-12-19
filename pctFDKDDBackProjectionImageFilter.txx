@@ -15,7 +15,7 @@ namespace pct
 template <class TInputImage, class TOutputImage>
 void
 FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId )
+::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId )
 {
   const unsigned int Dimension = TInputImage::ImageDimension;
   const unsigned int nProj = m_ProjectionStack->GetLargestPossibleRegion().GetSize(Dimension);
@@ -148,9 +148,9 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   const unsigned int Dimension = TInputImage::ImageDimension;
 
   itk::Matrix<double, Dimension+1, Dimension+1> matrixVol;
-  matrixVol = GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
+  matrixVol = rtk::GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
   itk::Matrix<double, Dimension+1, Dimension+1> matrixProjFull;
-  matrixProjFull = GetPhysicalPointToIndexMatrix< ProjectionImageType >(proj);
+  matrixProjFull = rtk::GetPhysicalPointToIndexMatrix< ProjectionImageType >(proj);
   itk::Matrix<double, Dimension, Dimension> matrixProj;
   matrixProj.SetIdentity();
   for(unsigned int j=0; j<Dimension-1; j++)
