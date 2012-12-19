@@ -73,13 +73,19 @@ int main(int argc, char * argv[])
   TRY_AND_EXIT_ON_ITK_EXCEPTION( projection->Update() );
 
   SmallHoleFiller< OutputImageType > filler;
-  filler.SetImage( projection->GetOutput() );
-  filler.SetHolePixel(0.);
-  filler.Fill();
+  if(args_info.fill_flag)
+    {
+    filler.SetImage( projection->GetOutput() );
+    filler.SetHolePixel(0.);
+    filler.Fill();
+    }
 
   typedef itk::ChangeInformationImageFilter< OutputImageType > CIIType;
   CIIType::Pointer cii = CIIType::New();
-  cii->SetInput(filler.GetOutput());
+  if(args_info.fill_flag)
+    cii->SetInput(filler.GetOutput());
+  else
+    cii->SetInput(projection->GetOutput());
   cii->ChangeOriginOn();
   cii->ChangeDirectionOn();
   cii->ChangeSpacingOn();
