@@ -138,6 +138,9 @@ public:
   /** Evaluate the coordinates (x,y) at depth z. */
   void Evaluate( const double u1, double &x, double&y );
 
+  /** Evaluate the error (x,y) (equation 27) at depth z. */
+  void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
+
 #ifdef MLP_TIMING
   /** Print timing information */
   virtual void PrintTiming(std::ostream& os);
@@ -174,6 +177,10 @@ private:
   itk::Matrix<double, 2, 2> m_R1;
   itk::Matrix<double, 2, 2> m_R0T;
   itk::Matrix<double, 2, 2> m_R1T;
+
+  // Scattering matrices
+  itk::Matrix<double, 2, 2> m_Sigma1;
+  itk::Matrix<double, 2, 2> m_Sigma2;
 
   // Part common to all positions along the trajectory
   //double m_IntForSigmaSqTheta0;  //Always 0. because m_u0=0.

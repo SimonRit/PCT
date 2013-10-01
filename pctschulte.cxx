@@ -45,6 +45,18 @@ int main(int argc, char * argv[])
     os.close();
     }
 
+  pct::SchulteMLPFunction::Pointer mlp;
+  mlp = pct::SchulteMLPFunction::New();
+  itk::Vector<double,3> p1,p2,d;
+  p1.Fill(0.);
+  p2 = p1;
+  d = p1;
+  p1[2] = -110.;
+  p2[2] = 110.;
+  d[2] = 1.;
+  mlp->Init(p1, p2, d, d);
+  itk::Matrix<double, 2, 2> error;
+
   switch(args_info.parameter_arg)
     {
     case(parameter_arg_energyMean):
@@ -62,7 +74,10 @@ int main(int argc, char * argv[])
     std::cout << sqrt(Sigma1(0,0)) << std::endl;
     return EXIT_SUCCESS;
 
-    default:
+  case(parameter_arg_mlpSD):
+    mlp->EvaluateError(args_info.length_arg, error);
+    std::cout << sqrt(error[0][0]) << std::endl;
+  default:
     return EXIT_FAILURE;
     }
 
