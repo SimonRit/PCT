@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
 
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
-  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( std::min(8, itk::MultiThreader::GetGlobalMaximumNumberOfThreads() ) );
+  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( std::min<double>(8, itk::MultiThreader::GetGlobalMaximumNumberOfThreads() ) );
 
   // Generate file names
   itk::RegularExpressionSeriesFileNames::Pointer names = itk::RegularExpressionSeriesFileNames::New();
@@ -87,7 +87,7 @@ int main(int argc, char * argv[])
 
   if(args_info.verbose_flag)
     {
-    std::cout << "It took " << writerProbe.GetMeanTime() << ' ' << writerProbe.GetUnit() << std::endl;
+    std::cout << "It took " << writerProbe.GetMean() << ' ' << writerProbe.GetUnit() << std::endl;
     feldkamp->PrintTiming(std::cout);
     }
 
