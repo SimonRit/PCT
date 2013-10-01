@@ -41,14 +41,16 @@ public:
 #endif
   ~BetheBlochProtonStoppingPower() {}
 
+#ifdef PCT_GEANT4
   TOutput GetValue(const TInput e, const double itkNotUsed(I) ) const
     {
-#ifdef PCT_GEANT4
     return m_G4BetheBlochModel->ComputeDEDXPerVolume( G4NistManager::Instance()->FindOrBuildMaterial("G4_WATER"), //G4Material::GetMaterial("Water"),
                                                      G4Proton::Proton(),
                                                      G4double(e),
                                                      G4double(1*CLHEP::km));
 #else
+  TOutput GetValue(const TInput e, const double I) const
+    {
     /** Physical constants */
     static const double K = 4. * CLHEP::pi *
                             CLHEP::classic_electr_radius *
