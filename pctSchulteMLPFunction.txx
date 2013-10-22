@@ -65,20 +65,18 @@ SchulteMLPFunction
   const double intForSigmaSqT1      = Functor::SchulteMLP::IntegralForSigmaSqT     ::GetValue(u1);
 
   // Construct Sigma1 (equations 6-9)
-  itk::Matrix<double, 2, 2> Sigma1;
-  Sigma1(1,1) = intForSigmaSqTheta1/* - m_IntForSigmaSqTheta0*/;
-  Sigma1(0,1) = u1 * Sigma1(1,1) - intForSigmaSqTTheta1/* + m_IntForSigmaSqTTheta0*/;
-  Sigma1(1,0) = Sigma1(0,1);
-  Sigma1(0,0) = u1 * ( 2*Sigma1(0,1) - u1*Sigma1(1,1) ) + intForSigmaSqT1/* - m_IntForSigmaSqT0*/;
-  Sigma1 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(m_u0,u1);
+  m_Sigma1(1,1) = intForSigmaSqTheta1/* - m_IntForSigmaSqTheta0*/;
+  m_Sigma1(0,1) = u1 * m_Sigma1(1,1) - intForSigmaSqTTheta1/* + m_IntForSigmaSqTTheta0*/;
+  m_Sigma1(1,0) = m_Sigma1(0,1);
+  m_Sigma1(0,0) = u1 * ( 2*m_Sigma1(0,1) - u1*m_Sigma1(1,1) ) + intForSigmaSqT1/* - m_IntForSigmaSqT0*/;
+  m_Sigma1 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(m_u0,u1);
 
   // Construct Sigma2 (equations 15-18)
-  itk::Matrix<double, 2, 2> Sigma2;
-  Sigma2(1,1) = m_IntForSigmaSqTheta2 - intForSigmaSqTheta1;
-  Sigma2(0,1) = m_u2 * Sigma2(1,1) - m_IntForSigmaSqTTheta2 + intForSigmaSqTTheta1;
-  Sigma2(1,0) = Sigma2(0,1);
-  Sigma2(0,0) = m_u2 * ( 2*Sigma2(0,1) - m_u2*Sigma2(1,1) ) + m_IntForSigmaSqT2 - intForSigmaSqT1;
-  Sigma2 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(u1,m_u2);
+  m_Sigma2(1,1) = m_IntForSigmaSqTheta2 - intForSigmaSqTheta1;
+  m_Sigma2(0,1) = m_u2 * m_Sigma2(1,1) - m_IntForSigmaSqTTheta2 + intForSigmaSqTTheta1;
+  m_Sigma2(1,0) = m_Sigma2(0,1);
+  m_Sigma2(0,0) = m_u2 * ( 2*m_Sigma2(0,1) - m_u2*m_Sigma2(1,1) ) + m_IntForSigmaSqT2 - intForSigmaSqT1;
+  m_Sigma2 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(u1,m_u2);
 
 #ifdef MLP_TIMING
   m_EvaluateProbe1.Stop();
@@ -87,11 +85,11 @@ SchulteMLPFunction
 
   // x and y, equation 24
   // common calculations
-  InverseMatrix(Sigma1);
-  InverseMatrix(Sigma2);
-  itk::Matrix<double, 2, 2> Sigma1Inv_R0 = Sigma1 * m_R0;
-  itk::Matrix<double, 2, 2> R1T_Sigma2Inv = m_R1T * Sigma2;
-  itk::Matrix<double, 2, 2> part(Sigma1 + R1T_Sigma2Inv * m_R1);
+  InverseMatrix(m_Sigma1);
+  InverseMatrix(m_Sigma2);
+  itk::Matrix<double, 2, 2> Sigma1Inv_R0 = m_Sigma1 * m_R0;
+  itk::Matrix<double, 2, 2> R1T_Sigma2Inv = m_R1T * m_Sigma2;
+  itk::Matrix<double, 2, 2> part(m_Sigma1 + R1T_Sigma2Inv * m_R1);
   InverseMatrix(part);
 
   // x
@@ -107,6 +105,17 @@ SchulteMLPFunction
 #ifdef MLP_TIMING
   m_EvaluateProbe2.Stop();
 #endif
+}
+
+void
+SchulteMLPFunction
+::EvaluateError( const double u, itk::Matrix<double, 2, 2> &error )
+{
+  double x, y;
+  Evaluate(u,x,y);
+  error = m_Sigma1 + m_R1T * m_Sigma2 * m_R1;
+  InverseMatrix(error);
+  error *= 2.;
 }
 
 #ifdef MLP_TIMING
