@@ -1,15 +1,15 @@
 #!/bin/sh -x
 
 OPTIONS='--lowmem
-    --dimension 2100,1,2100
-    --spacing 0.1
+    --dimension 210,1,210
+    --spacing 1
     --pad 0.
     --hann 0.
     -r proj.*.mhd
     --verbose'
 
 rtksimulatedgeometry \
-    -n 720 \
+    -n 360 \
     -f 0 \
     -a -360 \
     -o geometry.rtk \

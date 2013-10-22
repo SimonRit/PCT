@@ -1,7 +1,7 @@
 #!/bin/sh -x
 
 GROUP=20
-for FIRST in $(seq 0 $GROUP 719)
+for FIRST in $(seq 0 $GROUP 359)
 do
 qsub -N pctbinning.${FIRST} \
          -o "$(pwd)" \

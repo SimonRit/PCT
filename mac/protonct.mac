@@ -42,7 +42,7 @@
 /gate/random/setEngineName MersenneTwister
 /gate/random/setEngineSeed auto
 
-/gate/application/setTimeSlice              0.25 s
+/gate/application/setTimeSlice              1 s
 /gate/application/setTimeStart              0 s
 /gate/application/setTimeStop               360 s
 
