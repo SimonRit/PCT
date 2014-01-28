@@ -113,7 +113,7 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
 
 int main(int argc, char * argv[])
 {
-  GGO(pctpairprotons, args_info);
+  GGO(pctpairprotons, args_info); //RTK macro parsing options from .ggo file (rtkMacro.h)
 
   // Create root trees
   TChain *treeIn = new TChain("PhaseSpace");
@@ -205,7 +205,7 @@ int main(int argc, char * argv[])
 
     // Condition 2: absolute time difference must be small
 //    if( pIn.time-pOut.time<-100.f )
-    if(piIn.eventID < piOut.eventID)
+    if(piIn.eventID < piOut.eventID) //1 primary per event in Gate
       {
       iIn++;
       continue;
@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
 
     // There may be multiple protons to pair with an input proton so only
     // increment the output counter. Note that there may also be multiple input
-    // protons associated to an output proton but this is ignored.
+    // protons associated to an output proton (secondary proton back scattering) but this is ignored.
     iOut++;
     }
 

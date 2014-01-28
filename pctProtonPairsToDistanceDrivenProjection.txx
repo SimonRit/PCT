@@ -17,7 +17,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts.resize( this->GetNumberOfThreads() );
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
-  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 500*CLHEP::MeV, 0.1*CLHEP::keV);
+  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 600*CLHEP::MeV, 0.1*CLHEP::keV);
 }
 
 template <class TInputImage, class TOutputImage>
@@ -86,7 +86,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   source.Fill(0.);
   source[2] = m_SourceDistance;
 
-  // Create a local copy of quadrics for multithreading
+  // Create a local copy of quadrics (surface object) for multithreading
   RQIType::Pointer quadricIn, quadricOut;
   if(m_QuadricIn.GetPointer()!=NULL)
     {
@@ -115,7 +115,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     quadricOut->SetJ(m_QuadricOut->GetJ());
     }
 
-  // Create zmm and magnitude lut
+  // Create zmm and magnitude lut (look up table)
   std::vector<double> zmm(imgSize[2]);
   std::vector<double> zmag(imgSize[2]);
   const double zPlaneOutInMM = (*(reader->GetOutput()->GetBufferPointer()+1))[2];
@@ -179,8 +179,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       length = (pSIn  - p).GetNorm();
       }
 
-    // Energy cut (also requires the expected energy mean)
-    if(m_SigmaEnergyCut!=0.)
+    // Energy cut (also requires the expected energy mean) with material hypothesis
+    if(m_SigmaEnergyCut!=0.) //default value = 0
       {
       double energyMean = m_ConvFunc->GetEnergy(length, eIn);
       double sigmaEnergyCutVal = m_SigmaEnergyCut *
@@ -197,8 +197,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
 
-    // Angle cut
-    if(m_SigmaAngleCut!=0.)
+    // Angle cut with material hypothesis
+    if(m_SigmaAngleCut!=0.) //default value = 0
       {
       const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
       double sigmaAngleCutVal = sigmaAngleCutSq *
@@ -222,19 +222,19 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       {
       double xx, yy;
       const double dk = zmm[k];
-      if(dk<=pSIn[2])
+      if(dk<=pSIn[2]) //before entrance
         {
         const double z = (dk-pIn[2]);
         xx = pIn[0]+z*dIn[0];
         yy = pIn[1]+z*dIn[1];
         }
-      else if(dk>=pSOut[2])
+      else if(dk>=pSOut[2]) //after exit
         {
         const double z = (dk-pSOut[2]);
         xx = pSOut[0]+z*dOut[0];
         yy = pSOut[1]+z*dOut[1];
         }
-      else
+      else //MLP
         {
         mlp->Evaluate(zmm[k], xx, yy);
         }

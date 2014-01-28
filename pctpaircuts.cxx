@@ -20,7 +20,7 @@
 
 int main(int argc, char * argv[])
 {
-  GGO(pctpaircuts, args_info);
+  GGO(pctpaircuts, args_info); //RTK macro parsing options from .ggo file (rtkMacro.h)
 
   typedef float ProjectionPixelType;
   typedef itk::Image< ProjectionPixelType, 2 > ProjectionImageType;
@@ -56,14 +56,14 @@ int main(int argc, char * argv[])
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName( args_info.input_arg );
   reader->UpdateOutputInformation();
-  size_t nprotons = reader->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
+  size_t nprotons = reader->GetOutput()->GetLargestPossibleRegion().GetSize()[1]; //total image proton pairs number
   PairsImageType::RegionType region = reader->GetOutput()->GetLargestPossibleRegion();
-  unsigned int nregions = nprotons/PAIRS_IN_RAM+1;
+  unsigned int nregions = nprotons/PAIRS_IN_RAM+1; //limit 1M proton pairs (memory)
 
   // Image information constants
-  const ProjectionImageType::SizeType imgSize  = sumEnergy->GetOutput()->GetBufferedRegion().GetSize();
-  const ProjectionImageType::PointType imgOrigin = sumEnergy->GetOutput()->GetOrigin();
-  const ProjectionImageType::SpacingType imgSpacing = sumEnergy->GetOutput()->GetSpacing();
+  const ProjectionImageType::SizeType imgSize  = sumEnergy->GetOutput()->GetBufferedRegion().GetSize(); //pixels number (vector)
+  const ProjectionImageType::PointType imgOrigin = sumEnergy->GetOutput()->GetOrigin(); //center position pixel (0,0) 
+  const ProjectionImageType::SpacingType imgSpacing = sumEnergy->GetOutput()->GetSpacing(); //space between pixels 
   itk::Vector<float, 2> imgSpacingInv;
   for(unsigned int i=0; i<2; i++)
     imgSpacingInv[i] = 1./imgSpacing[i];
@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
     // Read r-th set of pairs
     region.SetIndex(1, r*PAIRS_IN_RAM);
     region.SetSize(1, vnl_math_min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
-    reader->GetOutput()->SetRequestedRegion(region);
+    reader->GetOutput()->SetRequestedRegion(region); //we work on one region "r"
     TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
 
     // Process pairs
@@ -98,9 +98,9 @@ int main(int argc, char * argv[])
       const VectorType data = it.Get();
       ++it;
 
-      static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
+      static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]); //Magnification (Thales theorem)
 
-      const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0];
+      const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0]; //x corrected (mag), converted in pixel units
       const int i = itk::Math::Round<int,double>(xx);
       if(i<0 || i>=(int)imgSize[0])
         continue;
@@ -158,27 +158,28 @@ int main(int argc, char * argv[])
         }
       else if(pCounts[idx])
         {
-        // Energy: median and 30.85% with interpolation
+        // Energy: median and 30.85% (0.5 sigma) with interpolation
         double medianPos = pCounts[idx]*0.5;
         unsigned int medianSupPos = itk::Math::Ceil<unsigned int, double>(medianPos);
         std::partial_sort(energies[idx].begin(), energies[idx].begin()+medianSupPos+1, energies[idx].end());
         double medianDiff = medianSupPos-medianPos;
-        pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+
-                            *(energies[idx].begin()+medianSupPos-1)*medianDiff;
+	//median linear interpolation
+        pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+ //tab[x][y] <=> *(tab[x]+y)
+	  *(energies[idx].begin()+medianSupPos-1)*medianDiff; 
 
-        double sigmaEPos = pCounts[idx]*0.3085;
+        double sigmaEPos = pCounts[idx]*0.3085; //0.5 sigma
         unsigned int sigmaESupPos = itk::Math::Ceil<unsigned int, double>(sigmaEPos);
         double sigmaEDiff = sigmaESupPos-sigmaEPos;
         pSumEnergySq[idx] = 2.*(pSumEnergy[idx]-( *(energies[idx].begin()+sigmaESupPos)*(1.-sigmaEDiff)+
-                                                  *(energies[idx].begin()+sigmaESupPos-1)*sigmaEDiff) );
+                                                  *(energies[idx].begin()+sigmaESupPos-1)*sigmaEDiff) ); //x2 to get 1sigma
 
-        // Angle: 38.30% with interpolation (median is 0. and we only have positive values)
+        // Angle: 38.30% (0.5 sigma) with interpolation (median is 0. and we only have positive values
         double sigmaAPos = angles[idx].size()*0.3830;
         unsigned int sigmaASupPos = itk::Math::Ceil<unsigned int, double>(sigmaAPos);
         std::partial_sort(angles[idx].begin(), angles[idx].begin()+sigmaASupPos+1, angles[idx].end());
         double sigmaADiff = sigmaASupPos-sigmaAPos;
         pSumAngleSq[idx] = 2.*(*(angles[idx].begin()+sigmaASupPos)*(1.-sigmaADiff)+
-                               *(angles[idx].begin()+sigmaASupPos-1)*sigmaADiff);
+                               *(angles[idx].begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
         }
       }
     }
