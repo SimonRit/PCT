@@ -17,7 +17,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts.resize( this->GetNumberOfThreads() );
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
-  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 600*CLHEP::MeV, 0.1*CLHEP::keV);
+  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 600.*CLHEP::MeV, 0.1*CLHEP::keV);
 }
 
 template <class TInputImage, class TOutputImage>

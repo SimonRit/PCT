@@ -13,7 +13,7 @@ OPTIONS='--lowmem
     -f 0 \
     -a -360 \
     -o geometry.rtk \
-    --sdd 2800 \
+    --sdd 2400 \
     --sid 2000
 
 /Users/arbor/Workspace/pCT/pct_build/pctfdk \
