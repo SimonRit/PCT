@@ -219,6 +219,7 @@ int main(int argc, char * argv[])
 
     // Corresponding protons found, add to vector if no nuclear interaction
     //if(piIn.trackID == piOut.trackID)
+    if(piIn.runID>=args_info.minRun_arg && piIn.runID<args_info.maxRun_arg)
       {
       // WARNING: We have swap x and z, z sign must also be changed
       pdIn.direction[2] *= -1.;
