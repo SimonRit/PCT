@@ -17,7 +17,14 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts.resize( this->GetNumberOfThreads() );
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
-  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 500*CLHEP::MeV, 0.1*CLHEP::keV);
+  m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 600*CLHEP::MeV, 0.1*CLHEP::keV);
+
+  // Read pairs
+  typedef itk::ImageFileReader< ProtonPairsImageType > ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName( m_ProtonPairsFileName );
+  reader->Update();
+  m_ProtonPairs = reader->GetOutput();
 }
 
 template <class TInputImage, class TOutputImage>
@@ -55,17 +62,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
   m_Outputs[threadId]->FillBuffer(0.);
 
-  // Read pairs
-  typedef itk::ImageFileReader< ProtonPairsImageType > ReaderType;
-  ReaderType::Pointer reader = ReaderType::New();
-  reader->SetFileName( m_ProtonPairsFileName );
-  reader->UpdateOutputInformation();
-  size_t nprotons = reader->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
-  ProtonPairsImageType::RegionType region = reader->GetOutput()->GetLargestPossibleRegion();
+  size_t nprotons = m_ProtonPairs->GetLargestPossibleRegion().GetSize()[1];
+  ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
   region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
   region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
-  reader->GetOutput()->SetRequestedRegion(region);
-  reader->Update();
 
   // Image information constants
   const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
@@ -116,9 +116,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
 
   // Create zmm and magnitude lut
+  itk::ImageRegionIterator<ProtonPairsImageType> it(m_ProtonPairs, region);
   std::vector<double> zmm(imgSize[2]);
   std::vector<double> zmag(imgSize[2]);
-  const double zPlaneOutInMM = (*(reader->GetOutput()->GetBufferPointer()+1))[2];
+  ++it;
+  const double zPlaneOutInMM = it.Get()[2];
+  --it;
   for(unsigned int i=0; i<imgSize[2]; i++)
     {
     zmm[i] = i*imgSpacing[2]+imgOrigin[2];
@@ -126,7 +129,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
 
   // Process pairs
-  itk::ImageRegionIterator<ProtonPairsImageType> it(reader->GetOutput(), region);
   while(!it.IsAtEnd())
   {
     if(threadId==0 && it.GetIndex()[1]%10000==0)
