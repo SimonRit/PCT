@@ -165,7 +165,7 @@ int main(int argc, char * argv[])
         double medianDiff = medianSupPos-medianPos;
 	//median linear interpolation
         pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+ //tab[x][y] <=> *(tab[x]+y)
-	  *(energies[idx].begin()+medianSupPos-1)*medianDiff; 
+                            *(energies[idx].begin()+medianSupPos-1)*medianDiff;
 
         double sigmaEPos = pCounts[idx]*0.3085; //0.5 sigma
         unsigned int sigmaESupPos = itk::Math::Ceil<unsigned int, double>(sigmaEPos);

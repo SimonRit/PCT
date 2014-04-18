@@ -6,10 +6,10 @@
 /gate/world/geometry/setZLength     4 m 
 
 # Phantom
-/control/execute                mac/fan.mac
-#/gate/Spiral/moves/insert       rotation
-#/gate/Spiral/rotation/setSpeed  1 deg/s
-#/gate/Spiral/rotation/setAxis   0 0 1
+/control/execute                mac/spiral.mac
+/gate/Spiral/moves/insert       rotation
+/gate/Spiral/rotation/setSpeed  1 deg/s
+/gate/Spiral/rotation/setAxis   0 0 1
 
 # Beam
 /control/execute mac/beam.mac
@@ -42,10 +42,10 @@
 /gate/random/setEngineName MersenneTwister
 /gate/random/setEngineSeed auto
 
-#/gate/application/setTimeSlice              1 s
-#/gate/application/setTimeStart              0 s
-#/gate/application/setTimeStop               360 s
+/gate/application/setTimeSlice              1 s
+/gate/application/setTimeStart              0 s
+/gate/application/setTimeStop               360 s
 
-/gate/application/setTotalNumberOfPrimaries 7200000
+/gate/application/setTotalNumberOfPrimaries 720000
 /gate/application/start
 

@@ -42,7 +42,8 @@ int main(int argc, char * argv[])
 
   if(args_info.quadricIn_given)
     {
-      ProjectionFilter::RQIType::Pointer qIn = ProjectionFilter::RQIType::New(); //quadric = object surface
+    //quadric = object surface
+    ProjectionFilter::RQIType::Pointer qIn = ProjectionFilter::RQIType::New();
     qIn->SetA(args_info.quadricIn_arg[0]);
     qIn->SetB(args_info.quadricIn_arg[1]);
     qIn->SetC(args_info.quadricIn_arg[2]);

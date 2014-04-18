@@ -121,6 +121,7 @@ private:
   /** Ionization potential used in the Bethe Bloch equation */
   double m_IonizationPotential;
 
+  /** Flag to reconstruct the relative stopping power instead of the electron density */
   bool m_RelativeStoppingPower;
 
   /** The functor to convert energy loss to attenuation */
