@@ -125,6 +125,8 @@ private:
 
   /** The functor to convert energy loss to attenuation */
   Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
+
+  ProtonPairsImageType::Pointer m_ProtonPairs;
 };
 
 } // end namespace pct
