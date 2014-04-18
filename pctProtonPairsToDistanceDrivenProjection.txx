@@ -147,7 +147,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     const double eIn = it.Get()[0];
     const double eOut = it.Get()[1];
-    const double value = m_ConvFunc->GetValue(eOut, eIn);
+    double value = 0.;
+    if(m_RelativeStoppingPower) 
+       value = m_ConvFunc->GetValue(eOut, eIn); //relative electron density
+    else 
+       value = 501-0.01506*eOut-0.007345*eOut*eOut+0.00000634*eOut*eOut*eOut; //WEPL 300MeV
+    //const double value = 256.4-0.05446*eOut-0.007566*eOut*eOut+0.000007154*eOut*eOut*eOut; //WEPL 200MeV
     ++it;
 
     // Move straight to entrance and exit shapes

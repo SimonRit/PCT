@@ -37,6 +37,13 @@ static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
   static const double a3 =  2.026409e-08 * aunit / (CLHEP::cm3);
   static const double a4 = -1.420501e-09 * aunit / (CLHEP::cm3 * CLHEP::cm);
   static const double a5 =  3.899100e-11 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#elif defined(NICO_COEFF)
+  static const double a0 =  3.599e-06 * aunit;
+  static const double a1 =  7.303e-08 * aunit / (CLHEP::cm);
+  static const double a2 =  2.419e-09 * aunit / (CLHEP::cm2);
+  static const double a3 = -4.216e-11 * aunit / (CLHEP::cm3);
+  static const double a4 =  1.601e-12 * aunit / (CLHEP::cm3 * CLHEP::cm);
+  static const double a5 =  1.467e-13 * aunit / (CLHEP::cm3 * CLHEP::cm2);
 #endif
 
 // [Schulte, Med Phys, 2008], constant part of equations 7, 8 and 9

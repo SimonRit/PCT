@@ -38,6 +38,7 @@ int main(int argc, char * argv[])
   projection->SetSigmaAngleCut( args_info.anglecut_arg );
   projection->SetSigmaEnergyCut( args_info.energycut_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
+  projection->SetRelativeStoppingPower( args_info.rsp_flag );
 
   if(args_info.quadricIn_given)
     {

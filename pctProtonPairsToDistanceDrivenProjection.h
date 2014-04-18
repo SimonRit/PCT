@@ -73,10 +73,15 @@ public:
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
 
+  /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
+  itkGetMacro(RelativeStoppingPower, bool);
+  itkSetMacro(RelativeStoppingPower, bool);
+
 protected:
   ProtonPairsToDistanceDrivenProjection() {
     this->SetInPlace( true );
 //    this->SetNumberOfThreads(4);
+    m_RelativeStoppingPower = false;
   };
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
@@ -115,6 +120,8 @@ private:
 
   /** Ionization potential used in the Bethe Bloch equation */
   double m_IonizationPotential;
+
+  bool m_RelativeStoppingPower;
 
   /** The functor to convert energy loss to attenuation */
   Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
