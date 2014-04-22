@@ -73,4 +73,5 @@ ADD_PCT_EXECUTABLE(pctbackprojections pctbackprojections.cxx)
 ADD_PCT_EXECUTABLE(pctfdktwodweights pctfdktwodweights.cxx)
 ADD_PCT_EXECUTABLE(pctfdk pctfdk.cxx)
 ADD_PCT_EXECUTABLE(pctschulte pctschulte.cxx)
+ADD_PCT_EXECUTABLE(pctswapcoordinates pctswapcoordinates.cxx)
 
