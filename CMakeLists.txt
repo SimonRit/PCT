@@ -74,4 +74,5 @@ ADD_PCT_EXECUTABLE(pctfdktwodweights pctfdktwodweights.cxx)
 ADD_PCT_EXECUTABLE(pctfdk pctfdk.cxx)
 ADD_PCT_EXECUTABLE(pctschulte pctschulte.cxx)
 ADD_PCT_EXECUTABLE(pctswapcoordinates pctswapcoordinates.cxx)
+ADD_PCT_EXECUTABLE(pctpairarithm pctpairarithm.cxx)
 
