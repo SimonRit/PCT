@@ -218,8 +218,8 @@ int main(int argc, char * argv[])
       }
 
     // Corresponding protons found, add to vector if no nuclear interaction
-    //if(piIn.trackID == piOut.trackID)
-    if(piIn.runID>=args_info.minRun_arg && piIn.runID<args_info.maxRun_arg)
+    if(piIn.runID>=args_info.minRun_arg && piIn.runID<args_info.maxRun_arg &&
+       (!(args_info.nonuclear_flag) || (piIn.trackID == piOut.trackID))) // Condition to remove nuclear events if flag activated
       {
       // WARNING: We have swap x and z, z sign must also be changed
       pdIn.direction[2] *= -1.;
