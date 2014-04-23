@@ -61,14 +61,6 @@ public:
   /** Get/Set the count of proton pairs per pixel. */
   itkGetMacro(Count, CountImagePointer);
 
-  /** Get/Set the cut parameter on sigma angle. */
-  itkGetMacro(SigmaAngleCut, double);
-  itkSetMacro(SigmaAngleCut, double);
-
-  /** Get/Set the cut parameter on sigma energy. */
-  itkGetMacro(SigmaEnergyCut, double);
-  itkSetMacro(SigmaEnergyCut, double);
-
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
@@ -111,12 +103,6 @@ private:
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
   RQIType::Pointer m_QuadricOut;
-
-  /** Cut parameter on sigma angle (3 means keep all below 3*sigma) */
-  double m_SigmaAngleCut;
-
-  /** Cut parameter on sigma energy (3 means keep all below 3*sigma) */
-  double m_SigmaEnergyCut;
 
   /** Ionization potential used in the Bethe Bloch equation */
   double m_IonizationPotential;

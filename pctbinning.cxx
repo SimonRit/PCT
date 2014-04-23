@@ -35,8 +35,6 @@ int main(int argc, char * argv[])
   projection->SetProtonPairsFileName( args_info.input_arg );
   projection->SetSourceDistance( args_info.source_arg );
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
-  projection->SetSigmaAngleCut( args_info.anglecut_arg );
-  projection->SetSigmaEnergyCut( args_info.energycut_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
   projection->SetRelativeStoppingPower( args_info.rsp_flag );
 

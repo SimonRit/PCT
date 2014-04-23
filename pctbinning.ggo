@@ -9,8 +9,6 @@ option "source"     s "Source position"                                         
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
 option "mlptype"    - "Type of most likely path (schulte or polynomial)"         string          no  default="schulte"
-option "anglecut"   - "Cut parameter on the SD of proton angle. 0 disables it."  double          no  default="0."
-option "energycut"  - "Cut parameter on the SD of proton energy. 0 disables it." double          no  default="0."
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"       - "Fill holes, i.e. pixels that were not hit by protons"     flag            off
 option "rsp"        - "reconstruct RSP instead of electron density"              flag            off

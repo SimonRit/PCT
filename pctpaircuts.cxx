@@ -98,7 +98,8 @@ int main(int argc, char * argv[])
       const VectorType data = it.Get();
       ++it;
 
-      static double mag = (args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]); //Magnification (Thales theorem)
+      // Magnification (Thales theorem)
+      static double mag = (args_info.source_arg==0.)?1.:(args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
 
       const double xx = (pIn[0]*mag-imgOrigin[0]) * imgSpacingInv[0]; //x corrected (mag), converted in pixel units
       const int i = itk::Math::Round<int,double>(xx);

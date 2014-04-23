@@ -82,9 +82,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
   // Corrections
   typedef itk::Vector<double,3> VectorType;
-  VectorType source;
-  source.Fill(0.);
-  source[2] = m_SourceDistance;
 
   // Create a local copy of quadrics (surface object) for multithreading
   RQIType::Pointer quadricIn, quadricOut;
@@ -125,7 +122,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   for(unsigned int i=0; i<imgSize[2]; i++)
     {
     zmm[i] = i*imgSpacing[2]+imgOrigin[2];
-    zmag[i] = (zPlaneOutInMM-m_SourceDistance)/(zmm[i]-m_SourceDistance);
+    zmag[i] = (m_SourceDistance==0.)?1:(zPlaneOutInMM-m_SourceDistance)/(zmm[i]-m_SourceDistance);
     }
 
   // Process pairs
@@ -147,6 +144,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType dOut = it.Get();
     ++it;
+
+    if(pIn[2] > pOut[2])
+      {
+      itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
+      }
+
     const double eIn = it.Get()[0];
     const double eOut = it.Get()[1];
     double value = 0.;
@@ -175,27 +178,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         }
       }
 
-    // Compute cut on exit angle and energy with respect to straight line
-    quadricOut->SetRayOrigin(pIn);
-    double length = 0.;
-    if(quadricOut->Evaluate(dIn))
-      {
-      VectorType p = pIn  + dIn  * quadricOut ->GetFarthestDistance();
-      if(p[2]<pIn[2] || p[2]>pOut[2])
-        p = pIn  + dIn  * quadricOut ->GetNearestDistance();
-      length = (pSIn  - p).GetNorm();
-      }
-
-    // Energy cut (also requires the expected energy mean) with material hypothesis
-    if(m_SigmaEnergyCut!=0.) //default value = 0
-      {
-      double energyMean = m_ConvFunc->GetEnergy(length, eIn);
-      double sigmaEnergyCutVal = m_SigmaEnergyCut *
-                                 Functor::EnergyStragglingFunctor<double,double>::GetValue(length);
-      if(vcl_abs(eOut-energyMean)>sigmaEnergyCutVal)
-        continue;
-      }
-
     // Normalize direction with respect to z
     dIn[0] /= dIn[2];
     dIn[1] /= dIn[2];
@@ -203,24 +185,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     dOut[0] /= dOut[2];
     dOut[1] /= dOut[2];
     //dOut[2] = 1.; SR: implicit in the following
-
-    // Angle cut with material hypothesis
-    if(m_SigmaAngleCut!=0.) //default value = 0
-      {
-      const static double sigmaAngleCutSq = m_SigmaAngleCut * m_SigmaAngleCut;
-      double sigmaAngleCutVal = sigmaAngleCutSq *
-                                Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(0.,length) *
-                                Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(length);
-
-      double anglex = vcl_atan(dOut[0])-vcl_atan(dIn[0]);
-      anglex *= anglex;
-      if(anglex>sigmaAngleCutVal)
-        continue;
-      double angley = vcl_atan(dOut[1])-vcl_atan(dIn[1]);
-      angley *= angley;
-      if(angley>sigmaAngleCutVal)
-        continue;
-      }
 
     // Init MLP before mm to voxel conversion
     mlp->Init(pSIn, pSOut, dIn, dOut);
