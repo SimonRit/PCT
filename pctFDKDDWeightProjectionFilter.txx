@@ -18,11 +18,16 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
   for(unsigned int k=0; k<m_AngularWeightsAndRampFactor.size(); k++)
     {
     // Add correction factor for ramp filter
-    const double sid  = m_Geometry->GetSourceToIsocenterDistances()[k];
     const double sdd  = m_Geometry->GetSourceToDetectorDistances()[k];
-    // Zoom + factor 1/2 in eq 176, page 106, Kak & Slaney
-    const double rampFactor = sdd / (2 * sid);
-    m_AngularWeightsAndRampFactor[k] *= rampFactor;
+    if(sdd==0.) // Parallel
+      m_AngularWeightsAndRampFactor[k] *= 0.5;
+    else        // Divergent
+      {
+      // Zoom + factor 1/2 in eq 176, page 106, Kak & Slaney
+      const double sid  = m_Geometry->GetSourceToIsocenterDistances()[k];
+      const double rampFactor = sdd / (2. * sid);
+      m_AngularWeightsAndRampFactor[k] *= rampFactor;
+      }
     }
 }
 
@@ -61,24 +66,41 @@ FDKDDWeightProjectionFilter<TInputImage, TOutputImage>
       {
       typename InputImageType::PointType point = pointBase;
       point[1] = pointBase[1]
-                 + m_Geometry->GetSourceOffsetsY()[l]
-                 - m_Geometry->GetProjectionOffsetsY()[l];
+                 + m_Geometry->GetProjectionOffsetsY()[l]
+                 - m_Geometry->GetSourceOffsetsY()[l];
       const double sdd  = m_Geometry->GetSourceToDetectorDistances()[l];
+      const double sid  = m_Geometry->GetSourceToIsocenterDistances()[l];
       const double sdd2 = sdd * sdd;
-      double weight = sdd  * m_AngularWeightsAndRampFactor[l];
-      for(unsigned int j=outputRegionForThread.GetIndex(1);
-                       j<outputRegionForThread.GetIndex(1)+outputRegionForThread.GetSize(1);
-                       j++, point[1] += pointIncrement[1])
+      if(sdd != 0.) // Divergent
         {
-        point[0] = pointBase[0]
-                   + m_Geometry->GetSourceOffsetsX()[l]
-                   - m_Geometry->GetProjectionOffsetsX()[l];
-        const double sdd2y2 = sdd2 + point[1]*point[1];
-        for(unsigned int i=outputRegionForThread.GetIndex(0);
-                         i<outputRegionForThread.GetIndex(0)+outputRegionForThread.GetSize(0);
-                         i++, ++itI, ++itO, point[0] += pointIncrement[0])
+        const double tauOverD  = m_Geometry->GetSourceOffsetsX()[l] / sid;
+        const double tauOverDw = m_AngularWeightsAndRampFactor[l] * tauOverD;
+        const double sddw      = m_AngularWeightsAndRampFactor[l] * sdd;
+        for(unsigned int j=0;
+                         j<outputRegionForThread.GetSize(1);
+                         j++, point[1] += pointIncrement[1])
           {
-          itO.Set( itI.Get() * weight / sqrt( sdd2y2 + point[0]*point[0]) );
+          point[0] = pointBase[0]
+                     + m_Geometry->GetProjectionOffsetsX()[l]
+                     - m_Geometry->GetSourceOffsetsX()[l];
+          const double sdd2y2 = sdd2 + point[1]*point[1];
+          for(unsigned int i=0;
+                           i<outputRegionForThread.GetSize(0);
+                           i++, ++itI, ++itO, point[0] += pointIncrement[0])
+            {
+            // The term between parentheses comes from the publication
+            // [Gullberg Crawford Tsui, TMI, 1986], equation 18
+            itO.Set( itI.Get() * (sddw - tauOverDw * point[0]) / sqrt( sdd2y2 + point[0]*point[0]) );
+            }
+          }
+        }
+      else // Parallel
+        {
+        double weight = m_AngularWeightsAndRampFactor[l];
+        for(unsigned int j=0; j<outputRegionForThread.GetSize(1); j++)
+          {
+          for(unsigned int i=0; i<outputRegionForThread.GetSize(0); i++, ++itI, ++itO)
+            itO.Set( itI.Get() * weight);
           }
         }
       }

@@ -60,6 +60,7 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   for(unsigned int iProj=iFirstProj; iProj<iFirstProj+nProj; iProj++)
     {
     const double sid = geometry->GetSourceToIsocenterDistances()[iProj];
+    const double sdd = geometry->GetSourceToDetectorDistances()[iProj];
 
     // Extract the current slice
     ProjectionImagePointer projection = this->GetDDProjection(iProj);
@@ -67,40 +68,74 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
 
     // Index to index matrix normalized to have a correct backprojection weight
     // (1 at the isocenter)
-    ProjectionMatrixType matrix = GetIndexToIndexProjectionMatrix(iProj, projection);
-    double perspFactor = matrix[Dimension-1][Dimension];
-    for(unsigned int j=0; j<Dimension; j++)
-      perspFactor += matrix[Dimension-1][j] * rotCenterIndex[j];
-    matrix /= perspFactor;
+    ProjectionMatrixType matrix;
+    if(sdd==0.)
+      {
+      itk::Matrix<double, Dimension+1, Dimension+1> matrixVol =
+            rtk::GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
+      itk::Matrix<double, Dimension+1, Dimension+1> matrixStackProj =
+            rtk::GetPhysicalPointToIndexMatrix< TOutputImage >( projection );
+      matrix = matrixStackProj.GetVnlMatrix() *
+               geometry->GetRotationMatrices()[iProj].GetVnlMatrix() *
+               matrixVol.GetVnlMatrix();
+      }
+    else
+      {
+      matrix = GetIndexToIndexProjectionMatrix(iProj, projection);
+      double perspFactor = matrix[Dimension-1][Dimension];
+      for(unsigned int j=0; j<Dimension; j++)
+        perspFactor += matrix[Dimension-1][j] * rotCenterIndex[j];
+      matrix /= perspFactor;
+      }
+
 
     // Go over each voxel
     itOut.GoToBegin();
     while(!itOut.IsAtEnd() )
       {
-      // Compute projection index
-      for(unsigned int i=0; i<Dimension-1; i++)
+      if(sdd==0.) // Parallel
         {
-        pointProj[i] = matrix[i][Dimension];
+        // Compute projection index
+        for(unsigned int i=0; i<Dimension; i++)
+          {
+          pointProj[i] = matrix[i][Dimension];
+          for(unsigned int j=0; j<Dimension; j++)
+            pointProj[i] += matrix[i][j] * itOut.GetIndex()[j];
+          }
+
+        // Interpolate if in projection
+        if( interpolator->IsInsideBuffer(pointProj) )
+          {
+          itOut.Set( itOut.Get() + interpolator->EvaluateAtContinuousIndex(pointProj) );
+          }
+        }
+      else // Cone-beam
+        {
+        // Compute projection index
+        for(unsigned int i=0; i<Dimension-1; i++)
+          {
+          pointProj[i] = matrix[i][Dimension];
+          for(unsigned int j=0; j<Dimension; j++)
+            pointProj[i] += matrix[i][j] * itOut.GetIndex()[j];
+          }
+
+        // Apply perspective
+        double perspFactor = matrix[Dimension-1][Dimension];
         for(unsigned int j=0; j<Dimension; j++)
-          pointProj[i] += matrix[i][j] * itOut.GetIndex()[j];
+          perspFactor += matrix[Dimension-1][j] * itOut.GetIndex()[j];
+        perspFactor = 1/perspFactor;
+        for(unsigned int i=0; i<Dimension-1; i++)
+          pointProj[i] = pointProj[i]*perspFactor;
+
+        // Distance driven
+        pointProj[Dimension-1] = (sid / perspFactor - sid - m_ProjectionStack->GetOrigin()[Dimension-1]) / m_ProjectionStack->GetSpacing()[Dimension-1];
+        // Interpolate if in projection
+        if( interpolator->IsInsideBuffer(pointProj) )
+          {
+          itOut.Set( itOut.Get() + perspFactor*perspFactor*interpolator->EvaluateAtContinuousIndex(pointProj) );
+          }
         }
 
-      // Apply perspective
-      double perspFactor = matrix[Dimension-1][Dimension];
-      for(unsigned int j=0; j<Dimension; j++)
-        perspFactor += matrix[Dimension-1][j] * itOut.GetIndex()[j];
-      perspFactor = 1/perspFactor;
-      for(unsigned int i=0; i<Dimension-1; i++)
-        pointProj[i] = pointProj[i]*perspFactor;
-
-      // Distance driven
-      pointProj[Dimension-1] = (sid / perspFactor - sid - m_ProjectionStack->GetOrigin()[Dimension-1]) / m_ProjectionStack->GetSpacing()[Dimension-1];
-
-      // Interpolate if in projection
-      if( interpolator->IsInsideBuffer(pointProj) )
-        {
-        itOut.Set( itOut.Get() + perspFactor*perspFactor*interpolator->EvaluateAtContinuousIndex(pointProj) );
-        }
       ++itOut;
       }
     }
