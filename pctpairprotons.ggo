@@ -7,6 +7,6 @@ option "inputOut"  j "Root phase space file of particles after object"          
 option "output"    o "Output file name"                                          string  yes
 option "planeIn"   - "Plane position of incoming protons" double    yes
 option "planeOut"  - "Plane position of outgoing protons" double    yes
-option "minRun"    - "Minimum run (inclusive)"                      int       yes
-option "maxRun"    - "Maximum run (exclusive)"                      int       yes
+option "minRun"    - "Minimum run (inclusive)"                      int       no  default="0"
+option "maxRun"    - "Maximum run (exclusive)"                      int       no  default="1000000"
 option "nonuclear" - "Remove inelastic nuclear collisions"          flag      off
