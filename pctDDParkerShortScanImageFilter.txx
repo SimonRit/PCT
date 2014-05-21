@@ -14,7 +14,7 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
                        rtk::ThreadIdType itkNotUsed(threadId) )
 {
   // Get angular gaps and max gap
-  std::vector<double> angularGaps = m_Geometry->GetAngularGapsWithNext();
+  std::vector<double> angularGaps = m_Geometry->GetAngularGapsWithNext( m_Geometry->GetGantryAngles() );
   int                 nProj = angularGaps.size();
   int                 maxAngularGapPos = 0;
   for(int iProj=1; iProj<nProj; iProj++)
@@ -28,7 +28,9 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
   itOut.GoToBegin();
 
   // Not a short scan if less than 20 degrees max gap, => nothing to do
-  if( angularGaps[maxAngularGapPos] < itk::Math::pi / 9 )
+  // FIXME: do nothing in parallel geometry, currently handled with a trick in the geometry object
+  if( m_Geometry->GetSourceToDetectorDistances()[0] == 0. ||
+      angularGaps[maxAngularGapPos] < itk::Math::pi / 9 )
     {
     if(this->GetInput() != this->GetOutput() ) // If not in place, copy is
                                                // required
@@ -61,7 +63,7 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
   typename itk::ImageRegionIteratorWithIndex<WeightImageType> itWeights(weights, weights->GetLargestPossibleRegion() );
 
   const std::vector<double> rotationAngles = m_Geometry->GetGantryAngles();
-  const std::multimap<double,unsigned int> sortedAngles = m_Geometry->GetSortedAngles();
+  const std::multimap<double,unsigned int> sortedAngles = m_Geometry->GetSortedAngles( m_Geometry->GetGantryAngles() );
   const double detectorWidth = this->GetInput()->GetSpacing()[0] *
                                this->GetInput()->GetLargestPossibleRegion().GetSize()[0];
 
@@ -79,40 +81,42 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
   itLastAngle = (itLastAngle==sortedAngles.begin())?--sortedAngles.end():--itLastAngle;
   double lastAngle = itLastAngle->first;
   if(lastAngle<firstAngle)
-    lastAngle += 360;
+    lastAngle += 2*M_PI;
   //Delta
-  double delta = 0.5 * (lastAngle - firstAngle - 180);
-  delta = delta-360*floor(delta/360); // between -360 and 360
-  delta *= itk::Math::pi / 180;       // degrees to radians
+  double delta = 0.5 * (lastAngle - firstAngle - M_PI);
+  delta = delta - 2*M_PI*floor( delta / (2*M_PI) ); // between -2*PI and 2*PI
 
-  double invsdd = 1/m_Geometry->GetSourceToDetectorDistances()[itIn.GetIndex()[3]];
-  if( delta < atan(0.5 * detectorWidth * invsdd) )
+  double sox = m_Geometry->GetSourceOffsetsX()[itIn.GetIndex()[2]];
+  double sid = m_Geometry->GetSourceToIsocenterDistances()[itIn.GetIndex()[2]];
+  double invsid = 1./sqrt(sid*sid+sox*sox);
+  if( delta < atan(0.5 * detectorWidth * invsid) )
     itkWarningMacro(<< "You do not have enough data for proper Parker weighting (short scan)"
-                    << "Delta is " << delta*180./M_PI
-                    << " degree and should be more than half the beam angle, i.e. "
-                    << atan(0.5 * detectorWidth * invsdd)*180./M_PI << " degree.");
+                    << "Delta is " << delta*180./itk::Math::pi
+                    << " degrees and should be more than half the beam angle, i.e. "
+                    << atan(0.5 * detectorWidth * invsid)*180./itk::Math::pi << " degrees.");
 
   for(unsigned int l=0; l<outputRegionForThread.GetSize(3); l++)
     {
-    invsdd = 1/m_Geometry->GetSourceToDetectorDistances()[itIn.GetIndex()[3]];
+    sox = m_Geometry->GetSourceOffsetsX()[itIn.GetIndex()[3]];
+    sid = m_Geometry->GetSourceToIsocenterDistances()[itIn.GetIndex()[3]];
+    invsid = 1./sqrt(sid*sid+sox*sox);
 
     // Prepare weights for current slice (depends on ProjectionOffsetsX)
     typename WeightImageType::PointType point;
     weights->TransformIndexToPhysicalPoint(itWeights.GetIndex(), point);
-    point[0] -= m_Geometry->GetProjectionOffsetsX()[itIn.GetIndex()[3]];
 
     // Parker's article assumes that the scan starts at 0, convert projection
     // angle accordingly
     double beta = rotationAngles[ itIn.GetIndex()[3] ];
     beta = beta - firstAngle;
     if (beta<0)
-      beta += 360;
-    beta *= itk::Math::pi / 180;
+      beta += 2*M_PI;
 
     itWeights.GoToBegin();
     while(!itWeights.IsAtEnd() )
       {
-      double alpha = atan( -1 * point[0] * invsdd );
+      const double l = m_Geometry->ToUntiltedCoordinateAtIsocenter(itIn.GetIndex()[3], point[0]);
+      double alpha = atan( -1 * l * invsid );
       if(beta <= 2*delta-2*alpha)
         itWeights.Set( 2. * pow(sin( (itk::Math::pi*beta) / (4*(delta-alpha) ) ), 2.) );
       else if(beta <= itk::Math::pi-2*alpha)
