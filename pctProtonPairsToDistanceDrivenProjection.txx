@@ -228,7 +228,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   }
   if(threadId==0)
     {
-    std::cout << std::endl << "Done!" << std::endl;
+    std::cout << '\r'
+              << region.GetSize(1) << " pairs of protons processed (100%) in thread 1"
+              << std::endl;
 #ifdef MLP_TIMING
     mlp->PrintTiming(std::cout);
 #endif
