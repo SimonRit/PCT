@@ -250,6 +250,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   // Merge the projection computed in each thread to the first one
   for(int i=1; i<this->GetNumberOfThreads(); i++)
     {
+    if(m_Outputs[i].GetPointer() == NULL)
+      continue;
     ImageIteratorType itOutThread(m_Outputs[i], m_Outputs[i]->GetLargestPossibleRegion());
     ImageCountIteratorType itCOutThread(m_Counts[i], m_Outputs[i]->GetLargestPossibleRegion());
 
