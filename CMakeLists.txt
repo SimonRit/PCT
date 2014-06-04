@@ -30,6 +30,10 @@ FIND_PACKAGE(CLHEP 2.0 REQUIRED)
 INCLUDE_DIRECTORIES(${CLHEP_INCLUDE_DIRS})
 #INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/CLHEP")
 
+IF(NOT ITK_USE_FFTWD OR NOT ITK_USE_FFTWF)
+    MESSAGE(FATAL_ERROR "You must recompile ITK with ITK_USE_FFTWF and ITK_USE_FFTWD. Then, recompile RTK first and pct second.")
+ENDIF()
+
 #=========================================================
 # Geant4 stuff
 OPTION(PCT_WITH_GEANT4 "Use Geant4" OFF)
