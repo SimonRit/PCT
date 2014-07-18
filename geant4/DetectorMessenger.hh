@@ -23,40 +23,63 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: DetectorMessenger.hh,v 1.2 2006-06-29 16:35:31 gunter Exp $
-// GEANT4 tag $Name: not supported by cvs2svn $
+/// \file hadronic/Hadr01/include/DetectorMessenger.hh
+/// \brief Definition of the DetectorMessenger class
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// $Id: DetectorMessenger.hh 77255 2013-11-22 10:09:14Z gcosmo $
+//
+/////////////////////////////////////////////////////////////////////////
+//
+// DetectorMessenger
+//
+// Created: 31.01.03 V.Ivanchenko
+//
+// Modified:
+// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
+// 16.11.2006 Add beamCmd (V.Ivanchenko)
+//
+////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef DetectorMessenger_h
 #define DetectorMessenger_h 1
 
-#include "G4UImessenger.hh"
 #include "globals.hh"
+#include "G4UImessenger.hh"
 
 class DetectorConstruction;
 class G4UIdirectory;
+class G4UIcmdWithABool;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class DetectorMessenger: public G4UImessenger
 {
-  public:
-  
-    DetectorMessenger(DetectorConstruction* );
-   ~DetectorMessenger();
-    
-    void SetNewValue(G4UIcommand*, G4String);
-    
-  private:
-  
-    DetectorConstruction*   Detector;
-    
-    G4UIdirectory*             testemDir;
-    G4UIdirectory*             detDir;
-    G4UIcmdWithAString*        MaterCmd;
+public:
+
+  DetectorMessenger(DetectorConstruction* );
+  virtual ~DetectorMessenger();
+
+  virtual void SetNewValue(G4UIcommand*, G4String);
+
+private:
+
+  DetectorConstruction* fDetector;
+
+  G4UIdirectory*             fTestDir;
+  G4UIcmdWithAString*        fMatCmd;
+  G4UIcmdWithAString*        fMat1Cmd;
+  G4UIcmdWithADoubleAndUnit* fRCmd;
+  G4UIcmdWithADoubleAndUnit* fLCmd;
+  G4UIcmdWithADoubleAndUnit* fEdepCmd;
+  G4UIcmdWithAnInteger*      fBinCmd;
+  G4UIcmdWithAnInteger*      fNOfAbsCmd;
+  G4UIcmdWithAnInteger*      fVerbCmd;
+  G4UIcmdWithABool*          fBeamCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

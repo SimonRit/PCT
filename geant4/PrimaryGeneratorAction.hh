@@ -23,39 +23,51 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.2 2006-06-29 16:35:40 gunter Exp $
-// GEANT4 tag $Name: not supported by cvs2svn $
+/// \file hadronic/Hadr01/include/PrimaryGeneratorAction.hh
+/// \brief Definition of the PrimaryGeneratorAction class
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//
+// $Id: PrimaryGeneratorAction.hh 68803 2013-04-05 13:59:55Z gcosmo $
+//
+//
+/////////////////////////////////////////////////////////////////////////
+//
+// PrimaryGeneratorAction
+//
+// Created: 31.01.03 V.Ivanchenko
+//
+// Modified:
+// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
+//
+////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
 #include "globals.hh"
 
-class G4Event;
-class DetectorConstruction;
+class G4ParticleGun;
+class HistoManager;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
-  public:
-    PrimaryGeneratorAction(DetectorConstruction*);    
-   ~PrimaryGeneratorAction();
+public:
+  PrimaryGeneratorAction();
+  virtual ~PrimaryGeneratorAction();
 
-  public:
-    void SetDefaultKinematic();
-    void GeneratePrimaries(G4Event*);
-    
-    G4ParticleGun* GetParticleGun() {return particleGun;}
+  virtual void GeneratePrimaries(G4Event*);
 
-  private:
-    G4ParticleGun*             particleGun;
-    DetectorConstruction*      Detector;  
+private:
+
+  PrimaryGeneratorAction & operator=(const PrimaryGeneratorAction &right);
+  PrimaryGeneratorAction(const PrimaryGeneratorAction&);
+
+  G4ParticleGun*   fParticleGun;
+  HistoManager*    fHisto; 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

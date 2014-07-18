@@ -23,61 +23,54 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/include/G4EmUserPhysics.hh
+/// \brief Definition of the G4EmUserPhysics class
 //
+// $Id: G4EmUserPhysics.hh 70761 2013-06-05 12:30:51Z gcosmo $
 //
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
+//---------------------------------------------------------------------------
 //
+// ClassName:   G4EmUserPhysics
 //
-/////////////////////////////////////////////////////////////////////////
-//
-// PhysicsListMessenger
-//
-// Created: 31.01.2006 V.Ivanchenko
+// Author:      V.Ivanchenko 11.07.2012
 //
 // Modified:
-// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
 //
-////////////////////////////////////////////////////////////////////////
-// 
+//----------------------------------------------------------------------------
+//
+// This class shows how extra EM options can be defined on top of
+// any reference Physics List
+//
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+#ifndef G4EmUserPhysics_h
+#define G4EmUserPhysics_h 1
 
+#include "G4VPhysicsConstructor.hh"
 #include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+class G4EmUserPhysics : public G4VPhysicsConstructor
 {
 public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
+
+  G4EmUserPhysics(G4int ver = 1);
+
+  virtual ~G4EmUserPhysics();
+
+  virtual void ConstructParticle();
+  virtual void ConstructProcess();
+
 private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
+  G4int  fVerbose;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+
+
+
+
+
 

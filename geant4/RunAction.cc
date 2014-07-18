@@ -23,61 +23,71 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/src/RunAction.cc
+/// \brief Implementation of the RunAction class
 //
+// $Id: RunAction.hh,v 1.1 2008-07-07 16:37:26 vnivanch Exp $
 //
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
+// -------------------------------------------------------------
+//  
+//    GEANT4 class file
+//    RunAction
 //
-//
-/////////////////////////////////////////////////////////////////////////
-//
-// PhysicsListMessenger
-//
-// Created: 31.01.2006 V.Ivanchenko
-//
-// Modified:
-// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
-//
-////////////////////////////////////////////////////////////////////////
-// 
+// -------------------------------------------------------------
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+#include "RunAction.hh"
+#include "HistoManager.hh"
+#include "G4UImanager.hh"
+#include "G4VVisManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+RunAction::RunAction()
+ : G4UserRunAction()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+RunAction::~RunAction()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RunAction::BeginOfRunAction(const G4Run* aRun)
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
-private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
-};
+  G4int id = aRun->GetRunID();
+  G4cout << "### Run " << id << " start" << G4endl;
+  (HistoManager::GetPointer())->BeginOfRun();
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#ifdef G4VIS_USE
+  G4UImanager* UI = G4UImanager::GetUIpointer();
 
+  G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+
+  if(pVVisManager)
+  {
+    UI->ApplyCommand("/vis/scene/notifyHandlers");
+  }
 #endif
 
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RunAction::EndOfRunAction(const G4Run*)
+{
+
+  G4cout << "RunAction: End of run actions are started" << G4endl;
+  (HistoManager::GetPointer())->EndOfRun();
+
+#ifdef G4VIS_USE
+  if (G4VVisManager::GetConcreteInstance())
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
+#endif
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

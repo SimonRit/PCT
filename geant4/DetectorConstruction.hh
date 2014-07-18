@@ -23,67 +23,71 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file hadronic/Hadr01/include/DetectorConstruction.hh
+/// \brief Definition of the DetectorConstruction class
 //
-// $Id: DetectorConstruction.hh,v 1.2 2006-06-29 16:35:29 gunter Exp $
-// GEANT4 tag $Name: not supported by cvs2svn $
+// $Id: DetectorConstruction.hh 77255 2013-11-22 10:09:14Z gcosmo $
 //
+/////////////////////////////////////////////////////////////////////////
+//
+// DetectorConstruction
+//
+// Created: 31.01.2003 V.Ivanchenko
+//
+// Modified:
+// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
+//
+////////////////////////////////////////////////////////////////////////
 // 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
+#include "G4Material.hh"
 
+class CheckVolumeSD;
+class TargetSD;
 class G4LogicalVolume;
-class G4Material;
 class DetectorMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
-  
-    DetectorConstruction();
-   ~DetectorConstruction();
+public:
 
-  public:
-  
-     G4VPhysicalVolume* Construct();
-             
-     void SetMaterial (G4String);            
-     
-  public:
-  
-     const
-     G4VPhysicalVolume* GetWorld()      {return pBox;};           
-                    
-     G4double           GetSize()       {return BoxSize;};      
-     G4Material*        GetMaterial()   {return aMaterial;};
-     
-     void               PrintParameters();
-                       
-  private:
-  
-     G4VPhysicalVolume*    pBox;
-     
-     G4double              BoxSize;
-     G4Material*           aMaterial;     
-     
-     DetectorMessenger* detectorMessenger;
+  DetectorConstruction();
+  virtual ~DetectorConstruction();
 
-  private:
-    
-     void               DefineMaterials();
-     G4VPhysicalVolume* ConstructVolumes();     
+  virtual G4VPhysicalVolume* Construct();
+  virtual void ConstructSDandField();
+
+  void SetWorldMaterial(const G4String&);
+  void SetTargetMaterial(const G4String&);
+
+  void SetTargetRadius(G4double val);
+
+private:
+
+  DetectorConstruction & operator=(const DetectorConstruction &right);
+  DetectorConstruction(const DetectorConstruction&);
+
+  G4double fRadius;
+
+  G4Material*  fTargetMaterial;
+  G4Material*  fWorldMaterial;
+
+  G4LogicalVolume* fLogicTarget;
+  G4LogicalVolume* fLogicCheck;
+  G4LogicalVolume* fLogicWorld;
+
+  DetectorMessenger* fDetectorMessenger;
+
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 #endif
 

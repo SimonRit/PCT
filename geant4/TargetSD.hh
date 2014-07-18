@@ -23,18 +23,16 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/include/TargetSD.hh
+/// \brief Definition of the TargetSD class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: TargetSD.hh 68803 2013-04-05 13:59:55Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// TargetSD
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.01.2003 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
@@ -42,42 +40,39 @@
 ////////////////////////////////////////////////////////////////////////
 // 
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+#ifndef TargetSD_h
+#define TargetSD_h 1
 
+#include "G4VSensitiveDetector.hh"
 #include "globals.hh"
-#include "G4UImessenger.hh"
 
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+class G4Step;
+class G4TouchableHistory;
+class G4HCofThisEvent;
+class HistoManager;
 
-class PhysicsListMessenger: public G4UImessenger
+class TargetSD : public G4VSensitiveDetector
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
+public: // Without description
+
+  TargetSD(const G4String&);
+  virtual ~TargetSD();
+
+  virtual void Initialize(G4HCofThisEvent*);
+  virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*);
+  virtual void EndOfEvent(G4HCofThisEvent*);
+  virtual void clear();
+  virtual void PrintAll();
+
 private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
+
+  HistoManager*  fHisto;
+
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 #endif
 

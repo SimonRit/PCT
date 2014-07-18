@@ -23,45 +23,75 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file hadronic/Hadr01/include/EventAction.hh
+/// \brief Definition of the EventAction class
 //
-// $Id: PhysListEmStandard.hh,v 1.2 2006-06-29 16:35:33 gunter Exp $
-// GEANT4 tag $Name: not supported by cvs2svn $
+// $Id: EventAction.hh 70761 2013-06-05 12:30:51Z gcosmo $
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/////////////////////////////////////////////////////////////////////////
+//
+// EventAction
+//
+// Created: 21.06.2008 V.Ivanchenko
+//
+// Modified:
+//
+////////////////////////////////////////////////////////////////////////
+// 
 
-#ifndef PhysListEmStandard_h
-#define PhysListEmStandard_h 1
-
-#include "G4VPhysicsConstructor.hh"
-#include "globals.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class PhysListEmStandard : public G4VPhysicsConstructor
-{
-  public: 
-    PhysListEmStandard(const G4String& name = "standard");
-   ~PhysListEmStandard();
-
-  public: 
-    // This method is dummy for physics
-    void ConstructParticle() {};
+#ifndef EventAction_h
+#define EventAction_h 1
  
-    // This method will be invoked in the Construct() method.
-    // each physics process will be instantiated and
-    // registered to the process manager of each particle type 
-    void ConstructProcess();
+#include "G4UserEventAction.hh"
+#include "globals.hh"
+#include <vector>
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+class G4Event;
+class EventActionMessenger;
+class G4UImanager;
+
+class EventAction : public G4UserEventAction
+{
+public: // Without description
+
+  EventAction();
+  virtual ~EventAction();
+
+  virtual void BeginOfEventAction(const G4Event*);
+  virtual void   EndOfEventAction(const G4Event*);
+
+  inline void SetPrintModulo(G4int val);
+  inline void AddEventToDebug(G4int val);
+
+private:
+
+  EventAction & operator=(const EventAction &right);
+  EventAction(const EventAction&);
+
+  EventActionMessenger* fEventMessenger;
+  G4UImanager*          fUI;
+  std::vector<G4int>    fSelectedEvents;
+
+  G4int        fPrintModulo;
+  G4int        fSelected;
+
+  G4bool       fDebugStarted;
+
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+inline void EventAction::SetPrintModulo(G4int val)   
+{ 
+  fPrintModulo = val;
+}
+ 
+inline void EventAction::AddEventToDebug(G4int val)  
+{ 
+  fSelectedEvents.push_back(val);
+  ++fSelected;
+}
 
 #endif
-
-
-
-
-
-
 
 

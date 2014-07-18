@@ -23,61 +23,66 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/src/EventActionMessenger.cc
+/// \brief Implementation of the EventActionMessenger class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: EventActionMessenger.cc 70761 2013-06-05 12:30:51Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// EventActionMessenger
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.01.03 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
 //
 ////////////////////////////////////////////////////////////////////////
-// 
+//
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+#include "EventActionMessenger.hh"
 
-#include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+#include "EventAction.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+EventActionMessenger::EventActionMessenger(EventAction* evAct)
+  : G4UImessenger(), fEventAction(evAct),
+    fPrintCmd(0), fCmd(0)
+{   
+  fPrintCmd = new G4UIcmdWithAnInteger("/testhadr/PrintModulo",this);
+  fPrintCmd->SetGuidance("Print events modulo n");
+  fPrintCmd->SetParameterName("EventNb",false);
+  fPrintCmd->SetRange("EventNb>0");
+  fPrintCmd->AvailableForStates(G4State_PreInit,G4State_Idle);      
+
+  fCmd = new G4UIcmdWithAnInteger("/testhadr/DebugEvent",this);
+  fCmd->SetGuidance("D event to debug");
+  fCmd->SetParameterName("fNb",false);
+  fCmd->SetRange("fNb>0");
+  fCmd->AvailableForStates(G4State_PreInit,G4State_Idle);      
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+EventActionMessenger::~EventActionMessenger()
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
-private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
-};
+  delete fPrintCmd;   
+  delete fCmd;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+void EventActionMessenger::SetNewValue(G4UIcommand* command,
+                                       G4String newValue)
+{ 
+  if(command == fPrintCmd)
+    {fEventAction->SetPrintModulo(fPrintCmd->GetNewIntValue(newValue));}
+  if(command == fCmd)
+    {fEventAction->AddEventToDebug(fCmd->GetNewIntValue(newValue));}
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

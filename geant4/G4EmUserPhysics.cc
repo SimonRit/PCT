@@ -23,56 +23,77 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
+/// \file hadronic/Hadr01/src/G4EmUserPhysics.cc
+/// \brief Implementation of the G4EmUserPhysics class
 //
-// $Id: PrimaryGeneratorAction.cc 70761 2013-06-05 12:30:51Z gcosmo $
+// $Id: G4EmUserPhysics.cc 70761 2013-06-05 12:30:51Z gcosmo $
 //
-/////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------------
 //
-// PrimaryGeneratorAction
+// ClassName:   G4EmUserPhysics
 //
-// Created: 31.01.03 V.Ivanchenko
+// Author:      V.Ivanchenko 11.07.2012
 //
 // Modified:
-// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
-// 16.11.2006 Add option allowing to have user defined beam position (VI)
 //
-////////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------
 //
 
-#include "PrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
+#include "G4EmUserPhysics.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4LossTableManager.hh"
+#include "G4VEnergyLossProcess.hh"
+#include "G4VProcess.hh"
+#include "G4EmProcessOptions.hh"
+#include "G4AntiProton.hh"
+#include "G4ProcessManager.hh"
+#include "G4ProcessVector.hh"
+#include "G4EmProcessSubType.hh"
 #include "G4SystemOfUnits.hh"
-#include "HistoManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction(),
-   fParticleGun(0), fHisto(0)
+G4EmUserPhysics::G4EmUserPhysics(G4int ver)
+  : G4VPhysicsConstructor("User EM Options"), fVerbose(ver)
 {
-  fParticleGun  = new G4ParticleGun(1);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  fHisto = HistoManager::GetPointer();
+  G4LossTableManager::Instance();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+G4EmUserPhysics::~G4EmUserPhysics()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void G4EmUserPhysics::ConstructParticle()
 {
-  delete fParticleGun;
+  G4AntiProton::AntiProton();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void G4EmUserPhysics::ConstructProcess()
 {
-  if(fHisto->DefaultBeamPosition()) {
-    G4double zVertex = -(5.0*mm + fHisto->Length());
-    fParticleGun->SetParticlePosition(G4ThreeVector(0.,0.,zVertex));
+  const G4ParticleDefinition* pbar = G4AntiProton::AntiProton();
+  G4ProcessManager* pmanager = pbar->GetProcessManager();
+  G4ProcessVector* pv = pmanager->GetProcessList(); 
+  size_t nn = pv->size();
+  for(size_t i=0; i<nn; ++i) {
+    G4VProcess* proc = (*pv)[i];
+    if(fIonisation == proc->GetProcessSubType()) {
+      G4VEnergyLossProcess* eloss = static_cast<G4VEnergyLossProcess*>(proc);
+      G4double elim = 1.e-6*eV;
+      eloss->SetLowestEnergyLimit(elim);
+      G4cout << "### G4EmUserPhysics::ConstructProcess: "
+             << "set new lowest energy limit " << elim/eV << " eV for "
+             << pbar->GetParticleName() << G4endl;
+      break;
+    }
   }
-  fParticleGun->GeneratePrimaryVertex(anEvent);
+
+  G4EmProcessOptions opt;
+  opt.SetVerbose(fVerbose);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

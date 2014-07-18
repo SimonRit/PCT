@@ -23,18 +23,16 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/src/TargetSD.cc
+/// \brief Implementation of the TargetSD class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: TargetSD.cc 70761 2013-06-05 12:30:51Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// TargetSD
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.01.2003 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
@@ -42,42 +40,53 @@
 ////////////////////////////////////////////////////////////////////////
 // 
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
-
-#include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+#include "TargetSD.hh"
+#include "HistoManager.hh"
+#include "G4HCofThisEvent.hh"
+#include "G4TouchableHistory.hh"
+#include "G4Step.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+TargetSD::TargetSD(const G4String& name)
+ :G4VSensitiveDetector(name), fHisto(0)
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
-private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
-};
+  fHisto = HistoManager::GetPointer();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+TargetSD::~TargetSD()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TargetSD::Initialize(G4HCofThisEvent*)
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool TargetSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
+{
+  fHisto->AddTargetStep(aStep);
+  return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TargetSD::EndOfEvent(G4HCofThisEvent*)
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TargetSD::clear()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
+void TargetSD::PrintAll()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

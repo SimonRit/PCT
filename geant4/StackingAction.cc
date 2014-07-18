@@ -23,18 +23,16 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/src/StackingAction.cc
+/// \brief Implementation of the StackingAction class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: StackingAction.cc 70761 2013-06-05 12:30:51Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// StackingAction
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.04.2006 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
@@ -42,42 +40,73 @@
 ////////////////////////////////////////////////////////////////////////
 // 
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
-
-#include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+#include "StackingAction.hh"
+#include "HistoManager.hh"
+#include "StackingMessenger.hh"
+#include "G4Track.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
+#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+StackingAction::StackingAction()
+ : G4UserStackingAction(),
+   fHistoManager(0), fStackMessenger(0), fParticle(0) 
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
-private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
-};
+  fStackMessenger = new StackingMessenger(this);
+  fHistoManager   = HistoManager::GetPointer();
+  fKillSecondary  = false;
+  fParticle       = 0; 
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+StackingAction::~StackingAction()
+{
+  delete fStackMessenger;
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4ClassificationOfNewTrack
+StackingAction::ClassifyNewTrack(const G4Track* aTrack)
+{
+  G4ClassificationOfNewTrack status = fUrgent;
+
+  if (aTrack->GetTrackStatus() == fAlive) {
+    fHistoManager->ScoreNewTrack(aTrack);
+  }
+
+  const G4ParticleDefinition* part = aTrack->GetDefinition();
+
+  if(fHistoManager->GetVerbose() > 1 ) {
+    G4cout << "Track #"
+           << aTrack->GetTrackID() << " of " << part->GetParticleName()
+           << " E(MeV)= " << aTrack->GetKineticEnergy()/MeV
+           << " produced by Track ID= " << aTrack->GetParentID()
+           << G4endl;
+  }
+
+  //stack or delete secondaries
+  if(aTrack->GetTrackID() > 1) {  
+    if (fKillSecondary || fParticle == part) { status = fKill; }
+  }
+  return status;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void StackingAction::SetKillStatus(G4bool value)    
+{ 
+  fKillSecondary = value;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void StackingAction::SetKill(const G4String& name)  
+{ 
+  fParticle = G4ParticleTable::GetParticleTable()->FindParticle(name);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -23,16 +23,23 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file hadronic/Hadr01/include/PhysicsList.hh
+/// \brief Definition of the PhysicsList class
 //
-// $Id: PhysicsList.hh,v 1.2 2006-06-29 16:35:35 gunter Exp $
-// GEANT4 tag $Name: not supported by cvs2svn $
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// $Id: PhysicsList.hh 68803 2013-04-05 13:59:55Z gcosmo $
 //
-// 14.10.02 (V.Ivanchenko) provide modular list on base of old PhysicsList
+/////////////////////////////////////////////////////////////////////////
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// PhysicsList
+//
+// Created: 31.04.2006 V.Ivanchenko
+//
+// Modified:
+// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
+//
+////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef PhysicsList_h
 #define PhysicsList_h 1
@@ -40,36 +47,48 @@
 #include "G4VModularPhysicsList.hh"
 #include "globals.hh"
 
-class PhysicsListMessenger;
 class G4VPhysicsConstructor;
+class PhysicsListMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PhysicsList: public G4VModularPhysicsList
 {
-  public:
-    PhysicsList();
-   ~PhysicsList();
+public:
 
-    void ConstructParticle();
-    void ConstructProcess();
-    void AddPhysicsList(const G4String& name);
+  PhysicsList();
+  virtual ~PhysicsList();
 
-    void SetCuts();
-    void SetCutForGamma(G4double);
-    void SetCutForElectron(G4double);
-    void SetCutForPositron(G4double);
-      
-  private:
-    G4double cutForGamma;
-    G4double cutForElectron;
-    G4double cutForPositron;
-    G4double currentDefaultCut;
+  virtual void ConstructParticle();
+  virtual void ConstructProcess();    
+
+  virtual void SetCuts();
+
+  void SetCutForGamma(G4double);
+  void SetCutForElectron(G4double);
+  void SetCutForPositron(G4double);
+  void SetCutForProton(G4double);
+        
+  void AddPhysicsList(const G4String& name);
+  void List();
+  
+private:
+
+  void SetBuilderList0(G4bool flagHP = false);
+  void SetBuilderList1(G4bool flagHP = false);
+  void SetBuilderList2();
+
+  G4double fCutForGamma;
+  G4double fCutForElectron;
+  G4double fCutForPositron;
+  G4double fCutForProton;
+
+  G4VPhysicsConstructor*  fEmPhysicsList;
+  G4VPhysicsConstructor*  fParticleList;
+  std::vector<G4VPhysicsConstructor*>  fHadronPhys;
     
-    G4VPhysicsConstructor*  emPhysicsList;
-    G4String emName;
-    
-    PhysicsListMessenger* pMessenger;         
+  PhysicsListMessenger* fMessenger;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

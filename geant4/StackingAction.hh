@@ -23,18 +23,16 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/include/StackingAction.hh
+/// \brief Definition of the StackingAction class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: StackingAction.hh 68803 2013-04-05 13:59:55Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// StackingAction
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.04.2006 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
@@ -42,39 +40,39 @@
 ////////////////////////////////////////////////////////////////////////
 // 
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+#ifndef StackingAction_h
+#define StackingAction_h 1
 
+#include "G4UserStackingAction.hh"
 #include "globals.hh"
-#include "G4UImessenger.hh"
 
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+class HistoManager;
+class StackingMessenger;
+class G4Track;
+class G4ParticleDefinition;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+class StackingAction : public G4UserStackingAction
 {
 public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
+
+  StackingAction();
+  virtual ~StackingAction();
+   
+  void SetKillStatus(G4bool value);
+  void SetKill(const G4String& name);
+     
+  virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track*);
     
 private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
+
+  HistoManager*       fHistoManager;    
+  StackingMessenger*  fStackMessenger;
+  G4bool              fKillSecondary;
+
+  const G4ParticleDefinition* fParticle;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

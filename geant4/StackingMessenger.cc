@@ -23,61 +23,63 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/src/StackingMessenger.cc
+/// \brief Implementation of the StackingMessenger class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: StackingMessenger.cc 70761 2013-06-05 12:30:51Z gcosmo $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// StackingMessenger
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.05.2006 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
 //
 ////////////////////////////////////////////////////////////////////////
-// 
+//
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
-
-#include "globals.hh"
-#include "G4UImessenger.hh"
-
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+#include "StackingMessenger.hh"
+#include "StackingAction.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAString.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+StackingMessenger::StackingMessenger(StackingAction* stack)
+:G4UImessenger(), fStackAction(stack),
+ fKillCmd(0), fKCmd(0)
 {
-public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
-    
-  virtual void SetNewValue(G4UIcommand*, G4String);
-    
-private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
-};
+  fKillCmd = new G4UIcmdWithABool("/testhadr/KillAllSecondaries",this);
+  fKillCmd->SetGuidance("  Choice : true false");
+  fKillCmd->SetParameterName("choice",true);
+  fKillCmd->SetDefaultValue(false);
+
+  fKCmd = new G4UIcmdWithAString("/testhadr/Kill", this);
+  fKCmd->SetGuidance("Kill secondary particles of defined type");
+  fKCmd->SetParameterName("ch", true);
+  fKCmd->SetDefaultValue("none");
+  fKCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+StackingMessenger::~StackingMessenger()
+{
+  delete fKillCmd;
+  delete fKCmd;
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void StackingMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
+{     
+  if(command == fKillCmd) {
+    fStackAction->SetKillStatus(fKillCmd->GetNewBoolValue(newValue));
+  } else if(command == fKCmd) {
+    fStackAction->SetKill(newValue);               
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

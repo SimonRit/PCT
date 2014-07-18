@@ -23,61 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/Hadr01/include/PhysicsListMessenger.hh
-/// \brief Definition of the PhysicsListMessenger class
+/// \file hadronic/Hadr01/include/EventActionMessenger.hh
+/// \brief Definition of the EventActionMessenger class
 //
-//
-// $Id: PhysicsListMessenger.hh 68803 2013-04-05 13:59:55Z gcosmo $
-//
+// $Id: EventActionMessenger.hh 66241 2012-12-13 18:34:42Z gunter $
 //
 /////////////////////////////////////////////////////////////////////////
 //
-// PhysicsListMessenger
+// EventActionMessenger
 //
-// Created: 31.01.2006 V.Ivanchenko
+// Created: 31.01.03 V.Ivanchenko
 //
 // Modified:
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
 //
 ////////////////////////////////////////////////////////////////////////
-// 
+//
 
-#ifndef PhysicsListMessenger_h
-#define PhysicsListMessenger_h 1
+#ifndef EventActionMessenger_h
+#define EventActionMessenger_h 1
 
 #include "globals.hh"
 #include "G4UImessenger.hh"
 
-class PhysicsList;
-class G4UIcmdWithADoubleAndUnit;
+class EventAction;
 class G4UIcmdWithAString;
-class G4UIcmdWithoutParameter;
+class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListMessenger: public G4UImessenger
+class EventActionMessenger: public G4UImessenger
 {
 public:
-  
-  PhysicsListMessenger(PhysicsList* p = 0);
-  virtual ~PhysicsListMessenger();
+
+  EventActionMessenger(EventAction*);
+  virtual ~EventActionMessenger();
     
   virtual void SetNewValue(G4UIcommand*, G4String);
     
 private:
-  
-  PhysicsList* fPhysicsList;
-    
-  G4UIcmdWithADoubleAndUnit* fGammaCutCmd;
-  G4UIcmdWithADoubleAndUnit* fElectCutCmd;
-  G4UIcmdWithADoubleAndUnit* fPosCutCmd;
-  G4UIcmdWithADoubleAndUnit* fCutCmd;
-  G4UIcmdWithADoubleAndUnit* fAllCutCmd;
-  G4UIcmdWithAString*        fPListCmd;
-  G4UIcmdWithoutParameter*   fListCmd;  
+
+  EventAction*          fEventAction;   
+  G4UIcmdWithAnInteger* fPrintCmd;    
+  G4UIcmdWithAnInteger* fCmd;    
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
