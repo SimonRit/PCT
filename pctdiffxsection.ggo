@@ -1,0 +1,11 @@
+package "pct"
+version "Compute hadronic elastic differential cross section of protons"
+
+option "config"    - "Config file"                                       string                  no
+option "energy"    - "Energy"                                            double default="200"    no
+option "material"  m "NIST material name"                                string                  yes
+option "npart"     n "Number of samples"                                 int                     yes
+option "sdd"       - "Position of interaction to detector distance (mm)" double default="100"    no
+option "nbins"     - "Number of bins"                                    double default="100000" no
+option "binw"      - "Width of bins (mm)"                                double default="1"      no
+option "output"    o "Output file name"                                  string                  yes
