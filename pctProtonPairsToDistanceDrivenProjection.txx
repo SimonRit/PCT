@@ -153,11 +153,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     const double eIn = it.Get()[0];
     const double eOut = it.Get()[1];
     double value = 0.;
-    if(!m_RelativeStoppingPower) 
-       value = m_ConvFunc->GetValue(eOut, eIn); //relative electron density
-    else 
-       value = 501-0.01506*eOut-0.007345*eOut*eOut+0.00000634*eOut*eOut*eOut; //WEPL 300MeV
-    //const double value = 256.4-0.05446*eOut-0.007566*eOut*eOut+0.000007154*eOut*eOut*eOut; //WEPL 200MeV
+    value = m_ConvFunc->GetValue(eOut, eIn); //relative electron density
     ++it;
 
     // Move straight to entrance and exit shapes
@@ -250,7 +246,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
   // Merge the projection computed in each thread to the first one
-  for(int i=1; i<this->GetNumberOfThreads(); i++)
+  for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
     {
     if(m_Outputs[i].GetPointer() == NULL)
       continue;

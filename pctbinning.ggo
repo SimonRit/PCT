@@ -11,7 +11,6 @@ option "quadricOut" - "Parameters of the exit quadric support function, see http
 option "mlptype"    - "Type of most likely path (schulte or polynomial)"         string          no  default="schulte"
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"       - "Fill holes, i.e. pixels that were not hit by protons"     flag            off
-option "rsp"        - "reconstruct RSP instead of electron density"              flag            off
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no
