@@ -124,7 +124,9 @@ pct::pctGeant4::pctGeant4()
 
   //get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  UImanager->ApplyCommand("/material/verbose 0");
   UImanager->ApplyCommand("/run/initialize");
+  UImanager->ApplyCommand("/material/verbose 0");
 /*
 #ifdef G4VIS_USE
    G4VisManager* visManager = 0;
