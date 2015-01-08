@@ -1,0 +1,8 @@
+package "pct"
+version "Computes the weighted backprojections described in [Zeng, Med Phys, 2007] from backprojections binned by direction"
+
+option "verbose"     v "Verbose execution"                                        flag            off
+option "config"      - "Config file"                                              string          no
+option "input"       i "Input file name"                                          string          yes
+option "outputc"     c "Output file name for the bp weighted by the cosinus"      string          yes
+option "outputs"     s "Output file name for the bp weighted by the sinus"        string          yes
