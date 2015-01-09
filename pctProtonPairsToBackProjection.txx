@@ -247,6 +247,46 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
           }
         }
 
+      // Use the result describe in http://math.stackexchange.com/a/476311/76513
+      // to rotate things such that entrance direction dIn becomes 0 0 1
+      itk::Vector<double, 3> v, u(0.);
+      itk::Matrix<double, 3, 3> R;
+      u[2] = 1.;
+      v = itk::CrossProduct(dIn, u);
+      double s = v.GetNorm();
+      if(s>0.000000001)
+        {
+        double c = dIn * u;
+        itk::Matrix<double, 3, 3> vMat;
+        vMat.Fill(0.);
+        vMat[1][2] = -v[0];
+        vMat[2][1] =  v[0];
+        vMat[0][2] =  v[1];
+        vMat[2][0] = -v[1];
+        vMat[0][1] = -v[2];
+        vMat[1][0] =  v[2];
+        R.SetIdentity();
+        R += vMat;
+        vMat *= vMat;
+        vMat *= ((1.-c)/(s*s));
+        R = R + vMat;
+        }
+      else
+        {
+        R.SetIdentity();
+        }
+      itk::Matrix<double, 3, 3> Rinv(R.GetInverse());
+
+      // Init MLP before mm to voxel conversion
+      VectorType pSInR, pSOutR, dInR, dOutR, posR;
+      dInR   = R * dIn;
+      dOutR  = R * dOut;
+      pSInR  = R * pSIn;
+      pSOutR = R * pSOut;
+      dInR[0] /= dInR[2];
+      dInR[1] /= dInR[2];
+      mlp->Init(pSInR, pSOutR, dInR, dOutR);
+
       // Normalize direction with respect to z
       dIn[dir1] /= dIn[mainDir];
       dIn[dir2] /= dIn[mainDir];
@@ -255,16 +295,6 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       dOut[dir2] /= dOut[mainDir];
       dOut[mainDir] = 1.;
 
-      // Init MLP before mm to voxel conversion
-      VectorType pSInO, pSOutO, dInO, dOutO;
-      for(unsigned int i=0; i<3; i++)
-        {
-        pSInO[i] = pSIn[(mainDir+i+1)%3];
-        pSOutO[i] = pSOut[(mainDir+i+1)%3];
-        dInO[i] = dIn[(mainDir+i+1)%3];
-        dOutO[i] = dOut[(mainDir+i+1)%3];
-        }
-      mlp->Init(pSInO, pSOutO, dInO, dOutO);
       VectorType dCurr = dIn;
       double xx = 0., yy = 0.;
       for(unsigned int k=0; k<imgSize[mainDir]; k++)
@@ -279,6 +309,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
           dCurr = dIn;
           xx = (xx - imgOrigin[dir1]) * imgSpacingInv[dir1];
           yy = (yy - imgOrigin[dir2]) * imgSpacingInv[dir2];
+          posR[mainDir] = (dk - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
           }
         else if((dInH[mainDir]>0 && dk>=pSOut[mainDir]) ||
                 (dInH[mainDir]<0 && dk<=pSOut[mainDir])) //after exit
@@ -289,17 +320,22 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
           dCurr = dOut;
           xx = (xx - imgOrigin[dir1]) * imgSpacingInv[dir1];
           yy = (yy - imgOrigin[dir2]) * imgSpacingInv[dir2];
+          posR[mainDir] = (dk - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
           }
         else //MLP
           {
           dCurr[dir1] = xx;
           dCurr[dir2] = yy;
-          dCurr[mainDir] = 1;
-          mlp->Evaluate(zmm[mainDir][k], xx, yy);
-          xx = (xx - imgOrigin[dir1]) * imgSpacingInv[dir1];
-          yy = (yy - imgOrigin[dir2]) * imgSpacingInv[dir2];
+          dCurr[mainDir] = posR[mainDir];
+          posR[2] = pSInR[2] + (zmm[mainDir][k]-pSIn[mainDir]) / (pSOut[mainDir]-pSIn[mainDir]) * (pSOutR[2]-pSInR[2]);
+          mlp->Evaluate(posR[2], posR[0], posR[1]);
+          posR = Rinv * posR;
+          xx = (posR[dir1] - imgOrigin[dir1]) * imgSpacingInv[dir1];
+          yy = (posR[dir2] - imgOrigin[dir2]) * imgSpacingInv[dir2];
+          posR[mainDir] = (posR[mainDir] - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
           dCurr[dir1] = xx - dCurr[dir1];
           dCurr[dir2] = yy - dCurr[dir2];
+          dCurr[mainDir] = posR[mainDir] - dCurr[mainDir];
           }
 
         // Lattice conversion
@@ -314,11 +350,8 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
             dCurr[0] *= -1.;
           double theta = acos(dCurr[0] / sqrt(dCurr[0]*dCurr[0]+dCurr[2]*dCurr[2]));
           theta *= imgSize[3] / itk::Math::pi;
-          while(theta<0.)
-            theta += imgSize[3];
-          while(theta>=imgSize[3])
-            theta -= imgSize[3];
-          idx[3] = itk::Math::Floor<int, double>(theta);
+          theta = std::max(0., theta);
+          idx[3] = itk::Math::Floor<int, double>(theta) % imgSize[3];
           typename OutputImageType::OffsetValueType offset = m_Outputs[threadId]->ComputeOffset(idx);
           imgData[ offset ] += value;
           imgCountData[ offset ]++;
