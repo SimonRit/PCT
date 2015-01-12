@@ -412,13 +412,13 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
   m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
 
   // Normalize with proton count (average)
-//  while(!itCOut.IsAtEnd())
-//    {
-//    if(itCOut.Get())
-//      itOut.Set(itOut.Get()/itCOut.Get());
-//    ++itOut;
-//    ++itCOut;
-//    }
+  while(!itCOut.IsAtEnd())
+    {
+    if(itCOut.Get())
+      itOut.Set(itOut.Get()/itCOut.Get());
+    ++itOut;
+    ++itCOut;
+    }
 
   // Free images created in threads
   m_Outputs.resize( 0 );
