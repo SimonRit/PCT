@@ -12,8 +12,7 @@ option "quadricOut"  - "Parameters of the exit quadric support function, see htt
 option "mlptype"     - "Type of most likely path (schulte or polynomial)"         string          no  default="schulte"
 option "ionpot"      - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"        - "Fill holes, i.e. pixels that were not hit by protons"     flag            off
-option "geometryIn"  - "XML geometry file name"                                   string          yes
-option "geometryOut" - "XML geometry file name"                                   string          yes
+option "geometry"    - "XML geometry file name"                                   string          yes
 option "bpVal"       - "Input backprojection image values"                        string          no
 option "bpCount"     - "Input backprojection image counts"                        string          no
 

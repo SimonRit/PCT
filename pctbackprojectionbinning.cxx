@@ -86,21 +86,14 @@ int main(int argc, char * argv[])
   // Geometry
   if(args_info.verbose_flag)
     std::cout << "Reading geometry information from "
-              << args_info.geometryIn_arg
-              << " and "
-              << args_info.geometryOut_arg
+              << args_info.geometry_arg
               << "..."
               << std::endl;
-  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReaderIn;
-  geometryReaderIn = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
-  geometryReaderIn->SetFilename(args_info.geometryIn_arg);
-  TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReaderIn->GenerateOutputInformation() )
-  projection->SetGeometryIn( geometryReaderIn->GetOutputObject() );
-  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReaderOut;
-  geometryReaderOut = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
-  geometryReaderOut->SetFilename(args_info.geometryOut_arg);
-  TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReaderOut->GenerateOutputInformation() )
-  projection->SetGeometryOut( geometryReaderOut->GetOutputObject() );
+  rtk::ThreeDCircularProjectionGeometryXMLFileReader::Pointer geometryReader;
+  geometryReader = rtk::ThreeDCircularProjectionGeometryXMLFileReader::New();
+  geometryReader->SetFilename(args_info.geometry_arg);
+  TRY_AND_EXIT_ON_ITK_EXCEPTION( geometryReader->GenerateOutputInformation() )
+  projection->SetGeometry( geometryReader->GetOutputObject() );
 
   if(args_info.quadricIn_given)
     {

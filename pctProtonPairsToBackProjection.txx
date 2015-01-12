@@ -1,6 +1,8 @@
 #include <itkImageFileReader.h>
 #include <itkImageRegionIterator.h>
 
+#include <rtkHomogeneousMatrix.h>
+
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
@@ -31,23 +33,33 @@ void
 ProtonPairsToBackProjection<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType& itkNotUsed(outputRegionForThread), rtk::ThreadIdType threadId)
 {
+  // Create MLP depending on type
+  pct::MostLikelyPathFunction<double>::Pointer mlp;
+  if(m_MostLikelyPathType == "polynomial")
+    mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
+  else if (m_MostLikelyPathType == "schulte")
+    mlp = pct::SchulteMLPFunction::New();
+  else
+    {
+    itkGenericExceptionMacro("MLP must either be schulte or polynomial, not [" << m_MostLikelyPathType << ']');
+    }
+
   // Create thread image and corresponding stack to count events
+  m_Counts[threadId] = CountImageType::New();
+  m_Counts[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
+  m_Counts[threadId]->Allocate();
+  m_Counts[threadId]->FillBuffer(0);
+
   if(threadId==0)
     {
     m_Outputs[0] = this->GetOutput();
-    m_Counts[0]  = this->GetCount();
+    m_Count = m_Counts[0];
     }
   else
     {
     m_Outputs[threadId] = OutputImageType::New();
     m_Outputs[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
     m_Outputs[threadId]->Allocate();
-    m_Outputs[threadId]->FillBuffer(0.);
-
-    m_Counts[threadId] = CountImageType::New();
-    m_Counts[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
-    m_Counts[threadId]->Allocate();
-    m_Counts[threadId]->FillBuffer(0);
     }
 
   for(unsigned int iProj = 0; iProj<m_ProtonPairsFileNames.size(); iProj++)
@@ -55,7 +67,6 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
     m_Barriers[0]->Wait();
     if(threadId==0)
       {
-      m_Barriers[2]= itk::Barrier::New();
       m_Barriers[2]->Initialize( this->GetNumberOfThreads() );
       }
     m_Barriers[1]->Wait();
@@ -78,26 +89,30 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       }
     if(threadId==0)
       {
-      m_Barriers[0]= itk::Barrier::New();
       m_Barriers[0]->Initialize( this->GetNumberOfThreads() );
       }
     m_Barriers[2]->Wait();
     if(threadId==0)
       {
-      m_Barriers[1]= itk::Barrier::New();
       m_Barriers[1]->Initialize( this->GetNumberOfThreads() );
       }
 
-    // Create MLP depending on type
-    pct::MostLikelyPathFunction<double>::Pointer mlp;
-    if(m_MostLikelyPathType == "polynomial")
-      mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
-    else if (m_MostLikelyPathType == "schulte")
-      mlp = pct::SchulteMLPFunction::New();
-    else
+    // Get geometry information. We need the rotation matrix alone to rotate the direction
+    // and the same matrix combined with mm (physical point) to voxel conversion for the volume.
+    GeometryType::ThreeDHomogeneousMatrixType rotMat, volPPToIndex;
+    rotMat = m_Geometry->GetRotationMatrices()[iProj].GetInverse();
+    itk::Matrix<double, 5, 5> volPPToIndex44;
+    volPPToIndex44 = rtk::GetPhysicalPointToIndexMatrix( this->GetInput() );
+    for(int j=0; j<3; j++)
       {
-      itkGenericExceptionMacro("MLP must either be schulte or polynomial, not [" << m_MostLikelyPathType << ']');
+      for(int i=0; i<3; i++)
+        volPPToIndex[j][i] = volPPToIndex44[j][i];
+      volPPToIndex[j][3] = volPPToIndex44[j][4];
       }
+    volPPToIndex[3][3] = 1.;
+
+    GeometryType::ThreeDHomogeneousMatrixType rotAndVoxConvMat;
+    rotAndVoxConvMat = volPPToIndex.GetVnlMatrix() * rotMat.GetVnlMatrix();
 
     size_t nprotons = m_ProtonPairs->GetLargestPossibleRegion().GetSize()[1];
     ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
@@ -106,18 +121,20 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
 
     // Image information constants
     const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
-    const typename OutputImageType::PointType   imgOrigin  = this->GetInput()->GetOrigin();
     const typename OutputImageType::SpacingType imgSpacing = this->GetInput()->GetSpacing();
 
     typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
     unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
     itk::Vector<float, 3> imgSpacingInv;
+    double minSpacing = imgSpacing[0];
     for(unsigned int i=0; i<3; i++)
+      {
       imgSpacingInv[i] = 1./imgSpacing[i];
+      minSpacing = std::min(imgSpacing[i], minSpacing);
+      }
 
     // Corrections
     typedef itk::Vector<double,3> VectorType;
-    typedef itk::Vector<double,4> VectorHType;
 
     // Create a local copy of quadrics (surface object) for multithreading
     RQIType::Pointer quadricIn, quadricOut;
@@ -150,15 +167,18 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
 
     // Create zmm lut (look up table)
     itk::ImageRegionIterator<ProtonPairsImageType> it(m_ProtonPairs, region);
-    std::vector<double> zmm[3];
-    for(unsigned int d=0; d<3; d++)
+    ++it;
+    const double zPlaneOutInMM = it.Get()[2];
+    --it;
+    const double zPlaneInInMM = it.Get()[2];
+    if(zPlaneInInMM > zPlaneOutInMM)
       {
-      zmm[d].resize(imgSize[d]);
-      for(unsigned int i=0; i<imgSize[d]; i++)
-        {
-        zmm[d][i] = i*imgSpacing[d]+imgOrigin[d];
-        }
+      itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
       }
+    std::vector<double> zmm;
+    zmm.push_back(zPlaneInInMM);
+    while(zmm.back()+minSpacing<zPlaneOutInMM)
+      zmm.push_back(zmm.back()+minSpacing);
 
     // Process pairs
     while(!it.IsAtEnd())
@@ -185,48 +205,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       VectorType dOut = it.Get();
       ++it;
 
-      if(pIn[2] > pOut[2])
-        {
-        itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
-        }
-
-      // Apply transform
-      VectorHType pInH(1.), pOutH(1.), dInH(1.), dOutH(1.);
-      for(unsigned int i=0; i<3; i++)
-        {
-        pInH[i] = pIn[i];
-        pOutH[i] = pOut[i];
-        dInH[i] = dIn[i];
-        dOutH[i] = dOut[i];
-        }
-      dInH[2]  = -1.*dInH[2];
-      dOutH[2] = -1.*dOutH[2];
-
-      pInH.SetVnlVector(m_GeometryIn->GetProjectionCoordinatesToFixedSystemMatrix(iProj).GetVnlMatrix() * pInH.GetVnlVector());
-      pOutH.SetVnlVector(m_GeometryOut->GetProjectionCoordinatesToFixedSystemMatrix(iProj).GetVnlMatrix() * pOutH.GetVnlVector());
-      dInH.SetVnlVector(m_GeometryIn->GetRotationMatrices()[iProj].GetInverse() * dInH.GetVnlVector());
-      dOutH.SetVnlVector(m_GeometryOut->GetRotationMatrices()[iProj].GetInverse() * dOutH.GetVnlVector());
-
-      for(unsigned int i=0; i<3; i++)
-        {
-        pIn[i] = pInH[i];
-        pOut[i] = pOutH[i];
-        dIn[i] = dInH[i];
-        dOut[i] = dOutH[i];
-        }
-
-      // Select main direction
-      unsigned int mainDir = 0;
-      VectorType dInAbs;
-      for(unsigned int i=0; i<3; i++)
-        {
-        dInAbs[i] = vnl_math_abs( dIn[i] );
-        if(dInAbs[i]>dInAbs[mainDir])
-          mainDir = i;
-        }
-      unsigned int dir1 = (mainDir+1)%3;
-      unsigned int dir2 = (mainDir+2)%3;
-
+      // Line integral
       const double eIn = it.Get()[0];
       const double eOut = it.Get()[1];
       double value = 0.;
@@ -238,117 +217,84 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       VectorType pSOut = pOut;
       if(quadricIn.GetPointer()!=NULL)
         {
-        quadricIn->SetRayOrigin(pSIn);
-        quadricOut->SetRayOrigin(pSOut);
+        quadricIn->SetRayOrigin(pIn);
+        quadricOut->SetRayOrigin(pOut);
         if(quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
           {
           pSIn  = pIn  + dIn  * quadricIn->GetNearestDistance();
+          if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
+            pSIn  = pIn  + dIn  * quadricIn ->GetFarthestDistance();
           pSOut = pOut + dOut * quadricOut->GetNearestDistance();
+          if(pSOut[2]<pIn[2] || pSOut[2]>pOut[2])
+            pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
           }
         }
-
-      // Use the result describe in http://math.stackexchange.com/a/476311/76513
-      // to rotate things such that entrance direction dIn becomes 0 0 1
-      itk::Vector<double, 3> v, u(0.);
-      itk::Matrix<double, 3, 3> R;
-      u[2] = 1.;
-      v = itk::CrossProduct(dIn, u);
-      double s = v.GetNorm();
-      if(s>0.000000001)
-        {
-        double c = dIn * u;
-        itk::Matrix<double, 3, 3> vMat;
-        vMat.Fill(0.);
-        vMat[1][2] = -v[0];
-        vMat[2][1] =  v[0];
-        vMat[0][2] =  v[1];
-        vMat[2][0] = -v[1];
-        vMat[0][1] = -v[2];
-        vMat[1][0] =  v[2];
-        R.SetIdentity();
-        R += vMat;
-        vMat *= vMat;
-        vMat *= ((1.-c)/(s*s));
-        R = R + vMat;
-        }
-      else
-        {
-        R.SetIdentity();
-        }
-      itk::Matrix<double, 3, 3> Rinv(R.GetInverse());
-
-      // Init MLP before mm to voxel conversion
-      VectorType pSInR, pSOutR, dInR, dOutR, posR;
-      dInR   = R * dIn;
-      dOutR  = R * dOut;
-      pSInR  = R * pSIn;
-      pSOutR = R * pSOut;
-      dInR[0] /= dInR[2];
-      dInR[1] /= dInR[2];
-      mlp->Init(pSInR, pSOutR, dInR, dOutR);
 
       // Normalize direction with respect to z
-      dIn[dir1] /= dIn[mainDir];
-      dIn[dir2] /= dIn[mainDir];
-      dIn[mainDir] = 1.;
-      dOut[dir1] /= dOut[mainDir];
-      dOut[dir2] /= dOut[mainDir];
-      dOut[mainDir] = 1.;
+      dIn[0] /= dIn[2];
+      dIn[1] /= dIn[2];
+      //dIn[2] = 1.; SR: implicit in the following
+      dOut[0] /= dOut[2];
+      dOut[1] /= dOut[2];
+      //dOut[2] = 1.; SR: implicit in the following
 
       VectorType dCurr = dIn;
-      double xx = 0., yy = 0.;
-      for(unsigned int k=0; k<imgSize[mainDir]; k++)
+      VectorType pCurr(0.);
+
+      // Init MLP before mm to voxel conversion
+      mlp->Init(pSIn, pSOut, dIn, dOut);
+
+      for(unsigned int k=0; k<zmm.size(); k++)
         {
-        const double dk = zmm[mainDir][k];
-        if((dInH[mainDir]>0 && dk<=pSIn[mainDir]) ||
-           (dInH[mainDir]<0 && dk>=pSIn[mainDir])) //before entrance
+        pCurr[2] = zmm[k];
+        if(pCurr[2]<=pSIn[2]) //before entrance
           {
-          const double z = (dk-pIn[mainDir]);
-          xx = pIn[dir1]+z*dIn[dir1];
-          yy = pIn[dir2]+z*dIn[dir2];
+          const double z = (pCurr[2]-pIn[2]);
+          pCurr[0] = pIn[0]+z*dIn[0];
+          pCurr[1] = pIn[1]+z*dIn[1];
           dCurr = dIn;
-          xx = (xx - imgOrigin[dir1]) * imgSpacingInv[dir1];
-          yy = (yy - imgOrigin[dir2]) * imgSpacingInv[dir2];
-          posR[mainDir] = (dk - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
           }
-        else if((dInH[mainDir]>0 && dk>=pSOut[mainDir]) ||
-                (dInH[mainDir]<0 && dk<=pSOut[mainDir])) //after exit
+        else if(pCurr[2]>=pSOut[2]) //after exit
           {
-          const double z = (dk-pSOut[mainDir]);
-          xx = pSOut[dir1]+z*dOut[dir1];
-          yy = pSOut[dir2]+z*dOut[dir2];
+          const double z = (pCurr[2]-pSOut[2]);
+          pCurr[0] = pSOut[0]+z*dOut[0];
+          pCurr[1] = pSOut[1]+z*dOut[1];
           dCurr = dOut;
-          xx = (xx - imgOrigin[dir1]) * imgSpacingInv[dir1];
-          yy = (yy - imgOrigin[dir2]) * imgSpacingInv[dir2];
-          posR[mainDir] = (dk - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
           }
         else //MLP
           {
-          dCurr[dir1] = xx;
-          dCurr[dir2] = yy;
-          dCurr[mainDir] = posR[mainDir];
-          posR[2] = pSInR[2] + (zmm[mainDir][k]-pSIn[mainDir]) / (pSOut[mainDir]-pSIn[mainDir]) * (pSOutR[2]-pSInR[2]);
-          mlp->Evaluate(posR[2], posR[0], posR[1]);
-          posR = Rinv * posR;
-          xx = (posR[dir1] - imgOrigin[dir1]) * imgSpacingInv[dir1];
-          yy = (posR[dir2] - imgOrigin[dir2]) * imgSpacingInv[dir2];
-          posR[mainDir] = (posR[mainDir] - imgOrigin[mainDir]) * imgSpacingInv[mainDir];
-          dCurr[dir1] = xx - dCurr[dir1];
-          dCurr[dir2] = yy - dCurr[dir2];
-          dCurr[mainDir] = posR[mainDir] - dCurr[mainDir];
+          dCurr[0] = pCurr[0];
+          dCurr[1] = pCurr[1];
+          dCurr[2] = minSpacing;
+          mlp->Evaluate(zmm[k], pCurr[0], pCurr[1]);
+          dCurr[0] = pCurr[0] - dCurr[0];
+          dCurr[1] = pCurr[1] - dCurr[1];
+          }
+        dCurr[2] *= -1.;
+        pCurr[2] *= -1.;
+
+        // rotation + mm to voxel conversion
+        VectorType pCurrRot, dCurrRot(0.);
+        for(unsigned int i=0; i<3; i++)
+          {
+          pCurrRot[i] = rotAndVoxConvMat[i][3];
+          for(unsigned int j=0; j<3; j++)
+            {
+            pCurrRot[i] += rotAndVoxConvMat[i][j] * pCurr[j];
+            dCurrRot[i] += rotMat[i][j] * dCurr[j];
+            }
           }
 
-        // Lattice conversion
         typename OutputImageType::IndexType idx;
-        idx[dir1] = itk::Math::Round<int,double>(xx);
-        idx[dir2] = itk::Math::Round<int,double>(yy);
-        if(idx[dir1]>=0 && idx[dir1]<(int)imgSize[dir1] &&
-           idx[dir2]>=0 && idx[dir2]<(int)imgSize[dir2])
+        for(int i=0; i<3; i++)
+          idx[i] = itk::Math::Round<int,double>(pCurrRot[i]);
+        if(idx[0]>=0 && idx[0] && (int)imgSize[0] &&
+           idx[1]>=0 && idx[1] && (int)imgSize[1] &&
+           idx[2]>=0 && idx[2] && (int)imgSize[2])
           {
-          idx[mainDir] = k;
-          if(dCurr[2]<0.)
-            dCurr[0] *= -1.;
-          double theta = acos(dCurr[0] / sqrt(dCurr[0]*dCurr[0]+dCurr[2]*dCurr[2]));
+          if(dCurrRot[2]<0.)
+            dCurrRot[0] *= -1.;
+          double theta = acos(dCurrRot[0] / sqrt(dCurrRot[0]*dCurrRot[0]+dCurrRot[2]*dCurrRot[2]));
           theta *= imgSize[3] / itk::Math::pi;
           theta = std::max(0., theta);
           idx[3] = itk::Math::Floor<int, double>(theta) % imgSize[3];

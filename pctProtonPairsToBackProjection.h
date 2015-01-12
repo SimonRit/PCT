@@ -82,10 +82,8 @@ public:
   itkSetMacro(IonizationPotential, double);
 
   /** Get / Set the object pointer to projection geometry */
-  itkGetMacro(GeometryIn, GeometryPointer);
-  itkSetMacro(GeometryIn, GeometryPointer);
-  itkGetMacro(GeometryOut, GeometryPointer);
-  itkSetMacro(GeometryOut, GeometryPointer);
+  itkGetMacro(Geometry, GeometryPointer);
+  itkSetMacro(Geometry, GeometryPointer);
 
 protected:
   ProtonPairsToBackProjection() {}
@@ -129,8 +127,7 @@ private:
   ProtonPairsImageType::Pointer m_ProtonPairs;
 
   /** RTK geometry object */
-  GeometryPointer m_GeometryIn;
-  GeometryPointer m_GeometryOut;
+  GeometryPointer m_Geometry;
 };
 
 } // end namespace pct
