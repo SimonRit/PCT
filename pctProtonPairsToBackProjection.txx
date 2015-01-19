@@ -165,12 +165,22 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       quadricOut->SetJ(m_QuadricOut->GetJ());
       }
 
+    // Calculate corner positions and largest diagonal in axial plane
+    typename TOutputImage::IndexType idxCorner1, idxCorner2;
+    idxCorner1 = this->GetInput()->GetLargestPossibleRegion().GetIndex();
+    idxCorner2 = idxCorner1 + this->GetInput()->GetLargestPossibleRegion().GetSize();
+    for(unsigned int i=0; i<TOutputImage::ImageDimension; i++)
+      idxCorner1[i] -= 1;
+    typename TOutputImage::PointType corner1, corner2;
+    this->GetInput()->TransformIndexToPhysicalPoint(idxCorner1, corner1);
+    this->GetInput()->TransformIndexToPhysicalPoint(idxCorner2, corner2);
+    const double cornerMaxX = std::max(std::fabs(corner1[0]), std::fabs(corner2[0]));
+    const double cornerMaxZ = std::max(std::fabs(corner1[2]), std::fabs(corner2[2]));
+    const double largestDiagonal = sqrt(cornerMaxX*cornerMaxX + cornerMaxZ*cornerMaxZ);
+
     // Create zmm lut (look up table)
-    itk::ImageRegionIterator<ProtonPairsImageType> it(m_ProtonPairs, region);
-    ++it;
-    const double zPlaneOutInMM = it.Get()[2];
-    --it;
-    const double zPlaneInInMM = it.Get()[2];
+    const double zPlaneInInMM = -1.*largestDiagonal;
+    const double zPlaneOutInMM = largestDiagonal;
     if(zPlaneInInMM > zPlaneOutInMM)
       {
       itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
@@ -181,6 +191,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       zmm.push_back(zmm.back()+minSpacing);
 
     // Process pairs
+    itk::ImageRegionIterator<ProtonPairsImageType> it(m_ProtonPairs, region);
     while(!it.IsAtEnd())
       {
       if(threadId==0 && it.GetIndex()[1]%10000==0)
@@ -288,9 +299,9 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
         typename OutputImageType::IndexType idx;
         for(int i=0; i<3; i++)
           idx[i] = itk::Math::Round<int,double>(pCurrRot[i]);
-        if(idx[0]>=0 && idx[0] && (int)imgSize[0] &&
-           idx[1]>=0 && idx[1] && (int)imgSize[1] &&
-           idx[2]>=0 && idx[2] && (int)imgSize[2])
+        if(idx[0]>=0 && idx[0]<(int)imgSize[0] &&
+           idx[1]>=0 && idx[1]<(int)imgSize[1] &&
+           idx[2]>=0 && idx[2]<(int)imgSize[2])
           {
           if(dCurrRot[2]<0.)
             dCurrRot[0] *= -1.;
