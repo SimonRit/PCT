@@ -95,7 +95,7 @@ DDParkerShortScanImageFilter<TInputImage, TOutputImage>
                     << " degrees and should be more than half the beam angle, i.e. "
                     << atan(0.5 * detectorWidth * invsid)*180./itk::Math::pi << " degrees.");
 
-  for(unsigned int l=0; l<outputRegionForThread.GetSize(3); l++)
+  for(unsigned int p=0; p<outputRegionForThread.GetSize(3); p++)
     {
     sox = m_Geometry->GetSourceOffsetsX()[itIn.GetIndex()[3]];
     sid = m_Geometry->GetSourceToIsocenterDistances()[itIn.GetIndex()[3]];
