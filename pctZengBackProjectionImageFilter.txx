@@ -60,17 +60,21 @@ ZengBackProjectionImageFilter<TInputImage, TOutputImage>
   itk::ImageRegionIterator<OutputImageType>     itOutS(this->GetOutput(1), outputRegionForThread);
 
   double angspac = itk::Math::pi / this->GetInput()->GetLargestPossibleRegion().GetSize(TInputImage::ImageDimension-1);
-
+  const double phi = 0.;
   while(!itOutC.IsAtEnd())
     {
-    double ang = angspac * 0.5;
+    double ang = angspac * 0.5 + itk::Math::pi_over_2;
     double vs = 0.;
     double vc = 0.;
     const typename TInputImage::PixelType *pInCurr = pIn;
     for(unsigned int i=0; i<this->GetInput()->GetLargestPossibleRegion().GetSize(TInputImage::ImageDimension-1); i++)
       {
-      vs += sin(ang) * (*pInCurr);
-      vc += cos(ang) * (*pInCurr);
+      while(ang>itk::Math::pi) ang -= itk::Math::pi;
+      double sign = 1.;
+      if(sin(ang-phi)<0.)
+        sign = -1.;
+      vs += sin(ang) * (*pInCurr) * sign;
+      vc += cos(ang) * (*pInCurr) * sign;
       ang += angspac;
       pInCurr += npix;
       }
