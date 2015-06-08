@@ -220,7 +220,10 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       const double eIn = it.Get()[0];
       const double eOut = it.Get()[1];
       double value = 0.;
-      value = m_ConvFunc->GetValue(eOut, eIn); //relative electron density
+      if(eIn==0.)
+        value = eOut; // Directly read WEPL
+      else
+        value = m_ConvFunc->GetValue(eOut, eIn); // convert to WEPL
       ++it;
 
       // Move straight to entrance and exit shapes
