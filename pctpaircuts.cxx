@@ -122,8 +122,8 @@ int main(int argc, char * argv[])
       dOutX[1] = dOut[2];
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
-      const double anglex = vcl_acos( std::min(1.,dInX*dOutX) / ( dInX.GetNorm() * dOutX.GetNorm() ) );
-      const double angley = vcl_acos( std::min(1.,dInY*dOutY) / ( dInY.GetNorm() * dOutY.GetNorm() ) );
+      const double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      const double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
 
       if(args_info.robust_flag || (args_info.plotpix_given && idx==(unsigned long)args_info.plotpix_arg ) )
@@ -256,8 +256,8 @@ int main(int argc, char * argv[])
       dOutX[1] = dOut[2];
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
-      const double anglex = vcl_acos( std::min(1.,dInX*dOutX) / ( dInX.GetNorm() * dOutX.GetNorm() ) );
-      const double angley = vcl_acos( std::min(1.,dInY*dOutY) / ( dInY.GetNorm() * dOutY.GetNorm() ) );
+      const double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      const double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
 
       if( anglex <= pSumAngleSq [idx] &&
