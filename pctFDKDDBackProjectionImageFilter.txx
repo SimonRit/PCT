@@ -4,7 +4,6 @@
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkLinearInterpolateImageFunction.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
-#include <itkImageFileWriter.h>
 
 namespace pct
 {
@@ -71,11 +70,22 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
     ProjectionMatrixType matrix;
     if(sdd==0.)
       {
+      // Create a 3D translation matrix for the projection instead of the 2D because
+      // we want to keep the z coordinate
+      itk::Matrix<double, Dimension+1, Dimension+1> matProjTrans;
+      double sourceOffsetX = geometry->GetSourceOffsetsX()[iProj];
+      double sourceOffsetY = geometry->GetSourceOffsetsY()[iProj];
+      double projOffsetX = geometry->GetProjectionOffsetsX()[iProj];
+      double projOffsetY = geometry->GetProjectionOffsetsY()[iProj];
+      matProjTrans = rtk::ThreeDCircularProjectionGeometry::ComputeTranslationHomogeneousMatrix(sourceOffsetX-projOffsetX, sourceOffsetY-projOffsetY, 0.);
+
       itk::Matrix<double, Dimension+1, Dimension+1> matrixVol =
             rtk::GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
       itk::Matrix<double, Dimension+1, Dimension+1> matrixStackProj =
             rtk::GetPhysicalPointToIndexMatrix< TOutputImage >( projection );
       matrix = matrixStackProj.GetVnlMatrix() *
+               matProjTrans.GetVnlMatrix() *
+               geometry->GetSourceTranslationMatrices()[iProj].GetVnlMatrix()*
                geometry->GetRotationMatrices()[iProj].GetVnlMatrix() *
                matrixVol.GetVnlMatrix();
       }
