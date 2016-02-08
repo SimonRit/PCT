@@ -20,13 +20,16 @@ struct ParticleData
   itk::Vector<float,3> position;
   itk::Vector<float,3> direction;
   float time;
+  int trackID;
+  int nuclearProcess;
+  int creatorProcess;
+  int order;
   };
 
 struct ParticleInfo
   {
   int runID;
   int eventID;
-  int trackID;
   char name[256];
   };
 
@@ -55,7 +58,6 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd
   if(!SetTreeBranch(tree, "ParticleName", pi.name, false))
     strcpy(pi.name, "proton"); // If absent, assume that particles have been filtered
   SetTreeBranch(tree, "RunID", &pi.runID);
-  SetTreeBranch(tree, "TrackID", &pi.trackID);
   SetTreeBranch(tree, "EventID", &pi.eventID);
   SetTreeBranch(tree, "Ekine", &pd.ekine);
 
@@ -67,30 +69,53 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd
   SetTreeBranch(tree, "dY", pd.direction.GetDataPointer());
   SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+1);
   SetTreeBranch(tree, "Time", &pd.time);
+  SetTreeBranch(tree, "TrackID", &pd.trackID);
+//  SetTreeBranch(tree, "NuclearProcess", &pd.nuclearProcess);
+//  SetTreeBranch(tree, "CreatorProcess", &pd.creatorProcess);
+//  SetTreeBranch(tree, "Order", &pd.order);
+
+  if(!SetTreeBranch(tree, "NuclearProcess", &pd.nuclearProcess, false))
+    pd.nuclearProcess = 0; 
+  if(!SetTreeBranch(tree, "CreatorProcess", &pd.creatorProcess, false))
+    pd.creatorProcess = 0; 
+  if(!SetTreeBranch(tree, "Order", &pd.order, false))
+    pd.order = 0; 
 }
 
 void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs, std::string fileName)
 {
   itk::ImageRegion<2> region;
   itk::ImageRegion<2>::SizeType size;
-  size[0] = 5;
+  size[0] = 6;
   size[1] = pairs.size();
   region.SetSize(size);
 
   typedef itk::Vector<float,3> PixelType;
   typedef itk::Image<PixelType,2> ImageType;
+
   ImageType::Pointer img = ImageType::New();
   img->SetRegions(region);
   img->Allocate();
 
   itk::ImageRegionIterator<ImageType> it(img, region);
   PixelType eet;
+  PixelType nuclearinfo;
+
+//-------------------
+    
+  std::cout<<pairs.size()<<std::endl;
+
   for(size_t i=0; i<pairs.size(); i++)
     {
     eet[0] = pairs[i].first.ekine;
     eet[1] = pairs[i].second.ekine;
-    eet[2] = pairs[i].second.time - pairs[i].first.time;
+//    eet[2] = pairs[i].second.time - pairs[i].first.time;
+    eet[2] = pairs[i].second.trackID; 
 
+    nuclearinfo[0] = pairs[i].second.creatorProcess; 
+    nuclearinfo[1] = pairs[i].second.nuclearProcess;
+    nuclearinfo[2] = pairs[i].second.order;
+    
     it.Set( pairs[i].first.position );
     ++it;
     it.Set( pairs[i].second.position );
@@ -100,6 +125,8 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
     it.Set( pairs[i].second.direction );
     ++it;
     it.Set( eet );
+    ++it;
+    it.Set( nuclearinfo );
     ++it;
     }
 
@@ -217,9 +244,11 @@ int main(int argc, char * argv[])
       continue;
       }
 
+//     std::cout<<pdIn.trackID<<"\t"<<pdOut.trackID<<std::endl;
+
     // Corresponding protons found, add to vector if no nuclear interaction
     if(piIn.runID>=args_info.minRun_arg && piIn.runID<args_info.maxRun_arg &&
-       (!(args_info.nonuclear_flag) || (piIn.trackID == piOut.trackID))) // Condition to remove nuclear events if flag activated
+       (!(args_info.nonuclear_flag) || (pdIn.trackID == pdOut.trackID))) // Condition to remove nuclear events if flag activated
       {
       // WARNING: We have swap x and z, z sign must also be changed
       pdIn.direction[2] *= -1.;
