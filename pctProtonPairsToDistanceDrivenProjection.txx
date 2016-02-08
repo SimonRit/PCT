@@ -5,6 +5,9 @@
 #include "pctSchulteMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
 
+#include <iostream>
+#include <TMath.h>
+
 namespace pct
 {
 
@@ -32,6 +35,7 @@ void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType& itkNotUsed(outputRegionForThread), rtk::ThreadIdType threadId)
 {
+
   // Create MLP depending on type
   pct::MostLikelyPathFunction<double>::Pointer mlp;
   if(m_MostLikelyPathType == "polynomial")
@@ -74,10 +78,15 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   const unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
-  unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
+  float *imgCountData = m_Counts[threadId]->GetBufferPointer();
   itk::Vector<float, 3> imgSpacingInv;
   for(unsigned int i=0; i<3; i++)
     imgSpacingInv[i] = 1./imgSpacing[i];
+
+
+  const unsigned long npixels = imgSize[0] * imgSize[1] * imgSize[2];
+  std::vector< std::vector<double> > angles(npixels);       //container for exit angles
+  std::vector< std::vector<double> > energies(npixels);     //container for exit energies
 
 
   // Corrections
@@ -125,6 +134,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     zmag[i] = (m_SourceDistance==0.)?1:(zPlaneOutInMM-m_SourceDistance)/(zmm[i]-m_SourceDistance);
     }
 
+
+  //std::ofstream wepl;
+  //wepl.open ("wepl.txt");
+
   // Process pairs
   while(!it.IsAtEnd())
   {
@@ -142,9 +155,29 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType dIn = it.Get();
     ++it;
+
+    const double angle_out = it.Get()[1];
     VectorType dOut = it.Get();
     ++it;
 
+/*
+  //----------------------ctq:
+  typedef itk::Vector<double, 2> VectorTwoDType;
+      VectorTwoDType dInX, dInY, dOutX, dOutY;
+      dInX[0] = dIn[0];
+      dInX[1] = dIn[2];
+      dInY[0] = dIn[1];
+      dInY[1] = dIn[2];
+      dOutX[0] = dOut[0];
+      dOutX[1] = dOut[2];
+      dOutY[0] = dOut[1];
+      dOutY[1] = dOut[2];
+
+    const double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+    const double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+    const double angle_out = sqrt(angley*angley+anglex*anglex);
+  //----------------------ctq:
+*/
     if(pIn[2] > pOut[2])
       {
       itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
@@ -156,11 +189,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     if(eIn==0.)
       value = eOut; // Directly read WEPL
     else
+      {
       value = m_ConvFunc->GetValue(eOut, eIn); // convert to WEPL
+      }
+    ++it;
+
+    VectorType nucInfo = it.Get();
     ++it;
 
     // Move straight to entrance and exit shapes
-    VectorType pSIn  = pIn;
+    VectorType pSIn  =   //----------------------ctq:
+pIn;
     VectorType pSOut = pOut;
     if(quadricIn.GetPointer()!=NULL)
       {
@@ -220,11 +259,79 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
          j>=0 && j<(int)imgSize[1])
         {
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
-        imgData[ idx ] += value;
+
+        //if (idx==128) 
+        //wepl<<idx<<"\t"<<eIn<<"\t"<<eOut<<"\t"<<value<<std::endl;
+
+        //imgData[ idx ] += value;
+        angles[ idx ].push_back(angle_out);
+        energies[ idx ].push_back(eOut);
         imgCountData[ idx ]++;
         }
       }
   }
+
+
+  //----------------------ctq:  
+     for(unsigned int k=0; k<npixels; k++)
+      {
+      float meanAngle = 0.;
+      float sdAngle = 0.; 
+      float meanEnergy = 0.;
+      const float Es = 15.0;      //unit: MeV/c
+      const float Ep = 938.272;   //unit: MeV/c2
+      const float Xs = 468.8;
+
+
+      for(unsigned int i=0; i<imgCountData[k]; i++)
+          {
+          meanAngle += angles[k][i];
+          meanEnergy += energies[k][i];
+          }
+       meanAngle=meanAngle/imgCountData[k];
+       meanEnergy=meanEnergy/imgCountData[k];
+
+      for(unsigned int i=0; i<imgCountData[k]; i++)
+        {
+        sdAngle+=(angles[k][i]-meanAngle)*(angles[k][i]-meanAngle);
+        //std::cout<<angles[k][i]<<std::endl;
+        }
+      sdAngle = sqrt(sdAngle/imgCountData[k]);
+
+      //double delta = (meanEnergy + Ep) * (meanEnergy + Ep) / (meanEnergy + 2*Ep) / (meanEnergy + 2*Ep) / meanEnergy / meanEnergy;  
+      //const float ein = 200.; 
+      //double pv = (meanEnergy + 2.*Ep) * meanEnergy/ (meanEnergy + Ep);  
+      //double p1v1 = (ein + 2*Ep) * ein/ (ein + Ep);  
+
+      double j = sdAngle * sdAngle;
+      const Float_t p0 =  261227;
+      const Float_t p1 =  -3.58031e+08;
+      const Float_t p2 =  3.65864e+11;
+      const Float_t p3 =  -2.5816e+14;
+      const Float_t p4 =  9.65983e+16;
+      const Float_t p5 =  -1.41069e+19;
+
+      if(imgCountData[k] == 0.)
+      imgData[ k ] = 0.;
+
+      else
+        {     
+        imgData[ k ] = (p0*j) + (p1*j*j/2.) + (p2*j*j*j/3.) + (p3*j*j*j*j/4.) + (p4*j*j*j*j*j/5.) + (p5*j*j*j*j*j*j/6.) ;
+
+      /*std::cout <<"\n\n"
+                << k << "\t"
+                << Tdm <<"\t" 
+                << p1v1<<"\t" 
+                << pv <<"\t" 
+                //<< meanEnergy <<"\t"
+                //<< delta <<"\t"
+                <<"\n"<< std::endl;
+*/
+        }
+      }
+  //----------------------ctq:
+
+
   if(threadId==0)
     {
     std::cout << '\r'
@@ -277,7 +384,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   while(!itCOut.IsAtEnd())
     {
     if(itCOut.Get())
-      itOut.Set(itOut.Get()/itCOut.Get());
+//      itOut.Set(itOut.Get()/itCOut.Get());
+      itOut.Set(itOut.Get());
+
     ++itOut;
     ++itCOut;
     }

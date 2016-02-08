@@ -25,7 +25,7 @@ public:
   typedef itk::Image<ProtonPairsPixelType,2>           ProtonPairsImageType;
   typedef ProtonPairsImageType::Pointer                ProtonPairsImagePointer;
 
-  typedef itk::Image<unsigned int, 3>                  CountImageType;
+  typedef itk::Image<float, 3>                  CountImageType;
   typedef CountImageType::Pointer                      CountImagePointer;
 
   typedef TOutputImage                                 OutputImageType;
