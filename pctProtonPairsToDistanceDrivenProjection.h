@@ -103,6 +103,9 @@ private:
   Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
 
   ProtonPairsImageType::Pointer m_ProtonPairs;
+
+public:
+  double eIn;
 };
 
 } // end namespace pct

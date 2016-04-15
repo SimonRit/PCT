@@ -4,9 +4,14 @@
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
+#include "pctScatteringWEPLFunctor.h"
+
 
 #include <iostream>
 #include <TMath.h>
+//#include <TROOT.h>
+//#include "Math/Polynomial.h"
+//#include "Math/Interpolator.h"
 
 namespace pct
 {
@@ -35,7 +40,6 @@ void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType& itkNotUsed(outputRegionForThread), rtk::ThreadIdType threadId)
 {
-
   // Create MLP depending on type
   pct::MostLikelyPathFunction<double>::Pointer mlp;
   if(m_MostLikelyPathType == "polynomial")
@@ -134,10 +138,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     zmag[i] = (m_SourceDistance==0.)?1:(zPlaneOutInMM-m_SourceDistance)/(zmm[i]-m_SourceDistance);
     }
 
-
-  //std::ofstream wepl;
-  //wepl.open ("wepl.txt");
-
   // Process pairs
   while(!it.IsAtEnd())
   {
@@ -183,7 +183,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
       }
 
-    const double eIn = it.Get()[0];
+    eIn = it.Get()[0];
     const double eOut = it.Get()[1];
     double value = 0.;
     if(eIn==0.)
@@ -198,8 +198,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
 
     // Move straight to entrance and exit shapes
-    VectorType pSIn  =   //----------------------ctq:
-pIn;
+    VectorType pSIn  = pIn;
     VectorType pSOut = pOut;
     if(quadricIn.GetPointer()!=NULL)
       {
@@ -259,11 +258,6 @@ pIn;
          j>=0 && j<(int)imgSize[1])
         {
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
-
-        //if (idx==128) 
-        //wepl<<idx<<"\t"<<eIn<<"\t"<<eOut<<"\t"<<value<<std::endl;
-
-        //imgData[ idx ] += value;
         angles[ idx ].push_back(angle_out);
         energies[ idx ].push_back(eOut);
         imgCountData[ idx ]++;
@@ -271,18 +265,39 @@ pIn;
       }
   }
 
-
   //----------------------ctq:  
+    // Create scattering WEPL LUT
+    unsigned int max_length = 500*CLHEP::mm;
+    const double E0 = 13.6*CLHEP::MeV;
+    const double X0 = 38.08*CLHEP::cm;
+    const double proton_mass_c2 = CLHEP::proton_mass_c2;
+    double integratedinvbeta2p2;
+    double invbeta2p2;
+    double energycurrent;
+    int range;
+    std::vector<double> sigma2_lut;
+    std::vector<int> thickness_lut;
+
+    for(int length = 1; length<max_length; length++)
+      {    
+      energycurrent = m_ConvFunc->GetEnergy(length*CLHEP::mm, eIn);
+      if(energycurrent<0.001) break;        
+      invbeta2p2 = (energycurrent+proton_mass_c2)*(energycurrent+proton_mass_c2) / 
+                  ((energycurrent+2*proton_mass_c2)*(energycurrent+2*proton_mass_c2) * energycurrent*energycurrent); 
+      integratedinvbeta2p2 += invbeta2p2;
+      sigma2_lut.push_back( E0*E0/X0 * (1+0.038*vcl_log(length/X0))* (1+0.038*vcl_log(length/X0)) * integratedinvbeta2p2);
+
+      thickness_lut.push_back(length);
+      range = length;     
+      }
+
+    // Calculate angular variance per pixel
      for(unsigned int k=0; k<npixels; k++)
       {
-      float meanAngle = 0.;
-      float sdAngle = 0.; 
-      float meanEnergy = 0.;
-      const float Es = 15.0;      //unit: MeV/c
-      const float Ep = 938.272;   //unit: MeV/c2
-      const float Xs = 468.8;
-
-
+      double meanAngle = 0.;
+      double meanEnergy = 0.;
+      double sigma2 = 0.;
+  
       for(unsigned int i=0; i<imgCountData[k]; i++)
           {
           meanAngle += angles[k][i];
@@ -293,38 +308,41 @@ pIn;
 
       for(unsigned int i=0; i<imgCountData[k]; i++)
         {
-        sdAngle+=(angles[k][i]-meanAngle)*(angles[k][i]-meanAngle);
-        //std::cout<<angles[k][i]<<std::endl;
+        sigma2+=(angles[k][i]-meanAngle)*(angles[k][i]-meanAngle);
         }
-      sdAngle = sqrt(sdAngle/imgCountData[k]);
+        sigma2 = sigma2/imgCountData[k];
 
-      //double delta = (meanEnergy + Ep) * (meanEnergy + Ep) / (meanEnergy + 2*Ep) / (meanEnergy + 2*Ep) / meanEnergy / meanEnergy;  
-      //const float ein = 200.; 
-      //double pv = (meanEnergy + 2.*Ep) * meanEnergy/ (meanEnergy + Ep);  
-      //double p1v1 = (ein + 2*Ep) * ein/ (ein + Ep);  
-
-      double j = sdAngle * sdAngle;
-      const Float_t p0 =  261227;
-      const Float_t p1 =  -3.58031e+08;
-      const Float_t p2 =  3.65864e+11;
-      const Float_t p3 =  -2.5816e+14;
-      const Float_t p4 =  9.65983e+16;
-      const Float_t p5 =  -1.41069e+19;
+      double x0,y0,x1,y1;
 
       if(imgCountData[k] == 0.)
       imgData[ k ] = 0.;
 
       else
         {     
-        imgData[ k ] = (p0*j) + (p1*j*j/2.) + (p2*j*j*j/3.) + (p3*j*j*j*j/4.) + (p4*j*j*j*j*j/5.) + (p5*j*j*j*j*j*j/6.) ;
+        for(int i=0; i<range; i++)
+          {
+          if(sigma2 < sigma2_lut[i])
+          continue;
+            {
+            x0 = sigma2_lut[i];
+            x1 = sigma2_lut[i+1];
+            y0 = thickness_lut[i];
+            y1 = thickness_lut[i+1];  
+            }
+          }
+        
+        // Calculate the scattering WEPL from LUT
+        imgData[ k ] = y0 + (y1-y0) * (sigma2-x0) / (x1 - x0); 
 
-      /*std::cout <<"\n\n"
-                << k << "\t"
-                << Tdm <<"\t" 
-                << p1v1<<"\t" 
-                << pv <<"\t" 
-                //<< meanEnergy <<"\t"
-                //<< delta <<"\t"
+/*        std::cout<<"\n"<<sigma2<<"\t"
+                <<x0<<"\t"
+                 <<x1<<"\t"
+                <<y0<<"\t"
+                <<y1<<"\t"
+        <<std::endl;
+
+        std::cout <<"\n\n"
+                << imgData[ k ] << "\t"
                 <<"\n"<< std::endl;
 */
         }
