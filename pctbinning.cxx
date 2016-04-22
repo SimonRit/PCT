@@ -92,12 +92,15 @@ int main(int argc, char * argv[])
   cii->SetOutputOrigin(    projection->GetOutput()->GetOrigin() );
   cii->SetOutputSpacing(   projection->GetOutput()->GetSpacing() );
 
-  // Write
-  typedef itk::ImageFileWriter<  OutputImageType > WriterType;
-  WriterType::Pointer writer = WriterType::New();
-  writer->SetFileName( args_info.output_arg );
-  writer->SetInput( cii->GetOutput() );
-  TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
+  if(args_info.elosswepl_given)
+    {
+    // Write
+    typedef itk::ImageFileWriter<  OutputImageType > WriterType;
+    WriterType::Pointer writer = WriterType::New();
+    writer->SetFileName( args_info.elosswepl_arg );
+    writer->SetInput( cii->GetOutput() );
+    TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
+    }
 
   if(args_info.count_given)
     {
@@ -107,6 +110,16 @@ int main(int argc, char * argv[])
     cwriter->SetFileName( args_info.count_arg );
     cwriter->SetInput( projection->GetCount() );
     TRY_AND_EXIT_ON_ITK_EXCEPTION( cwriter->Update() )
+    }
+
+  if(args_info.scatwepl_given)
+    {
+    // Write
+    typedef itk::ImageFileWriter< ProjectionFilter::AngleImageType > AngleWriterType;
+    AngleWriterType::Pointer swriter = AngleWriterType::New();
+    swriter->SetFileName( args_info.scatwepl_arg );
+    swriter->SetInput( projection->GetAngle() );
+    TRY_AND_EXIT_ON_ITK_EXCEPTION( swriter->Update() )
     }
 
   return EXIT_SUCCESS;

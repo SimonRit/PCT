@@ -28,6 +28,12 @@ public:
   typedef itk::Image<float, 3>                  CountImageType;
   typedef CountImageType::Pointer                      CountImagePointer;
 
+  typedef itk::Image<float, 3>                  AngleImageType;
+  typedef AngleImageType::Pointer                      AngleImagePointer;
+
+  typedef itk::Image<float, 3>                  AngleSqImageType;
+  typedef AngleSqImageType::Pointer                      AngleSqImagePointer;
+
   typedef TOutputImage                                 OutputImageType;
   typedef typename OutputImageType::Pointer            OutputImagePointer;
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
@@ -61,6 +67,9 @@ public:
   /** Get/Set the count of proton pairs per pixel. */
   itkGetMacro(Count, CountImagePointer);
 
+ /** Get/Set the angle of proton pairs per pixel. */
+  itkGetMacro(Angle, AngleImagePointer);
+
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
@@ -89,8 +98,17 @@ private:
   CountImagePointer m_Count;
   std::vector<CountImagePointer> m_Counts;
 
+  AngleImagePointer m_Angle;
+  std::vector<AngleImagePointer> m_Angles;
+
+  AngleSqImagePointer m_AngleSq;
+  std::vector<AngleSqImagePointer> m_AnglesSq;
+
+
   /** Create one output per thread */
   std::vector<OutputImagePointer> m_Outputs;
+  std::vector<OutputImagePointer> m_AngleOutputs;
+  std::vector<OutputImagePointer> m_AngleSqOutputs;
 
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
