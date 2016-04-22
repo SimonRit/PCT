@@ -3,7 +3,6 @@
 
 #include "pctBetheBlochFunctor.h"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include <iostream>
 
 namespace pct
 {
@@ -16,15 +15,15 @@ namespace ScatteringWEPL
 
 std::vector<double> sigma2_lut;
 std::vector<int> thickness_lut;
-unsigned int range;
+unsigned int range = 0;
 
 class ScatteringLUT
 {
 public:
   static double SetLUT(const double eIn)
     {
-    double m_IonizationPotential = 78; 
-    pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe( m_IonizationPotential * CLHEP::eV, 500 * CLHEP::MeV );
+    double m_IonizationPotential = 68.9984 * CLHEP::eV; 
+    pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> bethe( m_IonizationPotential, 500 * CLHEP::MeV );
 
     unsigned int max_waterthickness = 500*CLHEP::mm;
     const double E0 = 13.6*CLHEP::MeV;
@@ -54,19 +53,15 @@ public:
 
 class ConvertToScatteringWEPL
 {
-
 public:
   static double GetValue(const double sigma2)
     {
-    double value; 
-    double x0=0.,y0=0.,x1=0.,y1=0.;
-
-    for(unsigned int i=0; i<range; i++)
+    double value = 0., x0 = 0., y0 = 0., x1 = 0., y1 = 0.;
+    for(unsigned int i = 0; i < range; i++)
       {
       if(sigma2 < sigma2_lut[i])
       continue;
         {
-        //x0 = y0 = x1= y1 = 0.;
         x0 = sigma2_lut[i];
         x1 = sigma2_lut[i+1];
         y0 = thickness_lut[i];
@@ -75,6 +70,8 @@ public:
        } 
     // calculate wepl using linear interpolation      
     value = y0 + (y1-y0) * (sigma2-x0) / (x1 - x0); 
+    if(value!=value)
+      value = 0.;
     return value;
     }
 
