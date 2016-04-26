@@ -159,10 +159,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType pOut = it.Get();
     ++it;
+
     VectorType dIn = it.Get();
     ++it;
-
     const double angle_out = it.Get()[1];
+
     VectorType dOut = it.Get();
     ++it;
 
@@ -327,7 +328,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Angle->SetOrigin( this->GetOutput()->GetOrigin() );
 
   // Initialize scattering WEPL LUT
-  pct::Functor::ScatteringWEPL::ScatteringLUT::SetLUT(eIn);
+  pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(eIn);
 
   // Pointer
   pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL pointer;
