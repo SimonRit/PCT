@@ -11,7 +11,7 @@
 // Root includes
 #include <TChain.h>
 #include <TROOT.h>
-#include <TVector3.h> 
+#include <TVector3.h>
 
 #define MAX_RUNS 4096
 
@@ -141,20 +141,20 @@ int main(int argc, char * argv[])
   // Create root trees
   TChain *treeIn = new TChain("recoENTRY");
   treeIn->AddFile(args_info.input_arg);
-  std::cout << "George: Reading in file:" << args_info.input_arg << std::endl; 
+  std::cout << "George: Reading in file:" << args_info.input_arg << std::endl;
 
   // Branch particles
-  struct ParticleInfo pi; 
+  struct ParticleInfo pi;
   struct ParticleData pd;
   struct ParticleDataFinal pdIn;
   struct ParticleDataFinal pdOut;
-     
+
   BranchParticleToPhaseSpace(pi, pd, treeIn);
 
   // Init
   std::vector< std::vector< std::pair<ParticleDataFinal, ParticleDataFinal> > > pairs(MAX_RUNS);
   size_t nparticulesIn = treeIn->GetEntries();
-  std::cout << "George: Number of entries = " << nparticulesIn << std::endl;
+  std::cout << "Number of entries = " << nparticulesIn << std::endl;
   size_t iIn=0;
   int prevEventIDIn = -1;
   std::cout << iIn << " particles of input phase space processed ("
@@ -163,21 +163,21 @@ int main(int argc, char * argv[])
   while(iIn<nparticulesIn)
     {
     if(iIn%10000==0)
-      std::cout << '\r' 
+      std::cout << '\r'
                 << iIn << " particles of input phase space processed ("
                 << 100*iIn/nparticulesIn << "%)"
                 << std::flush;
 
     treeIn->GetEntry(iIn);
 
-#if 0 
-	std::cout << "George: Input Entry = " << iIn << " with data : " 
-	<< pd.position0[0] << "	" << pd.position0[1] << "	" << pd.position0[2] << "	" 
-	<< pd.position1[0] << "	" << pd.position1[1] << "	" << pd.position1[2] << "	" 
+#if 0
+	std::cout << "George: Input Entry = " << iIn << " with data : "
+	<< pd.position0[0] << "	" << pd.position0[1] << "	" << pd.position0[2] << "	"
+	<< pd.position1[0] << "	" << pd.position1[1] << "	" << pd.position1[2] << "	"
 	<< pd.position2[0] << "	" << pd.position2[1] << "	" << pd.position2[2] << "	" 	
 	<< pd.position3[0] << "	" << pd.position3[1] << "	" << pd.position3[2] << "	"	
-	<< "	" << pd.wepl << std::endl; 
-#endif	   
+	<< "	" << pd.wepl << std::endl;
+#endif	
 
 // Convert info from ParticleData to info for ParticleDataFinal
 // The inner tracker planes are used
@@ -193,9 +193,9 @@ int main(int argc, char * argv[])
 	pdOut.time = 0.;
 
 #if 0
-	std::cout << "George: Output Entry = " << iIn << " with data : " 
-	<< pdIn.position[0] << "	" << pdIn.position[1] << "	" << pdIn.position[2] << "	" 
-	<< pdOut.position[0] << "	" << pdOut.position[1] << "	" << pdOut.position[2] << "	" 
+	std::cout << "George: Output Entry = " << iIn << " with data : "
+	<< pdIn.position[0] << "	" << pdIn.position[1] << "	" << pdIn.position[2] << "	"
+	<< pdOut.position[0] << "	" << pdOut.position[1] << "	" << pdOut.position[2] << "	"
 	<< pdIn.direction[0] << "	" << pdIn.direction[1] << "	" << pdIn.direction[2] << "	" 	
 	<< pdOut.direction[0] << "	" << pdOut.direction[1] << "	" << pdOut.direction[2] << "	"	
 	<< "	" << pdIn.wepl << "	" << pdOut.wepl << std::endl; 	
@@ -203,14 +203,14 @@ int main(int argc, char * argv[])
 
 
     // Ensuring runID is meaningful and pairing protons
-    if(pi.runID>=args_info.minRun_arg && pi.runID<args_info.maxRun_arg) 
+    if(pi.runID>=args_info.minRun_arg && pi.runID<args_info.maxRun_arg && pdOut.wepl>=-4. && pdOut.wepl<=300.)
       {
       pairs[args_info.runID_arg].push_back( std::pair<ParticleDataFinal,ParticleDataFinal>(pdIn, pdOut) );
       }
 
 	iIn++;
     }
-    
+
 
   std::cout << "\r"
             << nparticulesIn << " particles of input phase space processed ("
@@ -230,7 +230,7 @@ int main(int argc, char * argv[])
       WritePairs(pairs[i], os.str());
       }
     }
-    
-    
+
+
   return EXIT_SUCCESS;
 }
