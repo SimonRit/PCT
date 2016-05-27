@@ -106,8 +106,8 @@ int main(int argc, char * argv[])
 
   // Image information constants
   const ProjectionImageType::SizeType imgSize  = sumEnergy->GetOutput()->GetBufferedRegion().GetSize(); //pixels number (vector)
-  const ProjectionImageType::PointType imgOrigin = sumEnergy->GetOutput()->GetOrigin(); //center position pixel (0,0) 
-  const ProjectionImageType::SpacingType imgSpacing = sumEnergy->GetOutput()->GetSpacing(); //space between pixels 
+  const ProjectionImageType::PointType imgOrigin = sumEnergy->GetOutput()->GetOrigin(); //center position pixel (0,0)
+  const ProjectionImageType::SpacingType imgSpacing = sumEnergy->GetOutput()->GetSpacing(); //space between pixels
   itk::Vector<float, 2> imgSpacingInv;
   for(unsigned int i=0; i<2; i++)
     imgSpacingInv[i] = 1./imgSpacing[i];
@@ -175,15 +175,15 @@ int main(int argc, char * argv[])
       double  anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
-      
+
       Ein = data[0];
 
-      if(args_info.robust_flag 
-        || (args_info.plotpix_given && idx==(unsigned long)args_info.plotpix_arg ) 
+      if(args_info.robust_flag
+        || (args_info.plotpix_given && idx==(unsigned long)args_info.plotpix_arg )
         || args_info.gauscut_flag
         || args_info.plotSuperDistribution_flag)
         {
-        energies[idx].push_back(energy); 
+        energies[idx].push_back(energy);
         angles  [idx].push_back(anglex);
         angles  [idx].push_back(angley);
         exitEnergies[idx].push_back(data[1]);
@@ -213,7 +213,7 @@ int main(int argc, char * argv[])
     {
     gROOT->SetBatch(kTRUE);
     for(unsigned int idx=0; idx<npixels; idx++)
-      { 
+      {
       char biPlotX_00[200], filename_00[100], foldername_00[100];
       char biPlotX_01[200], filename_01[100], foldername_01[100];
       char biPlotX_02[200], filename_02[100], foldername_02[100];
@@ -238,29 +238,29 @@ int main(int argc, char * argv[])
       sprintf( biPlotX_09, "Biplot of secondary protons created from elastic scattering and without elastic interaction in pixel index %d", idx);
       sprintf( biPlotX_10, "Biplot of secondary protons created from elastic scattering and with elastic interaction in pixel index %d", idx);
 
-      sprintf( foldername_00,  "mkdir -p biplot_00");  system(foldername_00);            
-      sprintf( foldername_01,  "mkdir -p biplot_01");  system(foldername_01);             
-      sprintf( foldername_02,  "mkdir -p biplot_02");  system(foldername_02);            
-      sprintf( foldername_03,  "mkdir -p biplot_03");  system(foldername_03);            
-      sprintf( foldername_04,  "mkdir -p biplot_04");  system(foldername_04);            
-      sprintf( foldername_05,  "mkdir -p biplot_05");  system(foldername_05);            
-      sprintf( foldername_06,  "mkdir -p biplot_06");  system(foldername_06);            
-      sprintf( foldername_07,  "mkdir -p biplot_07");  system(foldername_07);            
+      sprintf( foldername_00,  "mkdir -p biplot_00");  system(foldername_00);
+      sprintf( foldername_01,  "mkdir -p biplot_01");  system(foldername_01);
+      sprintf( foldername_02,  "mkdir -p biplot_02");  system(foldername_02);
+      sprintf( foldername_03,  "mkdir -p biplot_03");  system(foldername_03);
+      sprintf( foldername_04,  "mkdir -p biplot_04");  system(foldername_04);
+      sprintf( foldername_05,  "mkdir -p biplot_05");  system(foldername_05);
+      sprintf( foldername_06,  "mkdir -p biplot_06");  system(foldername_06);
+      sprintf( foldername_07,  "mkdir -p biplot_07");  system(foldername_07);
       sprintf( foldername_08,  "mkdir -p biplot_08");  system(foldername_08);
-      sprintf( foldername_09,  "mkdir -p biplot_09");  system(foldername_09);            
+      sprintf( foldername_09,  "mkdir -p biplot_09");  system(foldername_09);
       sprintf( foldername_10,  "mkdir -p biplot_10");  system(foldername_10);
 
-      sprintf( filename_00, "biplot_00/biplotX_%d.png", idx);            
-      sprintf( filename_01, "biplot_01/biplotX_%d.png", idx);            
-      sprintf( filename_02, "biplot_02/biplotX_%d.png", idx);            
-      sprintf( filename_03, "biplot_03/biplotX_%d.png", idx);            
-      sprintf( filename_04, "biplot_04/biplotX_%d.png", idx);            
-      sprintf( filename_05, "biplot_05/biplotX_%d.png", idx);            
-      sprintf( filename_06, "biplot_06/biplotX_%d.png", idx);            
-      sprintf( filename_07, "biplot_07/biplotX_%d.png", idx);            
-      sprintf( filename_08, "biplot_08/biplotX_%d.png", idx);            
-      sprintf( filename_09, "biplot_09/biplotX_%d.png", idx);            
-      sprintf( filename_10, "biplot_10/biplotX_%d.png", idx);            
+      sprintf( filename_00, "biplot_00/biplotX_%d.png", idx);
+      sprintf( filename_01, "biplot_01/biplotX_%d.png", idx);
+      sprintf( filename_02, "biplot_02/biplotX_%d.png", idx);
+      sprintf( filename_03, "biplot_03/biplotX_%d.png", idx);
+      sprintf( filename_04, "biplot_04/biplotX_%d.png", idx);
+      sprintf( filename_05, "biplot_05/biplotX_%d.png", idx);
+      sprintf( filename_06, "biplot_06/biplotX_%d.png", idx);
+      sprintf( filename_07, "biplot_07/biplotX_%d.png", idx);
+      sprintf( filename_08, "biplot_08/biplotX_%d.png", idx);
+      sprintf( filename_09, "biplot_09/biplotX_%d.png", idx);
+      sprintf( filename_10, "biplot_10/biplotX_%d.png", idx);
 
       TH2F *hx_00 = new TH2F("hx_00", biPlotX_00, 210, 0, 210., 90, 0, 90.);
       TH2F *hx_01 = new TH2F("hx_01", biPlotX_01, 210, 0, 210., 90, 0, 90.);
@@ -280,134 +280,134 @@ int main(int argc, char * argv[])
         hx_00->Fill(exitEnergies[idx][i],anglesX[idx][i] * 180./TMath::Pi());
 
         // all primaries
-        if(creatorProcess[idx][i]==0) 
-          { 
-          hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0)
+          {
+          hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // primaries without elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
+          {
+          hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // primaries with elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1)
+          {
+          hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries
-        if(creatorProcess[idx][i]>0) 
-          { 
-          hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]>0)
+          {
+          hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
-        // all secondaries created from inelastic scattering 
-        if(creatorProcess[idx][i]==2) 
-          { 
-          hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        // all secondaries created from inelastic scattering
+        if(creatorProcess[idx][i]==2)
+          {
+          hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // secondaries created from inelastic scattering and no elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0)
+          {
+          hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // secondaries created from inelastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1)
+          {
+          hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering
-        if(creatorProcess[idx][i]==1) 
-          { 
-          hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1)
+          {
+          hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering and without elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0)
+          {
+          hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1)
+          {
+          hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
         }
 
         hx_00->Draw("colz");
-        hx_00->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_00->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_00);            
+        hx_00->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_00->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_00);
         delete hx_00;
 
         hx_01->Draw("colz");
-        hx_01->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_01->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_01);            
+        hx_01->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_01->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_01);
         delete hx_01;
 
         hx_02->Draw("colz");
-        hx_02->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_02->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_02);            
+        hx_02->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_02->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_02);
         delete hx_02;
 
         hx_03->Draw("colz");
-        hx_03->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_03->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_03);            
+        hx_03->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_03->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_03);
         delete hx_03;
 
         hx_04->Draw("colz");
-        hx_04->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_04->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_04);            
+        hx_04->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_04->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_04);
         delete hx_04;
 
         hx_05->Draw("colz");
-        hx_05->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_05->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_05);            
+        hx_05->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_05->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_05);
         delete hx_05;
 
         hx_06->Draw("colz");
-        hx_06->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_06->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_06);            
+        hx_06->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_06->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_06);
         delete hx_06;
 
         hx_07->Draw("colz");
-        hx_07->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_07->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_07);            
+        hx_07->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_07->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_07);
         delete hx_07;
 
         hx_08->Draw("colz");
-        hx_08->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_08->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_08);            
+        hx_08->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_08->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_08);
         delete hx_08;
 
         hx_09->Draw("colz");
-        hx_09->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_09->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_09);            
+        hx_09->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_09->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_09);
         delete hx_09;
 
         hx_10->Draw("colz");
-        hx_10->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_10->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_10);            
+        hx_10->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_10->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_10);
         delete hx_10;
         }
       }
-    
+
 
 //===================================================================================================================================
 // Finalize cuts
@@ -479,7 +479,7 @@ int main(int argc, char * argv[])
           h2->Fill(anglesX[idx][i]);
           }
 
-        if (h1->GetRMS()>=1.) 
+        if (h1->GetRMS()>=1.)
           {
           h1->Fit("gausFit");
           float mean_energy = gausFit->GetParameter(1);
@@ -506,11 +506,11 @@ int main(int argc, char * argv[])
           gminAngle[idx] = mean_angle - args_info.anglecut_arg*sigma_angle;
           gmaxAngle[idx] = mean_angle + args_info.anglecut_arg*sigma_angle;
 
-          pSigmaAngle[idx] = gsigmaAngle[idx]; //sigma_angle; //gsigmaAngle[idx]; 
+          pSigmaAngle[idx] = gsigmaAngle[idx]; //sigma_angle; //gsigmaAngle[idx];
           }
 
         if (h1->GetRMS()<1.)
-          {             
+          {
           gminEnergy[idx] = 0.;
           gmaxEnergy[idx] = 1000.;
 
@@ -523,24 +523,24 @@ int main(int argc, char * argv[])
             char exitenergyfilename[100], energymakefolder[100];
             char exitanglefilename[100], anglemakefolder[100];
 
-            sprintf( energymakefolder, "mkdir -p figs_energy_proj");            
-            sprintf( anglemakefolder,  "mkdir -p figs_angle_proj");            
+            sprintf( energymakefolder, "mkdir -p figs_energy_proj");
+            sprintf( anglemakefolder,  "mkdir -p figs_angle_proj");
 
             system(energymakefolder);
             system(anglemakefolder);
 
-            sprintf( exitenergyfilename, "figs_energy_proj/exitenergy_%d.png", idx);            
-            sprintf( exitanglefilename, "figs_angle_proj/exitangle_%d.png", idx);            
+            sprintf( exitenergyfilename, "figs_energy_proj/exitenergy_%d.png", idx);
+            sprintf( exitanglefilename, "figs_angle_proj/exitangle_%d.png", idx);
 
             h1->Draw();
-            h1->GetXaxis()->SetTitle("Exit energy (MeV)");          
-            h1->GetYaxis()->SetTitle("Number of protons");    
+            h1->GetXaxis()->SetTitle("Exit energy (MeV)");
+            h1->GetYaxis()->SetTitle("Number of protons");
             gPad->Print(exitenergyfilename);
 
             h2->Draw();
-            h2->GetXaxis()->SetTitle("Exit angle (rad)");          
-            h2->GetYaxis()->SetTitle("Number of protons");    
-            gPad->Print(exitanglefilename);            
+            h2->GetXaxis()->SetTitle("Exit angle (rad)");
+            h2->GetYaxis()->SetTitle("Number of protons");
+            gPad->Print(exitanglefilename);
 
             }
           delete h1;
@@ -568,13 +568,13 @@ int main(int argc, char * argv[])
   // Weight standard deviations with parameters
   for(unsigned int idx=0; idx<npixels; idx++)
     {
-    std::cout<<idx<<"\t"<<pSumEnergySq[idx]<<"\t"<<pSumAngleSq[idx]<<std::endl;    
+    std::cout<<idx<<"\t"<<pSumEnergySq[idx]<<"\t"<<pSumAngleSq[idx]<<std::endl;
 //    if(pSumEnergySq[idx]<3.)
-//      pSumEnergySq[idx] = 1000.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries. 
+//      pSumEnergySq[idx] = 1000.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries.
       pSumEnergySq[idx] *= args_info.energycut_arg;
 
     if(pSumAngleSq[idx]==0.0)
-      pSumAngleSq[idx] = 1.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries. 
+      pSumAngleSq[idx] = 1.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries.
     pSumAngleSq[idx]  *= args_info.anglecut_arg;
 
     //std::cout<<idx<<"\t"<<pSumAngleSq[idx]<<std::endl;
@@ -636,9 +636,9 @@ int main(int argc, char * argv[])
       double  anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
-  
-      if(args_info.gauscut_flag 
-         && data[1] >= gminEnergy[idx] // && data[1] <= gmaxEnergy[idx] &&     
+
+      if(args_info.gauscut_flag
+         && data[1] >= gminEnergy[idx] // && data[1] <= gmaxEnergy[idx] &&
          && anglex  <= gmaxAngle[idx]  // && anglex  >= gminAngle[idx]
          && angley  <= gmaxAngle[idx]  // && angley  >= gminAngle[idx]
          )
@@ -656,7 +656,7 @@ int main(int argc, char * argv[])
         pCountsCut[idx]++;
         }
 
-      else if( !args_info.gauscut_flag && 
+      else if( !args_info.gauscut_flag &&
           anglex <= pSumAngleSq [idx] && // Does not work with attenuation CT. Update: It works now, with some modifications above.
           angley <= pSumAngleSq [idx] &&
           vcl_abs(energy-pSumEnergy[idx]) <= pSumEnergySq[idx] )
@@ -706,7 +706,7 @@ int main(int argc, char * argv[])
               exitAnglesCut[idx].push_back(angley);
               pCountsCut[idx]++;
             }
-        }    
+        }
     }
   }
 
@@ -727,9 +727,9 @@ int main(int argc, char * argv[])
       for(unsigned int i=0; i<pCounts[idx]; i++)
           {
          if (eMax[idx]<exitEnergies[idx][i])
-            eMax[idx] = exitEnergies[idx][i];  
+            eMax[idx] = exitEnergies[idx][i];
          if (eMin[idx]>exitEnergies[idx][i])
-            eMin[idx] = exitEnergies[idx][i];  
+            eMin[idx] = exitEnergies[idx][i];
           }
        eMax[idx] +=1;
        eMin[idx] =50.;
@@ -740,13 +740,13 @@ int main(int argc, char * argv[])
       {
       char sPlotE[200], sfilenameE[100], sfoldernameE[100];
       sprintf( sPlotE, "Energy distributions in pixel index %d", idx);
-      sprintf( sfoldernameE,  "mkdir -p splotE");  system(sfoldernameE);            
-      sprintf( sfilenameE, "splotE/splotE_%d.png", idx);            
+      sprintf( sfoldernameE,  "mkdir -p splotE");  system(sfoldernameE);
+      sprintf( sfilenameE, "splotE/splotE_%d.png", idx);
 
       char sPlotA[200], sfilenameA[100], sfoldernameA[100];
       sprintf( sPlotA, "Angular distributions in pixel index %d", idx);
-      sprintf( sfoldernameA,  "mkdir -p splotA");  system(sfoldernameA);            
-      sprintf( sfilenameA, "splotA/splotA_%d.png", idx);            
+      sprintf( sfoldernameA,  "mkdir -p splotA");  system(sfoldernameA);
+      sprintf( sfilenameA, "splotA/splotA_%d.png", idx);
 
       TH1F *shistEnergy_00 = new TH1F("shistEnergy_00", sPlotE, eMax[idx]*5, eMin[idx], eMax[idx]);
       TH1F *shistEnergy_01 = new TH1F("shistEnergy_01", sPlotE, eMax[idx]*5, eMin[idx], eMax[idx]);
@@ -770,35 +770,35 @@ int main(int argc, char * argv[])
 
       for(unsigned int i=0; i<pCounts[idx]; i++)
         {
-        // all protons  
+        // all protons
           shistEnergy_00->Fill(exitEnergies[idx][i]);
           shistAngle_00->Fill(anglesX[idx][i] * 180./TMath::Pi());
           rawcounter00++;
 
         // primaries only
-        if(creatorProcess[idx][i]==0) 
-          { 
+        if(creatorProcess[idx][i]==0)
+          {
           shistEnergy_01->Fill(exitEnergies[idx][i]);
           shistAngle_01->Fill(anglesX[idx][i] * 180./TMath::Pi());
           rawcounter01++;
           }
 
         // primaries without elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0) 
-          { 
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
+          {
           shistEnergy_02->Fill(exitEnergies[idx][i]);
           shistAngle_02->Fill(anglesX[idx][i] * 180./TMath::Pi());
           rawcounter02++;
           }
         // all secondaries
-        if(creatorProcess[idx][i]>0) 
-          { 
+        if(creatorProcess[idx][i]>0)
+          {
           shistEnergy_03->Fill(exitEnergies[idx][i]);
           shistAngle_03->Fill(anglesX[idx][i] * 180./TMath::Pi());
           rawcounter03++;
           }
 
-        if(anglesX[idx][i] <= pSumAngleSq [idx] && 
+        if(anglesX[idx][i] <= pSumAngleSq [idx] &&
            anglesY[idx][i] <= pSumAngleSq [idx] &&
            vcl_abs((Ein-exitEnergies[idx][i])-pSumEnergy[idx]) <= pSumEnergySq[idx] )
           {
@@ -813,8 +813,8 @@ int main(int argc, char * argv[])
 
         shistEnergy_00->Draw("");
         shistEnergy_00->SetLineColor(kBlack);
-        shistEnergy_00->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        shistEnergy_00->GetYaxis()->SetTitle("Number of protons");    
+        shistEnergy_00->GetXaxis()->SetTitle("Exit energy (MeV)");
+        shistEnergy_00->GetYaxis()->SetTitle("Number of protons");
 
         shistEnergy_01->Draw("same");
         shistEnergy_01->SetLineColor(kRed);
@@ -834,7 +834,7 @@ int main(int argc, char * argv[])
         sprintf( legend02, "Primary protons without nuclear interactions (%.2f%%)", (float)rawcounter02/rawcounter00*100);
         sprintf( legend03, "Secondary protons (%.2f%%)", (float)rawcounter03/rawcounter00*100);
         sprintf( legend04, "With cut (%.2f%%)", (float)cutcounter00/rawcounter00*100);
-    
+
         TLegend *leg = new TLegend(0.1,0.7,0.48,0.9);
         leg->AddEntry(shistEnergy_00,legend00);
         leg->AddEntry(shistEnergy_01,legend01);
@@ -843,7 +843,7 @@ int main(int argc, char * argv[])
         leg->AddEntry(shistEnergy_04,legend04);
         leg->Draw();
 
-        gPad->Print(sfilenameE);            
+        gPad->Print(sfilenameE);
         delete shistEnergy_00;
         delete shistEnergy_01;
         delete shistEnergy_02;
@@ -853,8 +853,8 @@ int main(int argc, char * argv[])
 
         shistAngle_00->Draw("");
         shistAngle_00->SetLineColor(kBlack);
-        shistAngle_00->GetXaxis()->SetTitle("Exit angle (deg)");          
-        shistAngle_00->GetYaxis()->SetTitle("Number of protons");    
+        shistAngle_00->GetXaxis()->SetTitle("Exit angle (deg)");
+        shistAngle_00->GetYaxis()->SetTitle("Number of protons");
 
         shistAngle_01->Draw("same");
         shistAngle_01->SetLineColor(kRed);
@@ -876,7 +876,7 @@ int main(int argc, char * argv[])
         legA->AddEntry(shistAngle_04,legend04);
         legA->Draw();
 
-        gPad->Print(sfilenameA);            
+        gPad->Print(sfilenameA);
         delete shistAngle_00;
         delete shistAngle_01;
         delete shistAngle_02;
@@ -895,13 +895,13 @@ int main(int argc, char * argv[])
       {
       char sPlotE[200], sfilenameE[100], sfoldernameE[100];
       sprintf( sPlotE, "Energy distributions with cut in pixel index %d", idx);
-      sprintf( sfoldernameE,  "mkdir -p cutsplotE");  system(sfoldernameE);            
-      sprintf( sfilenameE, "cutsplotE/splotE_%d.png", idx);            
+      sprintf( sfoldernameE,  "mkdir -p cutsplotE");  system(sfoldernameE);
+      sprintf( sfilenameE, "cutsplotE/splotE_%d.png", idx);
 
       char sPlotA[200], sfilenameA[100], sfoldernameA[100];
       sprintf( sPlotA, "Angular distributions in pixel index %d", idx);
-      sprintf( sfoldernameA,  "mkdir -p cutsplotA");  system(sfoldernameA);            
-      sprintf( sfilenameA, "cutsplotA/splotA_%d.png", idx);            
+      sprintf( sfoldernameA,  "mkdir -p cutsplotA");  system(sfoldernameA);
+      sprintf( sfilenameA, "cutsplotA/splotA_%d.png", idx);
 
       TH1F *shistEnergy_00 = new TH1F("shistEnergy_00", sPlotE, 420, 0., 210.);
       TH1F *shistEnergy_01 = new TH1F("shistEnergy_01", sPlotE, 420, 0., 210.);
@@ -921,35 +921,35 @@ int main(int argc, char * argv[])
 
       for(unsigned int i=0; i<pCounts[idx]; i++)
         {
-        if( !args_info.gauscut_flag && 
-          anglesX[idx][i] <= pSumAngleSq [idx] && 
+        if( !args_info.gauscut_flag &&
+          anglesX[idx][i] <= pSumAngleSq [idx] &&
           anglesY[idx][i] <= pSumAngleSq [idx] &&
           vcl_abs((Ein-exitEnergies[idx][i])-pSumEnergy[idx]) <= pSumEnergySq[idx] )
           {
 
-        // all protons  
+        // all protons
           shistEnergy_00->Fill(exitEnergies[idx][i]);
           shistAngle_00->Fill(anglesX[idx][i] * 180./TMath::Pi());
           cutcounter00++;
 
         // primaries only
-        if(creatorProcess[idx][i]==0) 
-          { 
+        if(creatorProcess[idx][i]==0)
+          {
           shistEnergy_01->Fill(exitEnergies[idx][i]);
           shistAngle_01->Fill(anglesX[idx][i] * 180./TMath::Pi());
           cutcounter01++;
           }
 
         // primaries without elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0) 
-          { 
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
+          {
           shistEnergy_02->Fill(exitEnergies[idx][i]);
           shistAngle_02->Fill(anglesX[idx][i] * 180./TMath::Pi());
           cutcounter02++;
           }
         // all secondaries
-        if(creatorProcess[idx][i]>0) 
-          { 
+        if(creatorProcess[idx][i]>0)
+          {
           shistEnergy_03->Fill(exitEnergies[idx][i]);
           shistAngle_03->Fill(anglesX[idx][i] * 180./TMath::Pi());
           cutcounter03++;
@@ -962,8 +962,8 @@ int main(int argc, char * argv[])
 
         shistEnergy_00->Draw("");
         shistEnergy_00->SetLineColor(kBlack);
-        shistEnergy_00->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        shistEnergy_00->GetYaxis()->SetTitle("Number of protons");    
+        shistEnergy_00->GetXaxis()->SetTitle("Exit energy (MeV)");
+        shistEnergy_00->GetYaxis()->SetTitle("Number of protons");
 
         shistEnergy_01->Draw("same");
         shistEnergy_01->SetLineColor(kRed);
@@ -978,7 +978,7 @@ int main(int argc, char * argv[])
         sprintf( legend01, "Primary protons (%.2f%%)", (float)cutcounter01/rawcounter00*100);
         sprintf( legend02, "Primary protons without nuclear interactions (%.2f%%)", (float)cutcounter02/rawcounter00*100);
         sprintf( legend03, "Secondary protons (%.2f%%)", (float)cutcounter03/rawcounter00*100);
-    
+
         TLegend *leg = new TLegend(0.1,0.7,0.48,0.9);
         leg->AddEntry(shistEnergy_00,legend00);
         leg->AddEntry(shistEnergy_01,legend01);
@@ -986,7 +986,7 @@ int main(int argc, char * argv[])
         leg->AddEntry(shistEnergy_03,legend03);
         leg->Draw();
 
-        gPad->Print(sfilenameE);            
+        gPad->Print(sfilenameE);
         delete shistEnergy_00;
         delete shistEnergy_01;
         delete shistEnergy_02;
@@ -995,8 +995,8 @@ int main(int argc, char * argv[])
 
         shistAngle_00->Draw("");
         shistAngle_00->SetLineColor(kBlack);
-        shistAngle_00->GetXaxis()->SetTitle("Exit angle (deg)");          
-        shistAngle_00->GetYaxis()->SetTitle("Number of protons");    
+        shistAngle_00->GetXaxis()->SetTitle("Exit angle (deg)");
+        shistAngle_00->GetYaxis()->SetTitle("Number of protons");
 
         shistAngle_01->Draw("same");
         shistAngle_01->SetLineColor(kRed);
@@ -1014,7 +1014,7 @@ int main(int argc, char * argv[])
         legA->AddEntry(shistAngle_03,legend03);
         legA->Draw();
 
-        gPad->Print(sfilenameA);            
+        gPad->Print(sfilenameA);
         delete shistAngle_00;
         delete shistAngle_01;
         delete shistAngle_02;
@@ -1032,7 +1032,7 @@ int main(int argc, char * argv[])
     {
     gROOT->SetBatch(kTRUE);
     for(unsigned int idx=0; idx<npixels; idx++)
-      { 
+      {
       char cbiPlotX_00[200], filename_00[100], foldername_00[100];
       char cbiPlotX_01[200], filename_01[100], foldername_01[100];
       char cbiPlotX_02[200], filename_02[100], foldername_02[100];
@@ -1057,29 +1057,29 @@ int main(int argc, char * argv[])
       sprintf( cbiPlotX_09, "Biplot with cut of secondary protons created from elastic scattering and without elastic interaction in pixel index %d", idx);
       sprintf( cbiPlotX_10, "Biplot with cut of secondary protons created from elastic scattering and with elastic interaction in pixel index %d", idx);
 
-      sprintf( foldername_00,  "mkdir -p cutbiplot_00");  system(foldername_00);            
-      sprintf( foldername_01,  "mkdir -p cutbiplot_01");  system(foldername_01);             
-      sprintf( foldername_02,  "mkdir -p cutbiplot_02");  system(foldername_02);            
-      sprintf( foldername_03,  "mkdir -p cutbiplot_03");  system(foldername_03);            
-      sprintf( foldername_04,  "mkdir -p cutbiplot_04");  system(foldername_04);            
-      sprintf( foldername_05,  "mkdir -p cutbiplot_05");  system(foldername_05);            
-      sprintf( foldername_06,  "mkdir -p cutbiplot_06");  system(foldername_06);            
-      sprintf( foldername_07,  "mkdir -p cutbiplot_07");  system(foldername_07);            
+      sprintf( foldername_00,  "mkdir -p cutbiplot_00");  system(foldername_00);
+      sprintf( foldername_01,  "mkdir -p cutbiplot_01");  system(foldername_01);
+      sprintf( foldername_02,  "mkdir -p cutbiplot_02");  system(foldername_02);
+      sprintf( foldername_03,  "mkdir -p cutbiplot_03");  system(foldername_03);
+      sprintf( foldername_04,  "mkdir -p cutbiplot_04");  system(foldername_04);
+      sprintf( foldername_05,  "mkdir -p cutbiplot_05");  system(foldername_05);
+      sprintf( foldername_06,  "mkdir -p cutbiplot_06");  system(foldername_06);
+      sprintf( foldername_07,  "mkdir -p cutbiplot_07");  system(foldername_07);
       sprintf( foldername_08,  "mkdir -p cutbiplot_08");  system(foldername_08);
-      sprintf( foldername_09,  "mkdir -p cutbiplot_09");  system(foldername_09);            
+      sprintf( foldername_09,  "mkdir -p cutbiplot_09");  system(foldername_09);
       sprintf( foldername_10,  "mkdir -p cutbiplot_10");  system(foldername_10);
 
-      sprintf( filename_00, "cutbiplot_00/biplotX_%d.png", idx);            
-      sprintf( filename_01, "cutbiplot_01/biplotX_%d.png", idx);            
-      sprintf( filename_02, "cutbiplot_02/biplotX_%d.png", idx);            
-      sprintf( filename_03, "cutbiplot_03/biplotX_%d.png", idx);            
-      sprintf( filename_04, "cutbiplot_04/biplotX_%d.png", idx);            
-      sprintf( filename_05, "cutbiplot_05/biplotX_%d.png", idx);            
-      sprintf( filename_06, "cutbiplot_06/biplotX_%d.png", idx);            
-      sprintf( filename_07, "cutbiplot_07/biplotX_%d.png", idx);            
-      sprintf( filename_08, "cutbiplot_08/biplotX_%d.png", idx);            
-      sprintf( filename_09, "cutbiplot_09/biplotX_%d.png", idx);            
-      sprintf( filename_10, "cutbiplot_10/biplotX_%d.png", idx);            
+      sprintf( filename_00, "cutbiplot_00/biplotX_%d.png", idx);
+      sprintf( filename_01, "cutbiplot_01/biplotX_%d.png", idx);
+      sprintf( filename_02, "cutbiplot_02/biplotX_%d.png", idx);
+      sprintf( filename_03, "cutbiplot_03/biplotX_%d.png", idx);
+      sprintf( filename_04, "cutbiplot_04/biplotX_%d.png", idx);
+      sprintf( filename_05, "cutbiplot_05/biplotX_%d.png", idx);
+      sprintf( filename_06, "cutbiplot_06/biplotX_%d.png", idx);
+      sprintf( filename_07, "cutbiplot_07/biplotX_%d.png", idx);
+      sprintf( filename_08, "cutbiplot_08/biplotX_%d.png", idx);
+      sprintf( filename_09, "cutbiplot_09/biplotX_%d.png", idx);
+      sprintf( filename_10, "cutbiplot_10/biplotX_%d.png", idx);
 
       TH2F *hx_00 = new TH2F("hx_00", cbiPlotX_00, 210, 0, 210., 90, 0, 90.);
       TH2F *hx_01 = new TH2F("hx_01", cbiPlotX_01, 210, 0, 210., 90, 0, 90.);
@@ -1095,8 +1095,8 @@ int main(int argc, char * argv[])
 
       for(unsigned int i=0; i<pCounts[idx]; i++)
         {
-        if( !args_info.gauscut_flag && 
-          anglesX[idx][i] <= pSumAngleSq [idx] && 
+        if( !args_info.gauscut_flag &&
+          anglesX[idx][i] <= pSumAngleSq [idx] &&
           //anglesY[idx][i] <= pSumAngleSq [idx] &&
           vcl_abs((Ein-exitEnergies[idx][i])-pSumEnergy[idx]) <= pSumEnergySq[idx] )
           {
@@ -1104,131 +1104,131 @@ int main(int argc, char * argv[])
         hx_00->Fill(exitEnergies[idx][i],anglesX[idx][i] * 180./TMath::Pi());
 
         // all primaries
-        if(creatorProcess[idx][i]==0) 
-          { 
-          hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0)
+          {
+          hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // primaries without elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
+          {
+          hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // primaries with elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1)
+          {
+          hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries
-        if(creatorProcess[idx][i]>0) 
-          { 
-          hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]>0)
+          {
+          hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
-        // all secondaries created from inelastic scattering 
-        if(creatorProcess[idx][i]==2) 
-          { 
-          hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        // all secondaries created from inelastic scattering
+        if(creatorProcess[idx][i]==2)
+          {
+          hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // secondaries created from inelastic scattering and no elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0)
+          {
+          hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // secondaries created from inelastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1)
+          {
+          hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering
-        if(creatorProcess[idx][i]==1) 
-          { 
-          hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1)
+          {
+          hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering and without elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0) 
-          { 
-          hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0)
+          {
+          hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
 
         // all secondaries created from elastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1) 
-          { 
-          hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());  
+        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1)
+          {
+          hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
           }
         }
       }
 
         hx_00->Draw("colz");
-        hx_00->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_00->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_00);            
+        hx_00->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_00->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_00);
         delete hx_00;
 
         hx_01->Draw("colz");
-        hx_01->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_01->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_01);            
+        hx_01->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_01->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_01);
         delete hx_01;
 
         hx_02->Draw("colz");
-        hx_02->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_02->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_02);            
+        hx_02->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_02->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_02);
         delete hx_02;
 
         hx_03->Draw("colz");
-        hx_03->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_03->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_03);            
+        hx_03->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_03->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_03);
         delete hx_03;
 
         hx_04->Draw("colz");
-        hx_04->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_04->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_04);            
+        hx_04->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_04->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_04);
         delete hx_04;
 
         hx_05->Draw("colz");
-        hx_05->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_05->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_05);            
+        hx_05->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_05->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_05);
         delete hx_05;
 
         hx_06->Draw("colz");
-        hx_06->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_06->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_06);            
+        hx_06->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_06->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_06);
         delete hx_06;
 
         hx_07->Draw("colz");
-        hx_07->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_07->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_07);            
+        hx_07->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_07->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_07);
         delete hx_07;
 
         hx_08->Draw("colz");
-        hx_08->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_08->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_08);            
+        hx_08->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_08->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_08);
         delete hx_08;
 
         hx_09->Draw("colz");
-        hx_09->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_09->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_09);            
+        hx_09->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_09->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_09);
         delete hx_09;
 
         hx_10->Draw("colz");
-        hx_10->GetXaxis()->SetTitle("Exit energy (MeV)");          
-        hx_10->GetYaxis()->SetTitle("Exit angle (deg)");    
-        gPad->Print(filename_10);            
+        hx_10->GetXaxis()->SetTitle("Exit energy (MeV)");
+        hx_10->GetYaxis()->SetTitle("Exit angle (deg)");
+        gPad->Print(filename_10);
         delete hx_10;
        }
       }
@@ -1317,7 +1317,7 @@ int main(int argc, char * argv[])
         {
         rooEnergy = energies[p][i]/CLHEP::MeV;
         rooEnergyData.add(RooArgSet(rooEnergy));
-        h1->Fill(exitEnergies[p][i]);  
+        h1->Fill(exitEnergies[p][i]);
         }
       h1->Draw("");
       statdata_raw << h1->GetEntries() << "\t" << h1->GetMean() << "\t" << h1->GetRMS() << std::endl;
@@ -1406,16 +1406,16 @@ int main(int argc, char * argv[])
 
         h->Draw();
         statdata_cut << h->GetEntries() << "\t" << h->GetMean() << "\t" << h->GetRMS() << std::endl;
-        sprintf( energymakefolder, "mkdir -p figscut_energy_proj%d", args_info.plotCutDistribution_arg);            
+        sprintf( energymakefolder, "mkdir -p figscut_energy_proj%d", args_info.plotCutDistribution_arg);
         system(energymakefolder);
-        sprintf( exitenergyfilename, "figscut_energy_proj%d/exitenergy_%d.png", args_info.plotCutDistribution_arg,p);            
+        sprintf( exitenergyfilename, "figscut_energy_proj%d/exitenergy_%d.png", args_info.plotCutDistribution_arg,p);
         gPad->Print(exitenergyfilename);
         delete h;
 
         h3_cut->Draw("colz");
-        sprintf( energyanglemakefolder, "mkdir -p figscut_energyangle_proj%d", args_info.plotCutDistribution_arg);            
+        sprintf( energyanglemakefolder, "mkdir -p figscut_energyangle_proj%d", args_info.plotCutDistribution_arg);
         system(energyanglemakefolder);
-        sprintf( exitenergyanglefilename, "figscut_energyangle_proj%d/exitenergyangle_%d.png", args_info.plotCutDistribution_arg,p);            
+        sprintf( exitenergyanglefilename, "figscut_energyangle_proj%d/exitenergyangle_%d.png", args_info.plotCutDistribution_arg,p);
         gPad->Print(exitenergyanglefilename);
         delete h3_cut;
         }
