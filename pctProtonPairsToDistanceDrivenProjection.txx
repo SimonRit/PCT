@@ -172,7 +172,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
       }
 
-    eIn = it.Get()[0];
+    const double eIn = it.Get()[0];
     const double eOut = it.Get()[1];
     double value = 0.;
     if(eIn==0.)
@@ -328,21 +328,20 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Angle->SetOrigin( this->GetOutput()->GetOrigin() );
 
   // Initialize scattering WEPL LUT
-  pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(eIn);
+  pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(m_ProtonPairs->GetBufferPointer()[4][0]);
 
   // Pointer
   pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL pointer;
-  
- 
+
   while(!itCOut.IsAtEnd())
     {
-    if(itCOut.Get()) 
+    if(itCOut.Get())
       {
       // Normalize eloss wepl with proton count (average)
       itOut.Set(itOut.Get()/itCOut.Get());
 
       // Calculate angular variance (sigma2) and convert to scattering wepl
-      double sigma2 = itAngleSqOut.Get()/itCOut.Get() - itAngleOut.Get()*itAngleOut.Get()/itCOut.Get()/itCOut.Get() ; 
+      double sigma2 = itAngleSqOut.Get()/itCOut.Get() - itAngleOut.Get()*itAngleOut.Get()/itCOut.Get()/itCOut.Get() ;
       itAngleOut.Set( pointer.GetValue(sigma2) );
       }
     ++itOut;
