@@ -6,6 +6,7 @@
 
 #include <rtkRayQuadricIntersectionFunction.h>
 #include <itkInPlaceImageFilter.h>
+#include <itkSimpleFastMutexLock.h>
 
 namespace pct
 {
@@ -21,22 +22,19 @@ public:
   typedef itk::SmartPointer<Self>                           Pointer;
   typedef itk::SmartPointer<const Self>                     ConstPointer;
 
-  typedef itk::Vector<float, 3>                        ProtonPairsPixelType;
-  typedef itk::Image<ProtonPairsPixelType,2>           ProtonPairsImageType;
-  typedef ProtonPairsImageType::Pointer                ProtonPairsImagePointer;
+  typedef itk::Vector<float, 3>                             ProtonPairsPixelType;
+  typedef itk::Image<ProtonPairsPixelType,2>                ProtonPairsImageType;
+  typedef ProtonPairsImageType::Pointer                     ProtonPairsImagePointer;
 
-  typedef itk::Image<float, 3>                  CountImageType;
-  typedef CountImageType::Pointer                      CountImagePointer;
+  typedef itk::Image<float, 3>                              CountImageType;
+  typedef CountImageType::Pointer                           CountImagePointer;
 
-  typedef itk::Image<float, 3>                  AngleImageType;
-  typedef AngleImageType::Pointer                      AngleImagePointer;
+  typedef itk::Image<float, 3>                              AngleImageType;
+  typedef AngleImageType::Pointer                           AngleImagePointer;
 
-  typedef itk::Image<float, 3>                  AngleSqImageType;
-  typedef AngleSqImageType::Pointer                      AngleSqImagePointer;
-
-  typedef TOutputImage                                 OutputImageType;
-  typedef typename OutputImageType::Pointer            OutputImagePointer;
-  typedef typename OutputImageType::RegionType         OutputImageRegionType;
+  typedef TOutputImage                                      OutputImageType;
+  typedef typename OutputImageType::Pointer                 OutputImagePointer;
+  typedef typename OutputImageType::RegionType              OutputImageRegionType;
 
   typedef rtk::RayQuadricIntersectionFunction<double,3> RQIType;
 
@@ -74,6 +72,12 @@ public:
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
 
+  /** Convert the projection data to line integrals after pre-processing.
+  ** Default is off. */
+  itkSetMacro(Robust, bool);
+  itkGetConstMacro(Robust, bool);
+  itkBooleanMacro(Robust);
+
 protected:
   ProtonPairsToDistanceDrivenProjection() {}
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
@@ -98,11 +102,13 @@ private:
   CountImagePointer m_Count;
   std::vector<CountImagePointer> m_Counts;
 
-  AngleImagePointer m_Angle;
-  std::vector<AngleImagePointer> m_Angles;
+  AngleImagePointer                 m_Angle;
+  std::vector<AngleImagePointer>    m_Angles;
+  std::vector< std::vector<float> > m_AnglesVectors;
+  itk::SimpleFastMutexLock          m_AnglesVectorsMutex;
 
-  AngleSqImagePointer m_AngleSq;
-  std::vector<AngleSqImagePointer> m_AnglesSq;
+  AngleImagePointer m_AngleSq;
+  std::vector<AngleImagePointer> m_AnglesSq;
 
 
   /** Create one output per thread */
@@ -121,6 +127,7 @@ private:
   Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
 
   ProtonPairsImageType::Pointer m_ProtonPairs;
+  bool                          m_Robust;
 };
 
 } // end namespace pct

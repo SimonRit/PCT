@@ -17,6 +17,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Outputs.resize( this->GetNumberOfThreads() );
   m_Counts.resize( this->GetNumberOfThreads() );
   m_Angles.resize( this->GetNumberOfThreads() );
+  m_AnglesVectors.resize( this->GetInput()->GetLargestPossibleRegion().GetNumberOfPixels() );
   m_AnglesSq.resize( this->GetNumberOfThreads() );
 
   if(m_QuadricOut.GetPointer()==NULL)
@@ -53,15 +54,18 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts[threadId]->Allocate();
   m_Counts[threadId]->FillBuffer(0);
 
-  m_Angles[threadId] = AngleImageType::New();
-  m_Angles[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
-  m_Angles[threadId]->Allocate();
-  m_Angles[threadId]->FillBuffer(0);
+  if(!m_Robust || threadId==0)
+    {
+    m_Angles[threadId] = AngleImageType::New();
+    m_Angles[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
+    m_Angles[threadId]->Allocate();
+    m_Angles[threadId]->FillBuffer(0);
 
-  m_AnglesSq[threadId] = AngleSqImageType::New();
-  m_AnglesSq[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
-  m_AnglesSq[threadId]->Allocate();
-  m_AnglesSq[threadId]->FillBuffer(0);
+    m_AnglesSq[threadId] = AngleImageType::New();
+    m_AnglesSq[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
+    m_AnglesSq[threadId]->Allocate();
+    m_AnglesSq[threadId]->FillBuffer(0);
+    }
 
   if(threadId==0)
     {
@@ -69,7 +73,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     m_Count = m_Counts[0];
     m_Angle = m_Angles[0];
     m_AngleSq = m_AnglesSq[0];
-
     }
   else
     {
@@ -92,8 +95,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
   float *imgCountData = m_Counts[threadId]->GetBufferPointer();
-  float *imgAngleData = m_Angles[threadId]->GetBufferPointer();
-  float *imgAngleSqData = m_AnglesSq[threadId]->GetBufferPointer();
+  float *imgAngleData = NULL, *imgAngleSqData = NULL;
+  if(!m_Robust)
+    {
+    imgAngleData = m_Angles[threadId]->GetBufferPointer();
+    imgAngleSqData = m_AnglesSq[threadId]->GetBufferPointer();
+    }
 
   itk::Vector<float, 3> imgSpacingInv;
   for(unsigned int i=0; i<3; i++)
@@ -159,13 +166,20 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType pOut = it.Get();
     ++it;
-
     VectorType dIn = it.Get();
     ++it;
     const double angle_out = it.Get()[1];
 
     VectorType dOut = it.Get();
     ++it;
+
+    //typedef itk::Vector<double, 2> VectorTwoDType;
+    //VectorTwoDType dInX, dOutX;
+    //dInX[0] = dIn[0];
+    //dInX[1] = dIn[2];
+    //dOutX[0] = dOut[0];
+    //dOutX[1] = dOut[2];
+    //const double angle_out = vcl_acos( std::min(1.,dInX*dOutX / ( dIn.GetNorm() * dOutX.GetNorm() ) ) );
 
     if(pIn[2] > pOut[2])
       {
@@ -249,8 +263,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
         imgData[ idx ] += value;
         imgCountData[ idx ]++;
-        imgAngleData[ idx ] += angle_out;
-        imgAngleSqData[ idx ] += angle_out*angle_out;
+        if(m_Robust)
+          {
+          m_AnglesVectorsMutex.Lock();
+          m_AnglesVectors[idx].push_back(vcl_abs(angle_out));
+          m_AnglesVectorsMutex.Unlock();
+          }
+        else
+          {
+          imgAngleData[ idx ] += angle_out;
+          imgAngleSqData[ idx ] += angle_out*angle_out;
+          }
         }
       }
   }
@@ -281,7 +304,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   typedef itk::ImageRegionIterator<AngleImageType> ImageAngleIteratorType;
   ImageAngleIteratorType itAngleOut(m_Angles[0], m_Outputs[0]->GetLargestPossibleRegion());
 
-  typedef itk::ImageRegionIterator<AngleSqImageType> ImageAngleSqIteratorType;
+  typedef itk::ImageRegionIterator<AngleImageType> ImageAngleSqIteratorType;
   ImageAngleSqIteratorType itAngleSqOut(m_AnglesSq[0], m_Outputs[0]->GetLargestPossibleRegion());
 
   // Merge the projection computed in each thread to the first one
@@ -291,8 +314,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       continue;
     ImageIteratorType itOutThread(m_Outputs[i], m_Outputs[i]->GetLargestPossibleRegion());
     ImageCountIteratorType itCOutThread(m_Counts[i], m_Outputs[i]->GetLargestPossibleRegion());
-    ImageAngleIteratorType itAngleOutThread(m_Angles[i], m_Outputs[i]->GetLargestPossibleRegion());
-    ImageAngleSqIteratorType itAngleSqOutThread(m_AnglesSq[i], m_Outputs[i]->GetLargestPossibleRegion());
 
     while(!itOut.IsAtEnd())
       {
@@ -303,22 +324,35 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itCOut.Set(itCOut.Get()+itCOutThread.Get());
       ++itCOutThread;
       ++itCOut;
-
-      itAngleOut.Set(itAngleOut.Get()+itAngleOutThread.Get());
-      ++itAngleOutThread;
-      ++itAngleOut;
-
-      itAngleSqOut.Set(itAngleSqOut.Get()+itAngleSqOutThread.Get());
-      ++itAngleSqOutThread;
-      ++itAngleSqOut;
       }
 
     itOut.GoToBegin();
     itCOut.GoToBegin();
-    itAngleOut.GoToBegin();
-    itAngleSqOut.GoToBegin();
     }
 
+  if(!m_Robust)
+    {
+    for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
+      {
+      if(m_Outputs[i].GetPointer() == NULL)
+        continue;
+      ImageAngleIteratorType itAngleOutThread(m_Angles[i], m_Outputs[i]->GetLargestPossibleRegion());
+      ImageAngleSqIteratorType itAngleSqOutThread(m_AnglesSq[i], m_Outputs[i]->GetLargestPossibleRegion());
+
+      while(!itAngleOut.IsAtEnd())
+        {
+        itAngleOut.Set(itAngleOut.Get()+itAngleOutThread.Get());
+        ++itAngleOutThread;
+        ++itAngleOut;
+
+        itAngleSqOut.Set(itAngleSqOut.Get()+itAngleSqOutThread.Get());
+        ++itAngleSqOutThread;
+        ++itAngleSqOut;
+        }
+      itAngleOut.GoToBegin();
+      itAngleSqOut.GoToBegin();
+      }
+    }
   // Set count image information
   m_Count->SetSpacing( this->GetOutput()->GetSpacing() );
   m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
@@ -333,6 +367,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   // Pointer
   pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL pointer;
 
+  std::vector< std::vector<float> >::iterator itAnglesVectors = m_AnglesVectors.begin();
   while(!itCOut.IsAtEnd())
     {
     if(itCOut.Get())
@@ -341,13 +376,38 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itOut.Set(itOut.Get()/itCOut.Get());
 
       // Calculate angular variance (sigma2) and convert to scattering wepl
-      double sigma2 = itAngleSqOut.Get()/itCOut.Get() - itAngleOut.Get()*itAngleOut.Get()/itCOut.Get()/itCOut.Get() ;
-      itAngleOut.Set( pointer.GetValue(sigma2) );
+      if(m_Robust)
+        {
+        if(itCOut.Get()==1)
+          {
+          itAngleOut.Set( 0. );
+          }
+        else
+          {
+          // Angle: 38.30% (0.5 sigma) with interpolation (median is 0. and we only have positive values
+          double sigmaAPos = itAnglesVectors->size()*0.3830;
+          unsigned int sigmaASupPos = itk::Math::Ceil<unsigned int, double>(sigmaAPos);
+          std::partial_sort(itAnglesVectors->begin(),
+                            itAnglesVectors->begin()+sigmaASupPos+1,
+                            itAnglesVectors->end());
+          double sigmaADiff = sigmaASupPos-sigmaAPos;
+          double sigma = 2.*(*(itAnglesVectors->begin()+sigmaASupPos)*(1.-sigmaADiff)+
+                             *(itAnglesVectors->begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
+          itAngleOut.Set( pointer.GetValue(sigma * sigma) );
+          }
+        }
+      else
+        {
+        double sigma2 = itAngleSqOut.Get()/itCOut.Get() - itAngleOut.Get()*itAngleOut.Get()/itCOut.Get()/itCOut.Get() ;
+        itAngleOut.Set( pointer.GetValue(sigma2) );
+        }
       }
+
     ++itOut;
     ++itCOut;
     ++itAngleOut;
     ++itAngleSqOut;
+    ++itAnglesVectors;
     }
 
   // Free images created in threads
@@ -355,6 +415,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts.resize( 0 );
   m_Angles.resize( 0 );
   m_AnglesSq.resize( 0 );
+  m_AnglesVectors.resize( 0 );
 }
 
 }
