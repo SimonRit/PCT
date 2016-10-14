@@ -168,18 +168,23 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     ++it;
     VectorType dIn = it.Get();
     ++it;
-    const double angle_out = it.Get()[1];
-
     VectorType dOut = it.Get();
     ++it;
 
-    //typedef itk::Vector<double, 2> VectorTwoDType;
-    //VectorTwoDType dInX, dOutX;
-    //dInX[0] = dIn[0];
-    //dInX[1] = dIn[2];
-    //dOutX[0] = dOut[0];
-    //dOutX[1] = dOut[2];
-    //const double angle_out = vcl_acos( std::min(1.,dInX*dOutX / ( dIn.GetNorm() * dOutX.GetNorm() ) ) );
+    typedef itk::Vector<double, 2> VectorTwoDType;
+
+      VectorTwoDType dInX, dInY, dOutX, dOutY;
+      dInX[0] = dIn[0];
+      dInX[1] = dIn[2];
+      dInY[0] = dIn[1];
+      dInY[1] = dIn[2];
+      dOutX[0] = dOut[0];
+      dOutX[1] = dOut[2];
+      dOutY[0] = dOut[1];
+      dOutY[1] = dOut[2];
+
+      double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+      double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
 
     if(pIn[2] > pOut[2])
       {
@@ -266,13 +271,16 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         if(m_Robust)
           {
           m_AnglesVectorsMutex.Lock();
-          m_AnglesVectors[idx].push_back(vcl_abs(angle_out));
+          m_AnglesVectors[idx].push_back(anglex);
+          m_AnglesVectors[idx].push_back(angley);
           m_AnglesVectorsMutex.Unlock();
           }
         else
           {
-          imgAngleData[ idx ] += angle_out;
-          imgAngleSqData[ idx ] += angle_out*angle_out;
+          imgAngleData[ idx ] += anglex;
+          imgAngleData[ idx ] += angley;
+          imgAngleSqData[ idx ] += anglex*anglex;
+          imgAngleSqData[ idx ] += angley*angley;
           }
         }
       }
@@ -394,12 +402,14 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
           double sigma = 2.*(*(itAnglesVectors->begin()+sigmaASupPos)*(1.-sigmaADiff)+
                              *(itAnglesVectors->begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
           itAngleOut.Set( pointer.GetValue(sigma * sigma) );
+          //itAngleOut.Set( sigma * sigma );
           }
         }
       else
         {
-        double sigma2 = itAngleSqOut.Get()/itCOut.Get() - itAngleOut.Get()*itAngleOut.Get()/itCOut.Get()/itCOut.Get() ;
-        itAngleOut.Set( pointer.GetValue(sigma2) );
+        double sigma2 = itAngleSqOut.Get()/itCOut.Get()/2;
+        itAngleOut.Set( pointer.GetValue( sigma2 ) );
+        //itAngleOut.Set( sigma2 );
         }
       }
 
