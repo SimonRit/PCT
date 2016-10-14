@@ -77,7 +77,7 @@ public:
     {
     // Reads LUT from a txt file
     char inputfilename[200];
-    sprintf(inputfilename, "/home/srit/src/pct/pct/database/ScatteringWaterLut_%iMeV.txt", (int)eIn);
+    sprintf(inputfilename, "/home/ctquinones/src/pct/database/ScatteringWaterLut_%iMeV.txt", (int)eIn);
     std::ifstream inputfile;
     inputfile.open(inputfilename);
 
@@ -120,8 +120,11 @@ public:
       y1 = thickness_lut[i+1];
       }
 
+    if(x0==0 || x1==0) 
+      value = 0;
     // calculate wepl using linear interpolation
-    value = y0 + (y1-y0) * (sigma2-x0) / (x1 - x0);
+    else 
+      value = y0 + (y1-y0) * (sigma2-x0) / (x1 - x0);
 
     return value;
     }
