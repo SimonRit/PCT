@@ -47,6 +47,11 @@ ELSE()
 ENDIF()
 
 #=========================================================
+# We remove the warning option "shadow", because there are tons of
+# such warning related to clhep/g4 system of units.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
+
+#=========================================================
 # Executables
 MACRO (ADD_PCT_EXECUTABLE EXE_NAME)
   WRAP_GGO(${EXE_NAME}_GGO_C ${EXE_NAME}.ggo)
@@ -70,6 +75,9 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
 TARGET_LINK_LIBRARIES(pctpaircuts ${ROOT_LIBRARIES} RooFit RooFitCore Minuit)
+ADD_PCT_EXECUTABLE(pctlluconverter pctlluconverter.cxx)
+TARGET_LINK_LIBRARIES(pctlluconverter ${ROOT_LIBRARIES})
+ADD_PCT_EXECUTABLE(pctpairgeometry pctpairgeometry.cxx)
 ADD_PCT_EXECUTABLE(pctmostlikelypath pctmostlikelypath.cxx)
 ADD_PCT_EXECUTABLE(pctbinning pctbinning.cxx)
 ADD_PCT_EXECUTABLE(pctfillholl pctfillholl.cxx)
