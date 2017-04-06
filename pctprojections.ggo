@@ -1,6 +1,7 @@
 package "pct"
 version "Stack projections"
 
+option "verbose"  v "Verbose execution"                                         flag      off
 option "config"   - "Config file"                                               string    no
 option "path"		 	p	"Path containing projections"		                            string  	yes
 option "regexp"		r	"Regular expression to select projection files in path"		  string  	yes

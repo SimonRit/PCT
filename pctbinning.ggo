@@ -1,8 +1,9 @@
 package "pct"
 version "Create the 3D sequence (2D + distance) of proton radiographies"
 
+option "verbose"    v "Verbose execution"                                        flag            off
 option "config"     - "Config file"                                              string          no
-option "input"		  i "Input file name containing the proton pairs"        string          yes
+option "input"		  i "Input file name containing the proton pairs"              string          yes
 option "output"     o "Output file name"                                         string          yes
 option "count"      c "Image of count of proton pairs per pixel"                 string          no
 option "source"     s "Source position"                                          double          no  default="0."

@@ -1,7 +1,8 @@
 package "pct"
 version "Multiply pairs coordinates (positions and directions) by each coordinate of a 3D vector."
 
+option "verbose"   v "Verbose execution"                            flag      off
 option "config"    - "Config file"                                  string    no
 option "input"     i "Input file name containing the proton pairs"  string    yes
 option "output"    o "Output file name"                             string    yes
-option "vector"    v "3D vector"                                    double multiple yes
+option "vector"    - "3D vector"                                    double multiple yes

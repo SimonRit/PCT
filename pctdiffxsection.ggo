@@ -1,6 +1,7 @@
 package "pct"
 version "Compute hadronic elastic differential cross section of protons"
 
+option "verbose"   v "Verbose execution"                                 flag                    off
 option "config"    - "Config file"                                       string                  no
 option "energy"    - "Energy"                                            double default="200"    no
 option "material"  m "NIST material name"                                string                  yes

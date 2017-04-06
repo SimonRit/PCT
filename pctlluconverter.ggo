@@ -1,6 +1,7 @@
 package "pct"
 version "Converts LLU data to pct root file format"
 
+option "verbose"   v "Verbose execution"                                   flag    off
 option "config"    - "Config file"                                         string  no
 option "input"     i "Input LLU file"                                      string  yes
 option "output"    o "Output ROOT file name"                               string  yes
