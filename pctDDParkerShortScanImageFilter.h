@@ -55,7 +55,7 @@ protected:
   DDParkerShortScanImageFilter(){ this->SetInPlace(true); }
   ~DDParkerShortScanImageFilter(){}
 
-  virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId);
+  virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId) ITK_OVERRIDE;
 
 private:
   DDParkerShortScanImageFilter(const Self&); //purposely not implemented

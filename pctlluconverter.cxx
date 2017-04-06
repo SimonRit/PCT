@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   char *phantomName = new char[phantomNameLength+1];
   infile.read(phantomName, sizeof(char)*phantomNameLength);
   std::cout << "Phantom name: " << phantomName << std::endl;
-  delete phantomName;
+  delete[] phantomName;
 
   int dataSourceNameLength;
   infile.read((char*)&dataSourceNameLength, sizeof(dataSourceNameLength));
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   char *dataSourceName = new char[dataSourceNameLength+1];
   infile.read(dataSourceName, sizeof(char)*dataSourceNameLength);
   std::cout << "Data source name: " << dataSourceName << std::endl;
-  delete dataSourceName;
+  delete[] dataSourceName;
 
   int personNameLength;
   infile.read((char*)&personNameLength, sizeof(personNameLength));
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   char *personName = new char[personNameLength+1];
   infile.read(personName, sizeof(char)*personNameLength);
   std::cout << "Prepared by: " << personName << std::endl;
-  delete personName;
+  delete[] personName;
 
   std::cout << "End of header" << std::endl;
 
