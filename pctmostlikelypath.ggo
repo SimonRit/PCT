@@ -9,8 +9,8 @@ option "posOut"        - "Exit 3D position"                                    d
 option "dirOut"        - "Exit 3D direction"                                   double multiple yes
 option "trajectory"    - "Output trajectory file name"                         string          yes
 option "intersections" - "Output intersections file name"                      string          yes
-option "quadricIn"     - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm" double multiple yes
-option "quadricOut"    - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"     double multiple yes
+option "quadricIn"     - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm" double multiple no
+option "quadricOut"    - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"     double multiple no
 option "type"          - "Type of most likely path (schulte or polynomial)"    string          no   default="schulte"
 
 section "Sampling parameters"

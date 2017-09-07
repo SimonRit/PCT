@@ -30,28 +30,34 @@ int main(int argc, char * argv[])
 
   typedef rtk::RayQuadricIntersectionFunction<double,3>     RQIType;
   RQIType::Pointer quadricIn = RQIType::New();
-  quadricIn->SetA(args_info.quadricIn_arg[0]);
-  quadricIn->SetB(args_info.quadricIn_arg[1]);
-  quadricIn->SetC(args_info.quadricIn_arg[2]);
-  quadricIn->SetD(args_info.quadricIn_arg[3]);
-  quadricIn->SetE(args_info.quadricIn_arg[4]);
-  quadricIn->SetF(args_info.quadricIn_arg[5]);
-  quadricIn->SetG(args_info.quadricIn_arg[6]);
-  quadricIn->SetH(args_info.quadricIn_arg[7]);
-  quadricIn->SetI(args_info.quadricIn_arg[8]);
-  quadricIn->SetJ(args_info.quadricIn_arg[9]);
+  if(args_info.quadricIn_given)
+    {
+    quadricIn->SetA(args_info.quadricIn_arg[0]);
+    quadricIn->SetB(args_info.quadricIn_arg[1]);
+    quadricIn->SetC(args_info.quadricIn_arg[2]);
+    quadricIn->SetD(args_info.quadricIn_arg[3]);
+    quadricIn->SetE(args_info.quadricIn_arg[4]);
+    quadricIn->SetF(args_info.quadricIn_arg[5]);
+    quadricIn->SetG(args_info.quadricIn_arg[6]);
+    quadricIn->SetH(args_info.quadricIn_arg[7]);
+    quadricIn->SetI(args_info.quadricIn_arg[8]);
+    quadricIn->SetJ(args_info.quadricIn_arg[9]);
+    }
 
   RQIType::Pointer quadricOut = RQIType::New();
-  quadricOut->SetA(args_info.quadricOut_arg[0]);
-  quadricOut->SetB(args_info.quadricOut_arg[1]);
-  quadricOut->SetC(args_info.quadricOut_arg[2]);
-  quadricOut->SetD(args_info.quadricOut_arg[3]);
-  quadricOut->SetE(args_info.quadricOut_arg[4]);
-  quadricOut->SetF(args_info.quadricOut_arg[5]);
-  quadricOut->SetG(args_info.quadricOut_arg[6]);
-  quadricOut->SetH(args_info.quadricOut_arg[7]);
-  quadricOut->SetI(args_info.quadricOut_arg[8]);
-  quadricOut->SetJ(args_info.quadricOut_arg[9]);
+  if(args_info.quadricOut_given)
+    {
+    quadricOut->SetA(args_info.quadricOut_arg[0]);
+    quadricOut->SetB(args_info.quadricOut_arg[1]);
+    quadricOut->SetC(args_info.quadricOut_arg[2]);
+    quadricOut->SetD(args_info.quadricOut_arg[3]);
+    quadricOut->SetE(args_info.quadricOut_arg[4]);
+    quadricOut->SetF(args_info.quadricOut_arg[5]);
+    quadricOut->SetG(args_info.quadricOut_arg[6]);
+    quadricOut->SetH(args_info.quadricOut_arg[7]);
+    quadricOut->SetI(args_info.quadricOut_arg[8]);
+    quadricOut->SetJ(args_info.quadricOut_arg[9]);
+    }
 
   VectorType pIn(args_info.posIn_arg);
   VectorType pOut(args_info.posOut_arg);
@@ -63,7 +69,7 @@ int main(int argc, char * argv[])
   VectorType pSOut = pOut;
   quadricIn->SetRayOrigin(pIn);
   quadricOut->SetRayOrigin(pOut);
-  if(quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
+  if(args_info.quadricIn_given && args_info.quadricOut_given && quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
     {
     pSIn  = pIn  + dIn  * quadricIn ->GetNearestDistance();
     if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
