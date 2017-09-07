@@ -50,6 +50,8 @@ int main(int argc, char * argv[])
       ++it;
       const VectorType data = it.Get();
       ++it;
+      if(region.GetSize(0)==6)
+        ++it;
 
       if(detDist==-1.)
         detDist = pOut[2]-pIn[2];
@@ -69,12 +71,12 @@ int main(int argc, char * argv[])
 
       if(wepl>args_info.weplmax_arg)
         continue;
-      if(abs(pOut[0])>args_info.mindist_arg && pIn[0]!=0.)
+      if(fabs(pOut[0])>args_info.mindist_arg && pIn[0]!=0.)
         {
         mag += double(pOut[0])/pIn[0];
         count++;
         }
-      if(abs(pOut[1])>args_info.mindist_arg && pIn[1]!=0.)
+      if(fabs(pOut[1])>args_info.mindist_arg && pIn[1]!=0.)
         {
         mag += double(pOut[1])/pIn[1];
         count++;
@@ -82,9 +84,9 @@ int main(int argc, char * argv[])
       }
     }
   mag /= count;
-  double s = detDist / (1.-mag);
+  double s = -1.*fabs(detDist) / (1.-mag);
   std::cout << "Used " << count << " values to compute a " << mag << " magnification factor." << std::endl;
-  std::cout << "Found source to exit detector distance: " << s+detDist << std::endl;
+  std::cout << "Found source to exit detector distance: " << s+fabs(detDist) << std::endl;
   std::cout << "Found source to entrance detector distance: " << s << std::endl;
   return EXIT_SUCCESS;
 }

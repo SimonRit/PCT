@@ -140,10 +140,10 @@ public:
   typedef Superclass::VectorType VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut);
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) ITK_OVERRIDE;
 
   /** Evaluate the coordinates (x,y) at depth z. */
-  void Evaluate( const double u1, double &x, double&y );
+  virtual void Evaluate( const double u1, double &x, double&y ) ITK_OVERRIDE;
 
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);

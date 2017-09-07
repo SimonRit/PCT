@@ -83,11 +83,16 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
             rtk::GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
       itk::Matrix<double, Dimension+1, Dimension+1> matrixStackProj =
             rtk::GetPhysicalPointToIndexMatrix< TOutputImage >( projection );
-      matrix = matrixStackProj.GetVnlMatrix() *
-               matProjTrans.GetVnlMatrix() *
-               geometry->GetSourceTranslationMatrices()[iProj].GetVnlMatrix()*
-               geometry->GetRotationMatrices()[iProj].GetVnlMatrix() *
-               matrixVol.GetVnlMatrix();
+      matrixVol = matrixStackProj.GetVnlMatrix() *
+                  matProjTrans.GetVnlMatrix() *
+                  geometry->GetSourceTranslationMatrices()[iProj].GetVnlMatrix()*
+                  geometry->GetRotationMatrices()[iProj].GetVnlMatrix() *
+                  matrixVol.GetVnlMatrix();
+
+      // Remove last line that is not used in the following
+      for(unsigned int i=0; i<Dimension; i++)
+        for(unsigned int j=0; j<Dimension+1; j++)
+          matrix[i][j] = matrixVol[i][j];
       }
     else
       {

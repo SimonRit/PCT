@@ -82,13 +82,13 @@ protected:
   ProtonPairsToDistanceDrivenProjection() {}
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
-  virtual void BeforeThreadedGenerateData();
-  virtual void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId );
-  virtual void AfterThreadedGenerateData();
+  virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
+  virtual void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId ) ITK_OVERRIDE;
+  virtual void AfterThreadedGenerateData() ITK_OVERRIDE;
 
   /** The two inputs should not be in the same space so there is nothing
    * to verify. */
-  virtual void VerifyInputInformation() {}
+  virtual void VerifyInputInformation() ITK_OVERRIDE {}
 
 private:
   ProtonPairsToDistanceDrivenProjection(const Self&); //purposely not implemented

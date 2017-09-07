@@ -1,6 +1,7 @@
 package "pct"
 version "Pair corresponding protons from Gate root files"
 
+option "verbose"   v "Verbose execution"                                         flag    off
 option "config"    - "Config file"                                               string  no
 option "inputIn"   i "Root phase space file of particles before object"          string  yes
 option "inputOut"  j "Root phase space file of particles after object"           string  yes

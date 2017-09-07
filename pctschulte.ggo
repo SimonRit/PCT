@@ -1,6 +1,7 @@
 package "pct"
 version "Create the 3D sequence (2D + distance) of proton radiographies"
 
+option "verbose"    v "Verbose execution"                                            flag   off
 option "config"     - "Config file"                                                  string no
 option "length"     l "Length of traversed material in mm"                           double yes
 option "parameter"  p "Parameter choice" values="energyMean","energySD","positionSD","mlpSD" enum   yes

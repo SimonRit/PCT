@@ -1,6 +1,7 @@
 package "pct"
 version "Swap two coordinates in proton pairs given a fixed one"
 
+option "verbose"   v "Verbose execution"                            flag      off
 option "config"    - "Config file"                                  string    no
 option "input"     i "Input file name containing the proton pairs"  string    yes
 option "output"    o "Output file name"                             string    yes
