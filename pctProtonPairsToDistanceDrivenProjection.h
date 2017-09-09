@@ -26,7 +26,7 @@ public:
   typedef itk::Image<ProtonPairsPixelType,2>                ProtonPairsImageType;
   typedef ProtonPairsImageType::Pointer                     ProtonPairsImagePointer;
 
-  typedef itk::Image<float, 3>                              CountImageType;
+  typedef itk::Image<unsigned int, 3>                       CountImageType;
   typedef CountImageType::Pointer                           CountImagePointer;
 
   typedef itk::Image<float, 3>                              AngleImageType;
@@ -78,8 +78,14 @@ public:
   itkGetConstMacro(Robust, bool);
   itkBooleanMacro(Robust);
 
+  /** Do the scatter projections (see Quinones et al, PMB, 2016)
+  ** Default is off. */
+  itkSetMacro(ComputeScattering, bool);
+  itkGetConstMacro(ComputeScattering, bool);
+  itkBooleanMacro(ComputeScattering);
+
 protected:
-  ProtonPairsToDistanceDrivenProjection() {}
+  ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false) {}
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
@@ -128,6 +134,7 @@ private:
 
   ProtonPairsImageType::Pointer m_ProtonPairs;
   bool                          m_Robust;
+  bool                          m_ComputeScattering;
 };
 
 } // end namespace pct

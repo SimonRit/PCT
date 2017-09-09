@@ -16,9 +16,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 {
   m_Outputs.resize( this->GetNumberOfThreads() );
   m_Counts.resize( this->GetNumberOfThreads() );
-  m_Angles.resize( this->GetNumberOfThreads() );
-  m_AnglesVectors.resize( this->GetInput()->GetLargestPossibleRegion().GetNumberOfPixels() );
-  m_AnglesSq.resize( this->GetNumberOfThreads() );
+  if(m_ComputeScattering)
+    {
+    m_Angles.resize( this->GetNumberOfThreads() );
+    m_AnglesVectors.resize( this->GetInput()->GetLargestPossibleRegion().GetNumberOfPixels() );
+    m_AnglesSq.resize( this->GetNumberOfThreads() );
+    }
 
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
@@ -54,7 +57,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Counts[threadId]->Allocate();
   m_Counts[threadId]->FillBuffer(0);
 
-  if(!m_Robust || threadId==0)
+  if( m_ComputeScattering && (!m_Robust || threadId==0) )
     {
     m_Angles[threadId] = AngleImageType::New();
     m_Angles[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
@@ -71,8 +74,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     {
     m_Outputs[0] = this->GetOutput();
     m_Count = m_Counts[0];
-    m_Angle = m_Angles[0];
-    m_AngleSq = m_AnglesSq[0];
+    if(m_ComputeScattering)
+      {
+      m_Angle = m_Angles[0];
+      m_AngleSq = m_AnglesSq[0];
+      }
     }
   else
     {
@@ -94,9 +100,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   const unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
-  float *imgCountData = m_Counts[threadId]->GetBufferPointer();
+  unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
   float *imgAngleData = NULL, *imgAngleSqData = NULL;
-  if(!m_Robust)
+  if(m_ComputeScattering && !m_Robust)
     {
     imgAngleData = m_Angles[threadId]->GetBufferPointer();
     imgAngleSqData = m_AnglesSq[threadId]->GetBufferPointer();
@@ -171,7 +177,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     VectorType dOut = it.Get();
     ++it;
 
-    typedef itk::Vector<double, 2> VectorTwoDType;
+    double anglex = 0., angley = 0.;
+    if( m_ComputeScattering )
+      {
+      typedef itk::Vector<double, 2> VectorTwoDType;
 
       VectorTwoDType dInX, dInY, dOutX, dOutY;
       dInX[0] = dIn[0];
@@ -183,12 +192,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
-      double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
-      double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+      anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      }
 
     if(pIn[2] > pOut[2])
       {
       itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
+      }
+    if(dIn[2] < 0.)
+      {
+      itkGenericExceptionMacro("The code assumes that protons move in positive z.");
       }
 
     const double eIn = it.Get()[0];
@@ -202,8 +216,12 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
     ++it;
 
-    VectorType nucInfo = it.Get();
-    ++it;
+    VectorType nucInfo(0.);
+    if(it.GetIndex()[0] != 0)
+      {
+      nucInfo = it.Get();
+      ++it;
+      }
 
     // Move straight to entrance and exit shapes
     VectorType pSIn  = pIn;
@@ -268,19 +286,22 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
         imgData[ idx ] += value;
         imgCountData[ idx ]++;
-        if(m_Robust)
+        if(m_ComputeScattering)
           {
-          m_AnglesVectorsMutex.Lock();
-          m_AnglesVectors[idx].push_back(anglex);
-          m_AnglesVectors[idx].push_back(angley);
-          m_AnglesVectorsMutex.Unlock();
-          }
-        else
-          {
-          imgAngleData[ idx ] += anglex;
-          imgAngleData[ idx ] += angley;
-          imgAngleSqData[ idx ] += anglex*anglex;
-          imgAngleSqData[ idx ] += angley*angley;
+          if(m_Robust)
+            {
+            m_AnglesVectorsMutex.Lock();
+            m_AnglesVectors[idx].push_back(anglex);
+            m_AnglesVectors[idx].push_back(angley);
+            m_AnglesVectorsMutex.Unlock();
+            }
+          else
+            {
+            imgAngleData[ idx ] += anglex;
+            imgAngleData[ idx ] += angley;
+            imgAngleSqData[ idx ] += anglex*anglex;
+            imgAngleSqData[ idx ] += angley*angley;
+            }
           }
         }
       }
@@ -309,12 +330,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   typedef itk::ImageRegionIterator<CountImageType> ImageCountIteratorType;
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
-  typedef itk::ImageRegionIterator<AngleImageType> ImageAngleIteratorType;
-  ImageAngleIteratorType itAngleOut(m_Angles[0], m_Outputs[0]->GetLargestPossibleRegion());
-
-  typedef itk::ImageRegionIterator<AngleImageType> ImageAngleSqIteratorType;
-  ImageAngleSqIteratorType itAngleSqOut(m_AnglesSq[0], m_Outputs[0]->GetLargestPossibleRegion());
-
   // Merge the projection computed in each thread to the first one
   for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
     {
@@ -338,86 +353,99 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     itCOut.GoToBegin();
     }
 
-  if(!m_Robust)
-    {
-    for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
-      {
-      if(m_Outputs[i].GetPointer() == NULL)
-        continue;
-      ImageAngleIteratorType itAngleOutThread(m_Angles[i], m_Outputs[i]->GetLargestPossibleRegion());
-      ImageAngleSqIteratorType itAngleSqOutThread(m_AnglesSq[i], m_Outputs[i]->GetLargestPossibleRegion());
-
-      while(!itAngleOut.IsAtEnd())
-        {
-        itAngleOut.Set(itAngleOut.Get()+itAngleOutThread.Get());
-        ++itAngleOutThread;
-        ++itAngleOut;
-
-        itAngleSqOut.Set(itAngleSqOut.Get()+itAngleSqOutThread.Get());
-        ++itAngleSqOutThread;
-        ++itAngleSqOut;
-        }
-      itAngleOut.GoToBegin();
-      itAngleSqOut.GoToBegin();
-      }
-    }
   // Set count image information
   m_Count->SetSpacing( this->GetOutput()->GetSpacing() );
   m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
 
-  // Set scattering wepl image information
-  m_Angle->SetSpacing( this->GetOutput()->GetSpacing() );
-  m_Angle->SetOrigin( this->GetOutput()->GetOrigin() );
-
-  // Initialize scattering WEPL LUT
-  pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(m_ProtonPairs->GetBufferPointer()[4][0]);
-
-  // Pointer
-  pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL pointer;
-
-  std::vector< std::vector<float> >::iterator itAnglesVectors = m_AnglesVectors.begin();
+  // Normalize eloss wepl with proton count (average)
   while(!itCOut.IsAtEnd())
     {
     if(itCOut.Get())
-      {
-      // Normalize eloss wepl with proton count (average)
       itOut.Set(itOut.Get()/itCOut.Get());
+    ++itOut;
+    ++itCOut;
+    }
 
-      // Calculate angular variance (sigma2) and convert to scattering wepl
-      if(m_Robust)
+  if(m_ComputeScattering)
+    {
+    typedef itk::ImageRegionIterator<AngleImageType> ImageAngleIteratorType;
+    ImageAngleIteratorType itAngleOut(m_Angles[0], m_Outputs[0]->GetLargestPossibleRegion());
+
+    typedef itk::ImageRegionIterator<AngleImageType> ImageAngleSqIteratorType;
+    ImageAngleSqIteratorType itAngleSqOut(m_AnglesSq[0], m_Outputs[0]->GetLargestPossibleRegion());
+
+    if(!m_Robust)
+      {
+      for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
         {
-        if(itCOut.Get()==1)
+        if(m_Outputs[i].GetPointer() == NULL)
+          continue;
+        ImageAngleIteratorType itAngleOutThread(m_Angles[i], m_Outputs[i]->GetLargestPossibleRegion());
+        ImageAngleSqIteratorType itAngleSqOutThread(m_AnglesSq[i], m_Outputs[i]->GetLargestPossibleRegion());
+
+        while(!itAngleOut.IsAtEnd())
           {
-          itAngleOut.Set( 0. );
+          itAngleOut.Set(itAngleOut.Get()+itAngleOutThread.Get());
+          ++itAngleOutThread;
+          ++itAngleOut;
+
+          itAngleSqOut.Set(itAngleSqOut.Get()+itAngleSqOutThread.Get());
+          ++itAngleSqOutThread;
+          ++itAngleSqOut;
           }
-        else
-          {
-          // Angle: 38.30% (0.5 sigma) with interpolation (median is 0. and we only have positive values
-          double sigmaAPos = itAnglesVectors->size()*0.3830;
-          unsigned int sigmaASupPos = itk::Math::Ceil<unsigned int, double>(sigmaAPos);
-          std::partial_sort(itAnglesVectors->begin(),
-                            itAnglesVectors->begin()+sigmaASupPos+1,
-                            itAnglesVectors->end());
-          double sigmaADiff = sigmaASupPos-sigmaAPos;
-          double sigma = 2.*(*(itAnglesVectors->begin()+sigmaASupPos)*(1.-sigmaADiff)+
-                             *(itAnglesVectors->begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
-          itAngleOut.Set( pointer.GetValue(sigma * sigma) );
-          //itAngleOut.Set( sigma * sigma );
-          }
-        }
-      else
-        {
-        double sigma2 = itAngleSqOut.Get()/itCOut.Get()/2;
-        itAngleOut.Set( pointer.GetValue( sigma2 ) );
-        //itAngleOut.Set( sigma2 );
+        itAngleOut.GoToBegin();
+        itAngleSqOut.GoToBegin();
         }
       }
 
-    ++itOut;
-    ++itCOut;
-    ++itAngleOut;
-    ++itAngleSqOut;
-    ++itAnglesVectors;
+    // Set scattering wepl image information
+    m_Angle->SetSpacing( this->GetOutput()->GetSpacing() );
+    m_Angle->SetOrigin( this->GetOutput()->GetOrigin() );
+
+    // Initialize scattering WEPL LUT
+    pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(m_ProtonPairs->GetBufferPointer()[4][0]);
+
+    itCOut.GoToBegin();
+    std::vector< std::vector<float> >::iterator itAnglesVectors = m_AnglesVectors.begin();
+    while(!itCOut.IsAtEnd())
+      {
+      if(itCOut.Get())
+        {
+        // Calculate angular variance (sigma2) and convert to scattering wepl
+        if(m_Robust)
+          {
+          if(itCOut.Get()==1)
+            {
+            itAngleOut.Set( 0. );
+            }
+          else
+            {
+            // Angle: 38.30% (0.5 sigma) with interpolation (median is 0. and we only have positive values
+            double sigmaAPos = itAnglesVectors->size()*0.3830;
+            unsigned int sigmaASupPos = itk::Math::Ceil<unsigned int, double>(sigmaAPos);
+            std::partial_sort(itAnglesVectors->begin(),
+                              itAnglesVectors->begin()+sigmaASupPos+1,
+                              itAnglesVectors->end());
+            double sigmaADiff = sigmaASupPos-sigmaAPos;
+            double sigma = 2.*(*(itAnglesVectors->begin()+sigmaASupPos)*(1.-sigmaADiff)+
+                               *(itAnglesVectors->begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
+            itAngleOut.Set( pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL::GetValue(sigma * sigma) );
+            //itAngleOut.Set( sigma * sigma );
+            }
+          }
+        else
+          {
+          double sigma2 = itAngleSqOut.Get()/itCOut.Get()/2;
+          itAngleOut.Set( pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL::GetValue( sigma2 ) );
+          //itAngleOut.Set( sigma2 );
+          }
+        }
+
+      ++itCOut;
+      ++itAngleOut;
+      ++itAngleSqOut;
+      ++itAnglesVectors;
+      }
     }
 
   // Free images created in threads

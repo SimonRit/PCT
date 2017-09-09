@@ -44,6 +44,7 @@ protected:
   virtual void GenerateOutputInformation() ITK_OVERRIDE;
   virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId) ITK_OVERRIDE;
 
+  using Superclass::MakeOutput;
   virtual itk::DataObject::Pointer MakeOutput(itk::ProcessObject::DataObjectPointerArraySizeType idx) ITK_OVERRIDE;
 
 private:

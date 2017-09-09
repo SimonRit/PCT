@@ -56,6 +56,7 @@ int main(int argc, char * argv[])
 
   rtk::SetConstantImageSourceFromGgo<CountImageSourceType, args_info_pctpaircuts>(counts, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( counts->Update() );
+  rtk::SetConstantImageSourceFromGgo<CountImageSourceType, args_info_pctpaircuts>(countsCut, args_info);
   TRY_AND_EXIT_ON_ITK_EXCEPTION( countsCut->Update() );
 
   // Robust case containers
@@ -68,30 +69,16 @@ int main(int argc, char * argv[])
   std::vector< std::vector<double> > anglesY(npixels);
   std::vector< std::vector<unsigned int> > creatorProcess(npixels);
   std::vector< std::vector<unsigned int> > nuclearProcess(npixels);
-//  std::vector< std::vector<unsigned int> > order(npixels);
 
   std::vector< std::vector<double> > exitEnergiesCut(npixels);
   std::vector< std::vector<double> > exitAnglesCut(npixels);
 
-  double gmeanEnergy[npixels];
-  double gsigmaEnergy[npixels];
   double gminEnergy[npixels];
-  double gmaxEnergy[npixels];
 
-  double gmeanAngle[npixels];
   double gsigmaAngle[npixels];
-  double gminAngle[npixels];
   double gmaxAngle[npixels];
 
-  unsigned int Ein;
-  unsigned int rawcounter00;
-  unsigned int rawcounter01;
-  unsigned int rawcounter02;
-  unsigned int rawcounter03;
-  unsigned int cutcounter00;
-  unsigned int cutcounter01;
-  unsigned int cutcounter02;
-  unsigned int cutcounter03;
+  float Ein = 0.;
 
   // Read pairs
   typedef itk::Vector<float, 3> VectorType;
@@ -144,8 +131,12 @@ int main(int argc, char * argv[])
       ++it;
       const VectorType data = it.Get();
       ++it;
-      const VectorType nuclearinfo = it.Get();
-      ++it;
+      VectorType nuclearinfo;
+      if(region.GetSize(0)==6)
+        {
+        nuclearinfo = it.Get();
+        ++it;
+        }
 
       // Magnification (Thales theorem)
       static double mag = (args_info.source_arg==0.)?1.:(args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
@@ -172,7 +163,7 @@ int main(int argc, char * argv[])
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
-      double  anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
 
@@ -434,7 +425,7 @@ int main(int argc, char * argv[])
         std::partial_sort(energies[idx].begin(), energies[idx].begin()+medianSupPos+1, energies[idx].end());
         double medianDiff = medianSupPos-medianPos;
 
-	      //median linear interpolation
+	//median linear interpolation
         pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+ //tab[x][y] <=> *(tab[x]+y)
                             *(energies[idx].begin()+medianSupPos-1)*medianDiff;
 
@@ -496,14 +487,9 @@ int main(int argc, char * argv[])
           float fitMax_angle = mean_angle + args_info.anglecut_arg*sigma_angle;
           h2->Fit(gausFit, "", "", fitMin_angle, fitMax_angle);
 
-          gmeanEnergy[idx] = gausFit->GetParameter(1);
-          gsigmaEnergy[idx] = gausFit->GetParameter(2);
           gminEnergy[idx] = mean_energy - args_info.energycut_arg*sigma_energy;
-          gmaxEnergy[idx] = mean_energy + args_info.energycut_arg*sigma_energy;
 
-          gmeanAngle[idx] = gausFit->GetParameter(1);
           gsigmaAngle[idx] = gausFit->GetParameter(2);
-          gminAngle[idx] = mean_angle - args_info.anglecut_arg*sigma_angle;
           gmaxAngle[idx] = mean_angle + args_info.anglecut_arg*sigma_angle;
 
           pSigmaAngle[idx] = gsigmaAngle[idx]; //sigma_angle; //gsigmaAngle[idx];
@@ -512,9 +498,7 @@ int main(int argc, char * argv[])
         if (h1->GetRMS()<1.)
           {
           gminEnergy[idx] = 0.;
-          gmaxEnergy[idx] = 1000.;
 
-          gminAngle[idx] = 0.;
           gmaxAngle[idx] = 2.;
           }
 
@@ -568,24 +552,18 @@ int main(int argc, char * argv[])
   // Weight standard deviations with parameters
   for(unsigned int idx=0; idx<npixels; idx++)
     {
-    std::cout<<idx<<"\t"<<pSumEnergySq[idx]<<"\t"<<pSumAngleSq[idx]<<std::endl;
-//    if(pSumEnergySq[idx]<3.)
-//      pSumEnergySq[idx] = 1000.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries.
-      pSumEnergySq[idx] *= args_info.energycut_arg;
+    pSumEnergySq[idx] *= args_info.energycut_arg;
 
     if(pSumAngleSq[idx]==0.0)
       pSumAngleSq[idx] = 1.;        // If the sigma is below 0.01, don't perform a cut. The pixel lies on the boundaries.
     pSumAngleSq[idx]  *= args_info.anglecut_arg;
-
-    //std::cout<<idx<<"\t"<<pSumAngleSq[idx]<<std::endl;
-
     }
 
   std::cout << "Select pairs..." << std::endl;
   // And select the pairs
   std::vector<VectorType> pairs;
   for(unsigned int r=0; r<nregions; r++)
-  {
+    {
     // Read r-th set of pairs
     region.SetIndex(1, r*PAIRS_IN_RAM);
     region.SetSize(1, vnl_math_min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
@@ -606,8 +584,12 @@ int main(int argc, char * argv[])
       ++it;
       const VectorType data = it.Get();
       ++it;
-      const VectorType nuclearinfo = it.Get();
-      ++it;
+      VectorType nuclearinfo;
+      if(region.GetSize(0)==6)
+        {
+        nuclearinfo = it.Get();
+        ++it;
+        }
 
       static double mag = (args_info.source_arg==0.)?1.:(args_info.source_arg - pOut[2]) / (args_info.source_arg - pIn[2]);
 
@@ -633,7 +615,7 @@ int main(int argc, char * argv[])
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
-      double  anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       const double energy = data[0]-data[1];
 
@@ -648,7 +630,8 @@ int main(int argc, char * argv[])
         pairs.push_back(dIn);
         pairs.push_back(dOut);
         pairs.push_back(data);
-        pairs.push_back(nuclearinfo);
+        if(region.GetSize(0)==6)
+          pairs.push_back(nuclearinfo);
 
         exitEnergiesCut[idx].push_back(data[1]);
         exitAnglesCut[idx].push_back(anglex);
@@ -668,7 +651,8 @@ int main(int argc, char * argv[])
               pairs.push_back(dIn);
               pairs.push_back(dOut);
               pairs.push_back(data);
-              pairs.push_back(nuclearinfo);
+              if(region.GetSize(0)==6)
+                pairs.push_back(nuclearinfo);
 
               exitEnergiesCut[idx].push_back(data[1]);
               exitAnglesCut[idx].push_back(anglex);
@@ -683,7 +667,8 @@ int main(int argc, char * argv[])
               pairs.push_back(dIn);
               pairs.push_back(dOut);
               pairs.push_back(data);
-              pairs.push_back(nuclearinfo);
+              if(region.GetSize(0)==6)
+                pairs.push_back(nuclearinfo);
 
               exitEnergiesCut[idx].push_back(data[1]);
               exitAnglesCut[idx].push_back(anglex);
@@ -699,7 +684,8 @@ int main(int argc, char * argv[])
               pairs.push_back(dIn);
               pairs.push_back(dOut);
               pairs.push_back(data);
-              pairs.push_back(nuclearinfo);
+              if(region.GetSize(0)==6)
+                pairs.push_back(nuclearinfo);
 
               exitEnergiesCut[idx].push_back(data[1]);
               exitAnglesCut[idx].push_back(anglex);
@@ -707,13 +693,14 @@ int main(int argc, char * argv[])
               pCountsCut[idx]++;
             }
         }
+     }
     }
-  }
 
 
 //===================================================================================================================================
 // Plot superimposed raw distributions
 //===================================================================================================================================
+  unsigned int rawcounter00 = 0;
   if(args_info.plotSuperDistribution_given)
     {
     unsigned short int eMax[npixels];
@@ -760,11 +747,10 @@ int main(int argc, char * argv[])
       TH1F *shistAngle_03 = new TH1F("shistAngle_03", sPlotA, 300, 0., 60.);
       TH1F *shistAngle_04 = new TH1F("shistAngle_04", sPlotA, 300, 0., 60.);
 
-      rawcounter00 = 0;
-      rawcounter01 = 0;
-      rawcounter02 = 0;
-      rawcounter03 = 0;
-      cutcounter00 = 0;
+      unsigned int rawcounter01 = 0;
+      unsigned int rawcounter02 = 0;
+      unsigned int rawcounter03 = 0;
+      unsigned int cutcounter00 = 0;
 
       char legend00[30], legend01[30], legend02[60],legend03[30],legend04[30];
 
@@ -829,7 +815,7 @@ int main(int argc, char * argv[])
         shistEnergy_04->SetLineColor(kYellow);
 
 
-        sprintf( legend00, "All protons (%i)", rawcounter00,"p");
+        sprintf( legend00, "All protons (%i)", rawcounter00);
         sprintf( legend01, "Primary protons (%.2f%%)", (float)rawcounter01/rawcounter00*100);
         sprintf( legend02, "Primary protons without nuclear interactions (%.2f%%)", (float)rawcounter02/rawcounter00*100);
         sprintf( legend03, "Secondary protons (%.2f%%)", (float)rawcounter03/rawcounter00*100);
@@ -913,10 +899,10 @@ int main(int argc, char * argv[])
       TH1F *shistAngle_02 = new TH1F("shistAngle_02", sPlotA, 300, 0., 60.);
       TH1F *shistAngle_03 = new TH1F("shistAngle_03", sPlotA, 300, 0., 60.);
 
-      cutcounter00 = 0;
-      cutcounter01 = 0;
-      cutcounter02 = 0;
-      cutcounter03 = 0;
+      unsigned int cutcounter00 = 0;
+      unsigned int cutcounter01 = 0;
+      unsigned int cutcounter02 = 0;
+      unsigned int cutcounter03 = 0;
       char legend00[30], legend01[30], legend02[60],legend03[30];
 
       for(unsigned int i=0; i<pCounts[idx]; i++)
@@ -974,7 +960,7 @@ int main(int argc, char * argv[])
         shistEnergy_03->Draw("same");
         shistEnergy_03->SetLineColor(kBlue);
 
-        sprintf( legend00, "All protons (%.2f%%)", (float)cutcounter00/rawcounter00*100,"p");
+        sprintf( legend00, "All protons (%.2f%%)", (float)cutcounter00/rawcounter00*100);
         sprintf( legend01, "Primary protons (%.2f%%)", (float)cutcounter01/rawcounter00*100);
         sprintf( legend02, "Primary protons without nuclear interactions (%.2f%%)", (float)cutcounter02/rawcounter00*100);
         sprintf( legend03, "Secondary protons (%.2f%%)", (float)cutcounter03/rawcounter00*100);
@@ -1100,70 +1086,70 @@ int main(int argc, char * argv[])
           //anglesY[idx][i] <= pSumAngleSq [idx] &&
           vcl_abs((Ein-exitEnergies[idx][i])-pSumEnergy[idx]) <= pSumEnergySq[idx] )
           {
-        // all protons (primaries and secondaries)
-        hx_00->Fill(exitEnergies[idx][i],anglesX[idx][i] * 180./TMath::Pi());
+          // all protons (primaries and secondaries)
+          hx_00->Fill(exitEnergies[idx][i],anglesX[idx][i] * 180./TMath::Pi());
 
-        // all primaries
-        if(creatorProcess[idx][i]==0)
-          {
-          hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // all primaries
+          if(creatorProcess[idx][i]==0)
+            {
+            hx_01->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // primaries without elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
-          {
-          hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // primaries without elastic scattering
+          if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==0)
+            {
+            hx_02->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // primaries with elastic scattering
-        if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1)
-          {
-          hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // primaries with elastic scattering
+          if(creatorProcess[idx][i]==0 && nuclearProcess[idx][i]==1)
+            {
+            hx_03->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // all secondaries
-        if(creatorProcess[idx][i]>0)
-          {
-          hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // all secondaries
+          if(creatorProcess[idx][i]>0)
+            {
+            hx_04->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // all secondaries created from inelastic scattering
-        if(creatorProcess[idx][i]==2)
-          {
-          hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // all secondaries created from inelastic scattering
+          if(creatorProcess[idx][i]==2)
+            {
+            hx_05->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // secondaries created from inelastic scattering and no elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0)
-          {
-          hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // secondaries created from inelastic scattering and no elastic scattering
+          if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==0)
+            {
+            hx_06->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // secondaries created from inelastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1)
-          {
-          hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // secondaries created from inelastic scattering and with elastic scattering
+          if(creatorProcess[idx][i]==2 && nuclearProcess[idx][i]==1)
+            {
+            hx_07->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // all secondaries created from elastic scattering
-        if(creatorProcess[idx][i]==1)
-          {
-          hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // all secondaries created from elastic scattering
+          if(creatorProcess[idx][i]==1)
+            {
+            hx_08->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // all secondaries created from elastic scattering and without elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0)
-          {
-          hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
-          }
+          // all secondaries created from elastic scattering and without elastic scattering
+          if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==0)
+            {
+            hx_09->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
 
-        // all secondaries created from elastic scattering and with elastic scattering
-        if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1)
-          {
-          hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+          // all secondaries created from elastic scattering and with elastic scattering
+          if(creatorProcess[idx][i]==1 && nuclearProcess[idx][i]==1)
+            {
+            hx_10->Fill(exitEnergies[idx][i],anglesX[idx][i]* 180./TMath::Pi());
+            }
           }
         }
-      }
 
         hx_00->Draw("colz");
         hx_00->GetXaxis()->SetTitle("Exit energy (MeV)");
@@ -1230,15 +1216,16 @@ int main(int argc, char * argv[])
         hx_10->GetYaxis()->SetTitle("Exit angle (deg)");
         gPad->Print(filename_10);
         delete hx_10;
-       }
+        }
       }
 
   std::cout << "Write pairs..." << std::endl;
 
   itk::ImageRegion<2> pairsRegion;
   itk::ImageRegion<2>::SizeType size;
-  size[0] = 6;
-  size[1] = pairs.size()/6;
+  size[0] = region.GetSize(0);
+  size[1] = pairs.size()/region.GetSize(0);
+
   pairsRegion.SetSize(size);
   PairsImageType::Pointer img = PairsImageType::New();
   img->SetRegions(pairsRegion);
@@ -1254,7 +1241,6 @@ int main(int argc, char * argv[])
   writer->SetFileName( args_info.output_arg );
   writer->SetInput( img );
   TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
-
   // Optional outputs
   typedef itk::ImageFileWriter<ProjectionImageType> PWriterType;
 
@@ -1265,7 +1251,6 @@ int main(int argc, char * argv[])
     w->SetFileName(args_info.sigmaAngle_arg);
     TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
     }
-
   if(args_info.sangle_given)
     {
     PWriterType::Pointer w = PWriterType::New();
@@ -1381,45 +1366,6 @@ int main(int argc, char * argv[])
       tAngleCanvas.SaveAs("angle.png");
       }
     }
-/*
-//===================================================================================================================================
-// Plot distributions with cuts
-//===================================================================================================================================
-  if(args_info.plotCutDistribution_given)
-    {
-    for(unsigned int p = 0; p<imgSize[0]; p++)
-      {
-      TH1F *h = new TH1F("exit energy distribution","",210, 0., 210.);
-      TH2F *h3_cut = new TH2F("h3_cut", "exit energy-angle distribution with cuts", 210, 0., 210., 100, 0., 1);
 
-      ofstream statdata_cut;
-      statdata_cut.open ("statdata_cut.txt",std::ofstream::app);
-
-      for(unsigned int i=0; i<pCountsCut[p]; i++)
-        {
-        h->Fill(exitEnergiesCut[p][i]);
-        h3_cut->Fill(exitEnergiesCut[p][i],exitAnglesCut[p][i]);
-        }
-
-        char exitenergyfilename[100], energymakefolder[100];
-        char exitenergyanglefilename[100], energyanglemakefolder[100];
-
-        h->Draw();
-        statdata_cut << h->GetEntries() << "\t" << h->GetMean() << "\t" << h->GetRMS() << std::endl;
-        sprintf( energymakefolder, "mkdir -p figscut_energy_proj%d", args_info.plotCutDistribution_arg);
-        system(energymakefolder);
-        sprintf( exitenergyfilename, "figscut_energy_proj%d/exitenergy_%d.png", args_info.plotCutDistribution_arg,p);
-        gPad->Print(exitenergyfilename);
-        delete h;
-
-        h3_cut->Draw("colz");
-        sprintf( energyanglemakefolder, "mkdir -p figscut_energyangle_proj%d", args_info.plotCutDistribution_arg);
-        system(energyanglemakefolder);
-        sprintf( exitenergyanglefilename, "figscut_energyangle_proj%d/exitenergyangle_%d.png", args_info.plotCutDistribution_arg,p);
-        gPad->Print(exitenergyanglefilename);
-        delete h3_cut;
-        }
-      }
-*/
   return EXIT_SUCCESS;
 }

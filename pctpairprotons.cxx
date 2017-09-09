@@ -19,7 +19,10 @@ struct ParticleData
   float ekine;
   itk::Vector<float,3> position;
   itk::Vector<float,3> direction;
-  float time;
+  };
+
+struct StoredParticleInfo
+  {
   int trackID;
   int nuclearProcess;
   int creatorProcess;
@@ -52,7 +55,7 @@ bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandato
   return found;
 }
 
-void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd, TChain *tree)
+void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct StoredParticleInfo &spi, struct ParticleData &pd, TChain *tree)
 {
   tree->GetListOfBranches(); // force reading of chain
   if(!SetTreeBranch(tree, "ParticleName", pi.name, false))
@@ -62,37 +65,37 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct ParticleData &pd
   SetTreeBranch(tree, "Ekine", &pd.ekine);
 
   // WARNING: X and Z are purposely swap...
-  //SetTreeBranch(tree, "X",  pd.position.GetDataPointer()+2);
-  SetTreeBranch(tree, "Y",  pd.position.GetDataPointer());
-  SetTreeBranch(tree, "Z",  pd.position.GetDataPointer()+1);
-  SetTreeBranch(tree, "dX", pd.direction.GetDataPointer()+2);
-  SetTreeBranch(tree, "dY", pd.direction.GetDataPointer());
-  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+1);
-  SetTreeBranch(tree, "Time", &pd.time);
-  SetTreeBranch(tree, "TrackID", &pd.trackID);
-//  SetTreeBranch(tree, "NuclearProcess", &pd.nuclearProcess);
-//  SetTreeBranch(tree, "CreatorProcess", &pd.creatorProcess);
-//  SetTreeBranch(tree, "Order", &pd.order);
+  SetTreeBranch(tree, "X",  pd.position.GetDataPointer());
+  SetTreeBranch(tree, "Y",  pd.position.GetDataPointer()+1);
+  //SetTreeBranch(tree, "Z",  pd.position.GetDataPointer()+2);
+  SetTreeBranch(tree, "dX", pd.direction.GetDataPointer());
+  SetTreeBranch(tree, "dY", pd.direction.GetDataPointer()+1);
+  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+2);
+  SetTreeBranch(tree, "TrackID", &spi.trackID);
 
-  if(!SetTreeBranch(tree, "NuclearProcess", &pd.nuclearProcess, false))
-    pd.nuclearProcess = 0; 
-  if(!SetTreeBranch(tree, "CreatorProcess", &pd.creatorProcess, false))
-    pd.creatorProcess = 0; 
-  if(!SetTreeBranch(tree, "Order", &pd.order, false))
-    pd.order = 0; 
+  if(!SetTreeBranch(tree, "NuclearProcess", &spi.nuclearProcess, false))
+    spi.nuclearProcess = -1;
+  if(!SetTreeBranch(tree, "CreatorProcess", &spi.creatorProcess, false))
+    spi.creatorProcess = -1;
+  if(!SetTreeBranch(tree, "Order", &spi.order, false))
+    spi.order = -1;
 }
 
-void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs, std::string fileName)
+void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs,
+                const std::vector< StoredParticleInfo> &particlesInfo,
+                std::string fileName)
 {
   itk::ImageRegion<2> region;
   itk::ImageRegion<2>::SizeType size;
-  size[0] = 6;
+  if(particlesInfo.back().nuclearProcess == -1)
+    size[0] = 5;
+  else
+    size[0] = 6;
   size[1] = pairs.size();
   region.SetSize(size);
 
   typedef itk::Vector<float,3> PixelType;
   typedef itk::Image<PixelType,2> ImageType;
-
   ImageType::Pointer img = ImageType::New();
   img->SetRegions(region);
   img->Allocate();
@@ -101,21 +104,12 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
   PixelType eet;
   PixelType nuclearinfo;
 
-//-------------------
-    
-  std::cout<<pairs.size()<<std::endl;
-
   for(size_t i=0; i<pairs.size(); i++)
     {
     eet[0] = pairs[i].first.ekine;
     eet[1] = pairs[i].second.ekine;
-//    eet[2] = pairs[i].second.time - pairs[i].first.time;
-    eet[2] = pairs[i].second.trackID; 
+    eet[2] = particlesInfo[i].trackID;
 
-    nuclearinfo[0] = pairs[i].second.creatorProcess; 
-    nuclearinfo[1] = pairs[i].second.nuclearProcess;
-    nuclearinfo[2] = pairs[i].second.order;
-    
     it.Set( pairs[i].first.position );
     ++it;
     it.Set( pairs[i].second.position );
@@ -126,8 +120,15 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
     ++it;
     it.Set( eet );
     ++it;
-    it.Set( nuclearinfo );
-    ++it;
+    if(size[0] == 6)
+      {
+      eet[0] = particlesInfo[i].creatorProcess;
+      eet[1] = particlesInfo[i].nuclearProcess;
+      eet[2] = particlesInfo[i].order;
+
+      it.Set( nuclearinfo );
+      ++it;
+      }
     }
 
   // Write
@@ -150,14 +151,16 @@ int main(int argc, char * argv[])
 
   // Branch particles
   struct ParticleInfo piIn, piOut;
+  struct StoredParticleInfo spiIn, spiOut;
   struct ParticleData pdIn, pdOut;
-  BranchParticleToPhaseSpace(piIn, pdIn, treeIn);
-  BranchParticleToPhaseSpace(piOut, pdOut, treeOut);
+  BranchParticleToPhaseSpace(piIn, spiIn, pdIn, treeIn);
+  BranchParticleToPhaseSpace(piOut, spiOut, pdOut, treeOut);
   pdIn.position[2]  = args_info.planeIn_arg;
   pdOut.position[2] = args_info.planeOut_arg;
 
   // Init
   std::vector< std::vector< std::pair<ParticleData, ParticleData> > > pairs(MAX_RUNS);
+  std::vector< std::vector< StoredParticleInfo > > particlesInfo(MAX_RUNS);
   size_t nparticulesIn = treeIn->GetEntries();
   size_t nparticulesOut = treeOut->GetEntries();
   size_t iIn=0, iOut=0;
@@ -170,7 +173,7 @@ int main(int argc, char * argv[])
   while(iIn<nparticulesIn && iOut<nparticulesOut)
     {
     if(iIn%1000000==0)
-      std::cout << '\r' 
+      std::cout << '\r'
                 << iIn << " particles of input phase space processed ("
                 << 100*iIn/nparticulesIn << "%)"
                 << std::flush;
@@ -244,16 +247,15 @@ int main(int argc, char * argv[])
       continue;
       }
 
-//     std::cout<<pdIn.trackID<<"\t"<<pdOut.trackID<<std::endl;
-
     // Corresponding protons found, add to vector if no nuclear interaction
     if(piIn.runID>=args_info.minRun_arg && piIn.runID<args_info.maxRun_arg &&
-       (!(args_info.nonuclear_flag) || (pdIn.trackID == pdOut.trackID))) // Condition to remove nuclear events if flag activated
+       (!(args_info.nonuclear_flag) || (spiIn.trackID == spiOut.trackID))) // Condition to remove nuclear events if flag activated
       {
       // WARNING: We have swap x and z, z sign must also be changed
       pdIn.direction[2] *= -1.;
       pdOut.direction[2] *= -1.;
       pairs[piIn.runID].push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
+      particlesInfo[piIn.runID].push_back( spiOut );
       }
 
     // There may be multiple protons to pair with an input proton so only
@@ -277,7 +279,7 @@ int main(int argc, char * argv[])
       os << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
          << std::setw(4) << std::setfill ('0') << i
          << itksys::SystemTools::GetFilenameLastExtension(args_info.output_arg);
-      WritePairs(pairs[i], os.str());
+      WritePairs(pairs[i], particlesInfo[i], os.str());
       }
     }
   return EXIT_SUCCESS;

@@ -16,6 +16,12 @@ int main(int argc, char * argv[])
 {
   GGO(pctbinning, args_info);
 
+  if(args_info.elosswepl_given && args_info.output_given)
+    {
+    std::cerr << "Only --output or --elosswepl should be provided" << std::endl;
+    return EXIT_FAILURE;
+    }
+
   typedef float OutputPixelType;
   const unsigned int Dimension = 3;
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
@@ -37,6 +43,7 @@ int main(int argc, char * argv[])
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
   projection->SetRobust( args_info.robust_flag );
+  projection->SetComputeScattering( args_info.scatwepl_given );
 
   if(args_info.quadricIn_given)
     {
@@ -93,12 +100,15 @@ int main(int argc, char * argv[])
   cii->SetOutputOrigin(    projection->GetOutput()->GetOrigin() );
   cii->SetOutputSpacing(   projection->GetOutput()->GetSpacing() );
 
-  if(args_info.elosswepl_given)
+  if(args_info.elosswepl_given || args_info.output_given)
     {
     // Write
     typedef itk::ImageFileWriter<  OutputImageType > WriterType;
     WriterType::Pointer writer = WriterType::New();
-    writer->SetFileName( args_info.elosswepl_arg );
+    if(args_info.elosswepl_given)
+      writer->SetFileName( args_info.elosswepl_arg );
+    else
+      writer->SetFileName( args_info.output_arg );
     writer->SetInput( cii->GetOutput() );
     TRY_AND_EXIT_ON_ITK_EXCEPTION( writer->Update() );
     }
