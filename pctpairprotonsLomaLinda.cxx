@@ -1,6 +1,7 @@
 #include "pctpairprotonsLomaLinda_ggo.h"
 
 #include <iomanip>
+#include <random>
 
 #include <rtkGgoFunctions.h>
 #include <itkImage.h>
@@ -36,7 +37,6 @@ struct ParticleDataFinal
 struct ParticleInfo
   {
   int runID;
-  char name[256];
   };
 
 
@@ -60,13 +60,9 @@ bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandato
 
 void BranchParticleToPhaseSpace(struct ParticleInfo &piInput, struct ParticleData &pdInput, TChain *tree)
 {
-  std::cout << "George: In BranchParticleToPhaseSpace" << std::endl;  	
+  std::cout << "In BranchParticleToPhaseSpace" << std::endl;  	
   tree->GetListOfBranches(); // force reading of chain
-  if(!SetTreeBranch(tree, "ParticleName", piInput.name, false))
-    strcpy(piInput.name, "proton"); // If absent, assume that particles have been filtered
-//  SetTreeBranch(tree, "RunID", &piInput.runID);
-//  SetTreeBranch(tree, "TrackID", &pi.trackID);
-//  SetTreeBranch(tree, "EventID", &pi.eventID);
+  SetTreeBranch(tree, "projection_angle", &piInput.runID);;
   SetTreeBranch(tree, "calculated_WEPL", &pdInput.wepl);
 
 
@@ -83,11 +79,6 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &piInput, struct ParticleDat
   SetTreeBranch(tree, "v_hit3",  pdInput.position3.GetDataPointer()+1);
   SetTreeBranch(tree, "t_hit3",  pdInput.position3.GetDataPointer());
   SetTreeBranch(tree, "u_hit3",  pdInput.position3.GetDataPointer()+2);
-//  SetTreeBranch(tree, "Z",  pd.position1.GetDataPointer()+1);
-//  SetTreeBranch(tree, "dX", pd.direction1.GetDataPointer()+2);
-//  SetTreeBranch(tree, "dY", pd.direction1.GetDataPointer());
-//  SetTreeBranch(tree, "dZ", pd.direction1.GetDataPointer()+1);
-//  SetTreeBranch(tree, "Time", &pd.time);
 
 }
 
@@ -141,7 +132,8 @@ int main(int argc, char * argv[])
   // Create root trees
   TChain *treeIn = new TChain("recoENTRY");
   treeIn->AddFile(args_info.input_arg);
-  std::cout << "George: Reading in file:" << args_info.input_arg << std::endl;
+  std::cout << "Reading in file:" << args_info.input_arg << std::endl;
+  if(args_info.fmpct_flag) std::cout << "In fmpct mode with ROI radius = " << args_info.roiR_arg << " mm" << std::endl;
 
   // Branch particles
   struct ParticleInfo pi;
@@ -156,6 +148,7 @@ int main(int argc, char * argv[])
   size_t nparticulesIn = treeIn->GetEntries();
   std::cout << "Number of entries = " << nparticulesIn << std::endl;
   size_t iIn=0;
+  size_t counterPairs=0;
   int prevEventIDIn = -1;
   std::cout << iIn << " particles of input phase space processed ("
             << 100*iIn/nparticulesIn << "%)" << std::flush;
@@ -171,13 +164,35 @@ int main(int argc, char * argv[])
     treeIn->GetEntry(iIn);
 
 #if 0
-	std::cout << "George: Input Entry = " << iIn << " with data : "
+	std::cout << "Input Entry = " << iIn << " with data : "
 	<< pd.position0[0] << "	" << pd.position0[1] << "	" << pd.position0[2] << "	"
 	<< pd.position1[0] << "	" << pd.position1[1] << "	" << pd.position1[2] << "	"
 	<< pd.position2[0] << "	" << pd.position2[1] << "	" << pd.position2[2] << "	" 	
 	<< pd.position3[0] << "	" << pd.position3[1] << "	" << pd.position3[2] << "	"	
 	<< "	" << pd.wepl << std::endl;
 #endif	
+
+
+// Part for proton track segment - corcular ROI intersection
+// http://mathworld.wolfram.com/Circle-LineIntersection.html
+	bool interceptionFlag = true;
+	if(args_info.fmpct_flag){
+		double radius = args_info.roiR_arg; // ROI radius in mm
+		double dx = pd.position2[2]-pd.position1[2];
+		double dy = pd.position2[0]-pd.position1[0];
+		double dr_sq = (dx*dx) + (dy*dy);
+		double D = (pd.position1[2]*pd.position2[0]) - (pd.position2[2]*pd.position1[0]);
+		double Delta = (radius*radius*dr_sq) - (D*D);
+		double randomNumber = ((double) rand() / (RAND_MAX));
+		//std::cout << "RAND_MAX = " << RAND_MAX << std::endl;
+		//std::cout << "randomNumber = " << randomNumber << std::endl;
+// no interception, then discard proton with randomNumber > modF_arg 
+		if (Delta<0) {
+			if (randomNumber>args_info.modF_arg) interceptionFlag = false;
+		}
+		//std::cout << "Delta, randomNumber, interceptionFlag = " << Delta << "	" << randomNumber << "	" << interceptionFlag <<std::endl;
+	}
+
 
 // Convert info from ParticleData to info for ParticleDataFinal
 // The inner tracker planes are used
@@ -192,20 +207,26 @@ int main(int argc, char * argv[])
 	pdIn.time = 0.;
 	pdOut.time = 0.;
 
+
+
 #if 0
-	std::cout << "George: Output Entry = " << iIn << " with data : "
+	std::cout << "Output Entry = " << iIn << " with data : "
 	<< pdIn.position[0] << "	" << pdIn.position[1] << "	" << pdIn.position[2] << "	"
 	<< pdOut.position[0] << "	" << pdOut.position[1] << "	" << pdOut.position[2] << "	"
 	<< pdIn.direction[0] << "	" << pdIn.direction[1] << "	" << pdIn.direction[2] << "	" 	
 	<< pdOut.direction[0] << "	" << pdOut.direction[1] << "	" << pdOut.direction[2] << "	"	
 	<< "	" << pdIn.wepl << "	" << pdOut.wepl << std::endl; 	
 #endif
-
-
-    // Ensuring runID is meaningful and pairing protons
-    if(pi.runID>=args_info.minRun_arg && pi.runID<args_info.maxRun_arg && pdOut.wepl>=-4. && pdOut.wepl<=300.)
+    if( pdOut.wepl>=-4. /*&& pdOut.wepl<=300.*/ && interceptionFlag)
       {
       pairs[args_info.runID_arg].push_back( std::pair<ParticleDataFinal,ParticleDataFinal>(pdIn, pdOut) );
+/*      	std::cout << "Test = " << iIn << " with data : "
+	<< pdIn.position[0] << "	" << pdIn.position[1] << "	" << pdIn.position[2] << "	"
+	<< pdOut.position[0] << "	" << pdOut.position[1] << "	" << pdOut.position[2] << "	"
+	<< pdIn.direction[0] << "	" << pdIn.direction[1] << "	" << pdIn.direction[2] << "	" 	
+	<< pdOut.direction[0] << "	" << pdOut.direction[1] << "	" << pdOut.direction[2] << "	"	
+	<< "	" << pdIn.wepl << "	" << pdOut.wepl << std::endl; */
+      /*if (pdIn.position[0]>-45. && pdIn.position[0]<-10. && pdIn.position[1]>-20. && pdIn.position[1]<30.)*/ counterPairs++;
       }
 
 	iIn++;
@@ -218,6 +239,7 @@ int main(int argc, char * argv[])
             << std::endl
             << "Writing..."
             << std::endl;
+  std::cout << "number of accepted pairs = " << counterPairs << std::endl;
 
   for(unsigned int i=0; i<MAX_RUNS; i++)
     {
@@ -227,6 +249,7 @@ int main(int argc, char * argv[])
       os << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
          << std::setw(4) << std::setfill ('0') << i
          << itksys::SystemTools::GetFilenameLastExtension(args_info.output_arg);
+      std::cout << "Writing into file:" << os.str() << std::endl;
       WritePairs(pairs[i], os.str());
       }
     }

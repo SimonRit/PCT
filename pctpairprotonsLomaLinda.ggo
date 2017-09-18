@@ -9,3 +9,6 @@ option "runID"     - "Run number, indicating a projection in the sim"     int   
 option "minRun"    - "Minimum run (inclusive)"                            int     no  default="0"
 option "maxRun"    - "Maximum run (exclusive)"                            int     no  default="1000000"
 option "nonuclear" - "Remove inelastic nuclear collisions"                flag    off
+option "fmpct"     - "Checks intersection with a cylindrical ROI"         flag    off
+option "roiR"      - "Radius of the above ROI in mm"                      double  no  default="0"
+option "modF"      - "Fluence level as fraction of full fluence"          double  no  default="0"
