@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
   std::cout << "Number of entries = " << nparticulesIn << std::endl;
   size_t iIn=0;
   size_t counterPairs=0;
-  int prevEventIDIn = -1;
+
   std::cout << iIn << " particles of input phase space processed ("
             << 100*iIn/nparticulesIn << "%)" << std::flush;
   // Go over root files

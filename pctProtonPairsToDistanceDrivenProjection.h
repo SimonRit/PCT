@@ -6,6 +6,7 @@
 
 #include <rtkRayQuadricIntersectionFunction.h>
 #include <itkInPlaceImageFilter.h>
+#include <itkSimpleFastMutexLock.h>
 
 namespace pct
 {
@@ -21,16 +22,19 @@ public:
   typedef itk::SmartPointer<Self>                           Pointer;
   typedef itk::SmartPointer<const Self>                     ConstPointer;
 
-  typedef itk::Vector<float, 3>                        ProtonPairsPixelType;
-  typedef itk::Image<ProtonPairsPixelType,2>           ProtonPairsImageType;
-  typedef ProtonPairsImageType::Pointer                ProtonPairsImagePointer;
+  typedef itk::Vector<float, 3>                             ProtonPairsPixelType;
+  typedef itk::Image<ProtonPairsPixelType,2>                ProtonPairsImageType;
+  typedef ProtonPairsImageType::Pointer                     ProtonPairsImagePointer;
 
-  typedef itk::Image<unsigned int, 3>                  CountImageType;
-  typedef CountImageType::Pointer                      CountImagePointer;
+  typedef itk::Image<unsigned int, 3>                       CountImageType;
+  typedef CountImageType::Pointer                           CountImagePointer;
 
-  typedef TOutputImage                                 OutputImageType;
-  typedef typename OutputImageType::Pointer            OutputImagePointer;
-  typedef typename OutputImageType::RegionType         OutputImageRegionType;
+  typedef itk::Image<float, 3>                              AngleImageType;
+  typedef AngleImageType::Pointer                           AngleImagePointer;
+
+  typedef TOutputImage                                      OutputImageType;
+  typedef typename OutputImageType::Pointer                 OutputImagePointer;
+  typedef typename OutputImageType::RegionType              OutputImageRegionType;
 
   typedef rtk::RayQuadricIntersectionFunction<double,3> RQIType;
 
@@ -61,12 +65,27 @@ public:
   /** Get/Set the count of proton pairs per pixel. */
   itkGetMacro(Count, CountImagePointer);
 
+ /** Get/Set the angle of proton pairs per pixel. */
+  itkGetMacro(Angle, AngleImagePointer);
+
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
 
+  /** Convert the projection data to line integrals after pre-processing.
+  ** Default is off. */
+  itkSetMacro(Robust, bool);
+  itkGetConstMacro(Robust, bool);
+  itkBooleanMacro(Robust);
+
+  /** Do the scatter projections (see Quinones et al, PMB, 2016)
+  ** Default is off. */
+  itkSetMacro(ComputeScattering, bool);
+  itkGetConstMacro(ComputeScattering, bool);
+  itkBooleanMacro(ComputeScattering);
+
 protected:
-  ProtonPairsToDistanceDrivenProjection() {}
+  ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false) {}
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
@@ -89,8 +108,19 @@ private:
   CountImagePointer m_Count;
   std::vector<CountImagePointer> m_Counts;
 
+  AngleImagePointer                 m_Angle;
+  std::vector<AngleImagePointer>    m_Angles;
+  std::vector< std::vector<float> > m_AnglesVectors;
+  itk::SimpleFastMutexLock          m_AnglesVectorsMutex;
+
+  AngleImagePointer m_AngleSq;
+  std::vector<AngleImagePointer> m_AnglesSq;
+
+
   /** Create one output per thread */
   std::vector<OutputImagePointer> m_Outputs;
+  std::vector<OutputImagePointer> m_AngleOutputs;
+  std::vector<OutputImagePointer> m_AngleSqOutputs;
 
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
@@ -103,6 +133,8 @@ private:
   Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *m_ConvFunc;
 
   ProtonPairsImageType::Pointer m_ProtonPairs;
+  bool                          m_Robust;
+  bool                          m_ComputeScattering;
 };
 
 } // end namespace pct

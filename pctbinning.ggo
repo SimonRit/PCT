@@ -3,9 +3,13 @@ version "Create the 3D sequence (2D + distance) of proton radiographies"
 
 option "verbose"    v "Verbose execution"                                        flag            off
 option "config"     - "Config file"                                              string          no
-option "input"		  i "Input file name containing the proton pairs"              string          yes
-option "output"     o "Output file name"                                         string          yes
+option "input"      i "Input file name containing the proton pairs"              string          yes
+option "output"     o "Output file name"                                         string          no
+option "elosswepl"  - "Output file name (alias for --output)"                    string          no
 option "count"      c "Image of count of proton pairs per pixel"                 string          no
+option "scatwepl"   - "Image of scattering WEPL of proton pairs per pixel"       string          no
+option "robust"     r "Use robust estimation of scattering using 19.1 %ile."     flag            off
+
 option "source"     s "Source position"                                          double          no  default="0."
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
