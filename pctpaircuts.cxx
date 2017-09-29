@@ -1294,7 +1294,7 @@ int main(int argc, char * argv[])
       TH1F *h1 = new TH1F("exit energy distribution","",210, 0., 210.);
       TF1 *gausFit = new TF1 ("gausFit", "gaus");
 
-      ofstream statdata_gaus, statdata_raw ;
+      std::ofstream statdata_gaus, statdata_raw ;
       statdata_gaus.open ("statdata_gaus.txt",std::ofstream::app);
       statdata_raw.open ("statdata_raw.txt",std::ofstream::app);
 
