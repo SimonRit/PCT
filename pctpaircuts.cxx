@@ -165,7 +165,7 @@ int main(int argc, char * argv[])
 
       double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
-      const double energy = data[0]-data[1];
+      const double energy = (data[0]==0.)?data[1]:data[0]-data[1];
 
       Ein = data[0];
 
@@ -617,7 +617,7 @@ int main(int argc, char * argv[])
 
       double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
-      const double energy = data[0]-data[1];
+      const double energy = (data[0]==0.)?data[1]:data[0]-data[1];
 
       if(args_info.gauscut_flag
          && data[1] >= gminEnergy[idx] // && data[1] <= gmaxEnergy[idx] &&
