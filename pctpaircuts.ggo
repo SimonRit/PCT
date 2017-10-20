@@ -10,16 +10,8 @@ option "anglecut"  - "Cut parameter on the SD of proton angle."     double    no
 option "energycut" - "Cut parameter on the SD of proton energy."    double    no   default="3."
 option "robust"    r "Use robust estimation using 50/19.1 %ile."    flag      off
 option "plotpix"   p "Pixel index of binning for output plot"       int       no
-option "gauscut"   g "Use Gaussian cut per pixel"                   flag      off
-option "plotproj"  - "Plot the energy and angular distribution of each pixel for a given projection index"       int       no
 option "primaries" - "Consider only primary protons"                flag      off
 option "nonuclear" - "Consider only primary protons without nuclear interactions"                flag      off
-
-option "plotRawDistribution"  - "Biplot of the raw distributions in each pixel"     flag      off
-option "plotCutDistribution"  - "Biplot of the raw distributions in each pixel after applying cut"     flag      off
-option "plotSuperDistribution"  - "Plot the raw distributions in each pixel"     flag      off
-
-
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no
@@ -33,4 +25,3 @@ option "menergy"   - "Mean energy file name"  string no
 option "senergy"   - "Sigma energy file name" string no
 option "sangle"    - "Sigma angle file name"  string no
 option "count"     - "Count file name"        string no
-option "sigmaAngle"    - "Sigma angle file name"  string no
