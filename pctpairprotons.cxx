@@ -55,7 +55,7 @@ bool SetTreeBranch(TChain *tree, std::string branchName, void *add, bool mandato
   return found;
 }
 
-void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct StoredParticleInfo &spi, struct ParticleData &pd, TChain *tree)
+void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct StoredParticleInfo &spi, struct ParticleData &pd, TChain *tree, args_info_pctpairprotons *args_info)
 {
   tree->GetListOfBranches(); // force reading of chain
   if(!SetTreeBranch(tree, "ParticleName", pi.name, false))
@@ -64,13 +64,11 @@ void BranchParticleToPhaseSpace(struct ParticleInfo &pi, struct StoredParticleIn
   SetTreeBranch(tree, "EventID", &pi.eventID);
   SetTreeBranch(tree, "Ekine", &pd.ekine);
 
-  // WARNING: X and Z are purposely swap...
-  SetTreeBranch(tree, "X",  pd.position.GetDataPointer());
-  SetTreeBranch(tree, "Y",  pd.position.GetDataPointer()+1);
-  //SetTreeBranch(tree, "Z",  pd.position.GetDataPointer()+2);
-  SetTreeBranch(tree, "dX", pd.direction.GetDataPointer());
-  SetTreeBranch(tree, "dY", pd.direction.GetDataPointer()+1);
-  SetTreeBranch(tree, "dZ", pd.direction.GetDataPointer()+2);
+  SetTreeBranch(tree, args_info->proju_arg,  pd.position.GetDataPointer());
+  SetTreeBranch(tree, args_info->projv_arg,  pd.position.GetDataPointer()+1);
+  SetTreeBranch(tree, std::string("d")+std::string(args_info->proju_arg), pd.direction.GetDataPointer());
+  SetTreeBranch(tree, std::string("d")+std::string(args_info->projv_arg), pd.direction.GetDataPointer()+1);
+  SetTreeBranch(tree, std::string("d")+std::string(args_info->projw_arg), pd.direction.GetDataPointer()+2);
   SetTreeBranch(tree, "TrackID", &spi.trackID);
 
   if(!SetTreeBranch(tree, "NuclearProcess", &spi.nuclearProcess, false))
@@ -153,8 +151,8 @@ int main(int argc, char * argv[])
   struct ParticleInfo piIn, piOut;
   struct StoredParticleInfo spiIn, spiOut;
   struct ParticleData pdIn, pdOut;
-  BranchParticleToPhaseSpace(piIn, spiIn, pdIn, treeIn);
-  BranchParticleToPhaseSpace(piOut, spiOut, pdOut, treeOut);
+  BranchParticleToPhaseSpace(piIn, spiIn, pdIn, treeIn, &args_info);
+  BranchParticleToPhaseSpace(piOut, spiOut, pdOut, treeOut, &args_info);
   pdIn.position[2]  = args_info.planeIn_arg;
   pdOut.position[2] = args_info.planeOut_arg;
 
@@ -252,8 +250,8 @@ int main(int argc, char * argv[])
        (!(args_info.nonuclear_flag) || (spiIn.trackID == spiOut.trackID))) // Condition to remove nuclear events if flag activated
       {
       // WARNING: We have swap x and z, z sign must also be changed
-      pdIn.direction[2] *= -1.;
-      pdOut.direction[2] *= -1.;
+      pdIn.direction[2] *= args_info.wweight_arg;
+      pdOut.direction[2] *=  args_info.wweight_arg;;
       pairs[piIn.runID].push_back( std::pair<ParticleData,ParticleData>(pdIn, pdOut) );
       particlesInfo[piIn.runID].push_back( spiOut );
       }

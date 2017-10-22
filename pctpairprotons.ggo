@@ -11,3 +11,7 @@ option "planeOut"  - "Plane position of outgoing protons" double    yes
 option "minRun"    - "Minimum run (inclusive)"                      int       no  default="0"
 option "maxRun"    - "Maximum run (exclusive)"                      int       no  default="1000000"
 option "nonuclear" - "Remove inelastic nuclear collisions"          flag      off
+option "proju"     - "Provide the name of the first axis in the root file"  string no default="Y"
+option "projv"     - "Provide the name of the second axis in the root file" string no default="Z"
+option "projw"     - "Provide the name of the third axis in the root file" string no default="X"
+option "wweight"   - "Weight for the third axis" double no default="-1."
