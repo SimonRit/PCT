@@ -386,7 +386,8 @@ int main(int argc, char * argv[])
       std::cout << "Can not create energy.pdf, sigma is 0." << std::endl;
     else
       {
-      RooRealVar rooEnergy("Energy","Energy loss",0.,500.*CLHEP::MeV, "MeV");
+      double minEnergy = std::min(0., -2.*pSumEnergySq[p]);
+      RooRealVar rooEnergy("Energy","Energy loss",minEnergy,500.*CLHEP::MeV,"MeV");
       RooDataSet rooEnergyData("data", "data", RooArgSet(rooEnergy));
       for(unsigned int i=0; i<pCounts[p]; i++)
         {
@@ -399,7 +400,7 @@ int main(int argc, char * argv[])
                                                pSumEnergy[p]+2*pSumEnergySq[p]);
       rooEnergyData.plotOn(rooEnergyPlot);
 
-      RooRealVar rooMeanEnergy("rooMeanEnergy","mean of energy gaussian",pSumEnergy[p],0.,500.*CLHEP::MeV) ;
+      RooRealVar rooMeanEnergy("rooMeanEnergy","mean of energy gaussian",pSumEnergy[p],minEnergy,500.*CLHEP::MeV) ;
       RooRealVar rooSigmaEnergy("rooSigmaEnergy","width of energy gaussian",pSumEnergySq[p]/args_info.energycut_arg,0.,500.*CLHEP::MeV);
       RooGaussian rooGaussEnergy("rooGaussEnergy","energy gaussian PDF",rooEnergy,rooMeanEnergy,rooSigmaEnergy) ;
 
