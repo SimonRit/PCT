@@ -217,7 +217,7 @@ int main(int argc, char * argv[])
 	<< pdOut.direction[0] << "	" << pdOut.direction[1] << "	" << pdOut.direction[2] << "	"	
 	<< "	" << pdIn.wepl << "	" << pdOut.wepl << std::endl; 	
 #endif
-    if( pdOut.wepl>=-4. /*&& pdOut.wepl<=300.*/ && interceptionFlag)
+    if( pdOut.wepl>=-20. && pdOut.wepl<=900. && interceptionFlag)
       {
       pairs[args_info.runID_arg].push_back( std::pair<ParticleDataFinal,ParticleDataFinal>(pdIn, pdOut) );
 /*      	std::cout << "Test = " << iIn << " with data : "
