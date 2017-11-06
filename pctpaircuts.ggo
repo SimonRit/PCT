@@ -9,6 +9,7 @@ option "source"    s "Source position"                              double    no
 option "anglecut"  - "Cut parameter on the SD of proton angle."     double    no   default="3."
 option "energycut" - "Cut parameter on the SD of proton energy."    double    no   default="3."
 option "robust"    r "Use robust estimation using 50/19.1 %ile."    flag      off
+option "robustopt" - "Use newer options for robust cut."            int       no   default="0"
 option "plotpix"   p "Pixel index of binning for output plot"       int       no
 option "primaries" - "Consider only primary protons"                flag      off
 option "nonuclear" - "Consider only primary protons without nuclear interactions"                flag      off

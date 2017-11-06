@@ -174,21 +174,40 @@ int main(int argc, char * argv[])
         }
       else if(pCounts[idx])
         {
-        // Energy: median and 30.85% (0.5 sigma) with interpolation
-        double medianPos = pCounts[idx]*0.5;
-        unsigned int medianSupPos = itk::Math::Ceil<unsigned int, double>(medianPos);
-        std::partial_sort(energies[idx].begin(), energies[idx].begin()+medianSupPos+1, energies[idx].end());
-        double medianDiff = medianSupPos-medianPos;
+        if(args_info.robustopt_arg==0)
+          {
+          // Energy: median and 30.85% (0.5 sigma) with interpolation
+          double medianPos = pCounts[idx]*0.5;
+          unsigned int medianSupPos = itk::Math::Ceil<unsigned int, double>(medianPos);
+          std::partial_sort(energies[idx].begin(), energies[idx].begin()+medianSupPos+1, energies[idx].end());
+          double medianDiff = medianSupPos-medianPos;
 
-	//median linear interpolation
-        pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+ //tab[x][y] <=> *(tab[x]+y)
-                            *(energies[idx].begin()+medianSupPos-1)*medianDiff;
+          //median linear interpolation
+          pSumEnergy  [idx] = *(energies[idx].begin()+medianSupPos)*(1.-medianDiff)+ //tab[x][y] <=> *(tab[x]+y)
+                              *(energies[idx].begin()+medianSupPos-1)*medianDiff;
 
-        double sigmaEPos = pCounts[idx]*0.3085; //0.5 sigma
-        unsigned int sigmaESupPos = itk::Math::Ceil<unsigned int, double>(sigmaEPos);
-        double sigmaEDiff = sigmaESupPos-sigmaEPos;
-        pSumEnergySq[idx] = 2.*(pSumEnergy[idx]-( *(energies[idx].begin()+sigmaESupPos)*(1.-sigmaEDiff)+
-                                                  *(energies[idx].begin()+sigmaESupPos-1)*sigmaEDiff) ); //x2 to get 1sigma
+          double sigmaEPos = pCounts[idx]*0.3085; //0.5 sigma
+          unsigned int sigmaESupPos = itk::Math::Ceil<unsigned int, double>(sigmaEPos);
+          double sigmaEDiff = sigmaESupPos-sigmaEPos;
+          pSumEnergySq[idx] = 2.*(pSumEnergy[idx]-( *(energies[idx].begin()+sigmaESupPos)*(1.-sigmaEDiff)+
+                                                    *(energies[idx].begin()+sigmaESupPos-1)*sigmaEDiff) ); //x2 to get 1sigma
+          }
+        else
+          {
+          // Energy: median and 30.85% (0.5 sigma) with interpolation
+          unsigned int medianPos = pCounts[idx]/2;
+          std::sort(energies[idx].begin(), energies[idx].end());
+          double sum = std::accumulate(energies[idx].begin(), energies[idx].end(), 0.);
+          while(medianPos>0 && sum>2*medianPos*energies[idx][medianPos])
+            {
+            sum -= energies[idx][medianPos*2-1];
+            sum -= energies[idx][medianPos*2-2];
+            medianPos--;
+            }
+          pSumEnergy[idx] = energies[idx][medianPos];
+          unsigned int sigmaEPos = itk::Math::Round<unsigned int, double>(medianPos*2.*0.3085); //0.5 sigma
+          pSumEnergySq[idx] = 2.*(pSumEnergy[idx]-energies[idx][sigmaEPos]); //x2 to get 1sigma
+          }
 
         // Angle: 38.30% (0.5 sigma) with interpolation (median is 0. and we only have positive values
         double sigmaAPos = angles[idx].size()*0.3830;
