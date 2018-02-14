@@ -2,7 +2,7 @@
 
 #include <rtkMacro.h>
 #include <rtkGgoFunctions.h>
-#include <rtkRayQuadricIntersectionFunction.h>
+#include <rtkQuadricShape.h>
 
 #include "pctSchulteMLPFunction.h"
 #include "pctThirdOrderPolynomialMLPFunction.h"
@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
   intersections->SetRegions(region);
   intersections->Allocate();
 
-  typedef rtk::RayQuadricIntersectionFunction<double,3>     RQIType;
+  typedef rtk::QuadricShape RQIType;
   RQIType::Pointer quadricIn = RQIType::New();
   if(args_info.quadricIn_given)
     {
@@ -67,16 +67,18 @@ int main(int argc, char * argv[])
   // Move straight to entrance and exit shapes
   VectorType pSIn  = pIn;
   VectorType pSOut = pOut;
-  quadricIn->SetRayOrigin(pIn);
-  quadricOut->SetRayOrigin(pOut);
-  if(args_info.quadricIn_given && args_info.quadricOut_given && quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
+  double nearDistIn, nearDistOut, farDistIn, farDistOut;
+  if(args_info.quadricIn_given &&
+     args_info.quadricOut_given &&
+     quadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
+     quadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
     {
-    pSIn  = pIn  + dIn  * quadricIn ->GetNearestDistance();
+    pSIn  = pIn  + dIn  * nearDistIn;
     if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
-      pSIn  = pIn  + dIn  * quadricIn ->GetFarthestDistance();
-    pSOut = pOut + dOut * quadricOut->GetNearestDistance();
+      pSIn  = pIn  + dIn  * farDistIn;
+    pSOut = pOut + dOut * nearDistOut;
     if(pSOut[2]<pIn[2] || pSOut[2]>pOut[2])
-      pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
+      pSOut = pOut + dOut * farDistOut;
     }
   OutputImageType::IndexType index;
   index[0] = 0;

@@ -4,7 +4,7 @@
 #include "rtkConfiguration.h"
 #include "pctBetheBlochFunctor.h"
 
-#include <rtkRayQuadricIntersectionFunction.h>
+#include <rtkQuadricShape.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
 #include <itkInPlaceImageFilter.h>
 #include <itkBarrier.h>
@@ -37,7 +37,7 @@ public:
   typedef typename OutputImageType::Pointer            OutputImagePointer;
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
 
-  typedef rtk::RayQuadricIntersectionFunction<double,3> RQIType;
+  typedef rtk::QuadricShape RQIType;
 
   typedef rtk::ThreeDCircularProjectionGeometry     GeometryType;
   typedef typename GeometryType::Pointer            GeometryPointer;

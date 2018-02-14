@@ -115,35 +115,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   // Corrections
   typedef itk::Vector<double,3> VectorType;
 
-  // Create a local copy of quadrics (surface object) for multithreading
-  RQIType::Pointer quadricIn, quadricOut;
-  if(m_QuadricIn.GetPointer()!=NULL)
-    {
-    quadricIn = RQIType::New();
-    quadricIn->SetA(m_QuadricIn->GetA());
-    quadricIn->SetB(m_QuadricIn->GetB());
-    quadricIn->SetC(m_QuadricIn->GetC());
-    quadricIn->SetD(m_QuadricIn->GetD());
-    quadricIn->SetE(m_QuadricIn->GetE());
-    quadricIn->SetF(m_QuadricIn->GetF());
-    quadricIn->SetG(m_QuadricIn->GetG());
-    quadricIn->SetH(m_QuadricIn->GetH());
-    quadricIn->SetI(m_QuadricIn->GetI());
-    quadricIn->SetJ(m_QuadricIn->GetJ());
-
-    quadricOut = RQIType::New();
-    quadricOut->SetA(m_QuadricOut->GetA());
-    quadricOut->SetB(m_QuadricOut->GetB());
-    quadricOut->SetC(m_QuadricOut->GetC());
-    quadricOut->SetD(m_QuadricOut->GetD());
-    quadricOut->SetE(m_QuadricOut->GetE());
-    quadricOut->SetF(m_QuadricOut->GetF());
-    quadricOut->SetG(m_QuadricOut->GetG());
-    quadricOut->SetH(m_QuadricOut->GetH());
-    quadricOut->SetI(m_QuadricOut->GetI());
-    quadricOut->SetJ(m_QuadricOut->GetJ());
-    }
-
   // Create zmm and magnitude lut (look up table)
   itk::ImageRegionIterator<ProtonPairsImageType> it(m_ProtonPairs, region);
   std::vector<double> zmm(imgSize[2]);
@@ -226,18 +197,18 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // Move straight to entrance and exit shapes
     VectorType pSIn  = pIn;
     VectorType pSOut = pOut;
-    if(quadricIn.GetPointer()!=NULL)
+    double nearDistIn, nearDistOut, farDistIn, farDistOut;
+    if(m_QuadricIn.GetPointer()!=NULL)
       {
-      quadricIn->SetRayOrigin(pIn);
-      quadricOut->SetRayOrigin(pOut);
-      if(quadricIn->Evaluate(dIn) && quadricOut->Evaluate(dOut))
+      if(m_QuadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
+         m_QuadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
         {
-        pSIn  = pIn  + dIn  * quadricIn ->GetNearestDistance();
+        pSIn  = pIn  + dIn  * nearDistIn;
         if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
-          pSIn  = pIn  + dIn  * quadricIn ->GetFarthestDistance();
-        pSOut = pOut + dOut * quadricOut->GetNearestDistance();
+          pSIn  = pIn  + dIn  * farDistIn;
+        pSOut = pOut + dOut * nearDistOut;
         if(pSOut[2]<pIn[2] || pSOut[2]>pOut[2])
-          pSOut = pOut + dOut * quadricOut->GetFarthestDistance();
+          pSOut = pOut + dOut * farDistOut;
         }
       }
 

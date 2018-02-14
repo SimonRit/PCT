@@ -4,7 +4,7 @@
 #include "rtkConfiguration.h"
 #include "pctBetheBlochFunctor.h"
 
-#include <rtkRayQuadricIntersectionFunction.h>
+#include <rtkQuadricShape.h>
 #include <itkInPlaceImageFilter.h>
 #include <itkSimpleFastMutexLock.h>
 
@@ -36,7 +36,7 @@ public:
   typedef typename OutputImageType::Pointer                 OutputImagePointer;
   typedef typename OutputImageType::RegionType              OutputImageRegionType;
 
-  typedef rtk::RayQuadricIntersectionFunction<double,3> RQIType;
+  typedef rtk::QuadricShape                                 RQIType;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);

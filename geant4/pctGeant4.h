@@ -3,6 +3,9 @@
 
 #include <itkFastMutexLock.h>
 
+class G4RunManager;
+class PhysicsListMessenger;
+
 namespace pct
 {
 
@@ -16,10 +19,15 @@ private:
   /// Constructor
   pctGeant4();
 
+  /// Destructor
+  ~pctGeant4();
+
   /// Singleton object pointer i
   static pctGeant4 * mSingleton;
-  
+
   static itk::FastMutexLock::Pointer m_Lock;
+  G4RunManager * m_RunManager;
+  PhysicsListMessenger* m_Mess;
 };
 
 } // end namespace pct
