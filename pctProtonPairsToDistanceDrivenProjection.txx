@@ -4,7 +4,6 @@
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
-#include "pctScatteringWEPLFunction.h"
 
 namespace pct
 {
@@ -373,9 +372,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     m_Angle->SetSpacing( this->GetOutput()->GetSpacing() );
     m_Angle->SetOrigin( this->GetOutput()->GetOrigin() );
 
-    // Initialize scattering WEPL LUT
-    pct::Functor::ScatteringWEPL::ScatteringLUT::SetG4LUT(m_ProtonPairs->GetBufferPointer()[4][0]);
-
     itCOut.GoToBegin();
     std::vector< std::vector<float> >::iterator itAnglesVectors = m_AnglesVectors.begin();
     while(!itCOut.IsAtEnd())
@@ -400,15 +396,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
             double sigmaADiff = sigmaASupPos-sigmaAPos;
             double sigma = 2.*(*(itAnglesVectors->begin()+sigmaASupPos)*(1.-sigmaADiff)+
                                *(itAnglesVectors->begin()+sigmaASupPos-1)*sigmaADiff); //x2 to get 1sigma
-            itAngleOut.Set( pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL::GetValue(sigma * sigma) );
-            //itAngleOut.Set( sigma * sigma );
+            itAngleOut.Set( sigma * sigma );
             }
           }
         else
           {
           double sigma2 = itAngleSqOut.Get()/itCOut.Get()/2;
-          itAngleOut.Set( pct::Functor::ScatteringWEPL::ConvertToScatteringWEPL::GetValue( sigma2 ) );
-          //itAngleOut.Set( sigma2 );
+          itAngleOut.Set( sigma2 );
           }
         }
 
