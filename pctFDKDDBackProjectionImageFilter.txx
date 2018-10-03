@@ -20,8 +20,8 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
   const unsigned int Dimension = TInputImage::ImageDimension;
   const unsigned int nProj = m_ProjectionStack->GetLargestPossibleRegion().GetSize(Dimension);
   const unsigned int iFirstProj = m_ProjectionStack->GetLargestPossibleRegion().GetIndex(Dimension);
-  rtk::ThreeDCircularProjectionGeometry * geometry;
-  geometry = dynamic_cast<rtk::ThreeDCircularProjectionGeometry *>(this->GetGeometry().GetPointer());
+  const rtk::ThreeDCircularProjectionGeometry * geometry;
+  geometry = this->GetGeometry();
 
   // Create interpolator, could be any interpolation
   typedef itk::LinearInterpolateImageFunction< ProjectionImageType, double > InterpolatorType;
