@@ -18,7 +18,8 @@ public:
   typedef itk::SmartPointer<Self>                                  Pointer;
   typedef itk::SmartPointer<const Self>                            ConstPointer;
 
-  typedef typename Superclass::ProjectionMatrixType           ProjectionMatrixType;                                                                                                      typedef typename TOutputImage::RegionType                                          OutputImageRegionType;
+  typedef typename Superclass::ProjectionMatrixType           ProjectionMatrixType;
+  typedef typename TOutputImage::RegionType                   OutputImageRegionType;
   typedef TInputImage                                         ProjectionImageType;
   typedef typename ProjectionImageType::Pointer               ProjectionImagePointer;
   typedef typename ProjectionImageType::PixelType             ProjectionPixelType;
