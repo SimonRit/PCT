@@ -15,8 +15,13 @@ void
 ProtonPairsToBackProjection<TInputImage, TOutputImage>
 ::BeforeThreadedGenerateData()
 {
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+  m_Outputs.resize( this->GetNumberOfWorkUnits() );
+  m_Counts.resize( this->GetNumberOfWorkUnits() );
+#else
   m_Outputs.resize( this->GetNumberOfThreads() );
   m_Counts.resize( this->GetNumberOfThreads() );
+#endif
   if(m_QuadricOut.GetPointer()==NULL)
     m_QuadricOut = m_QuadricIn;
   m_ConvFunc = new Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(m_IonizationPotential, 600.*CLHEP::MeV, 0.1*CLHEP::keV);
@@ -24,7 +29,11 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
   for(unsigned int i=0; i<3; i++)
     {
     m_Barriers[i]= itk::Barrier::New();
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+    m_Barriers[i]->Initialize( this->GetNumberOfWorkUnits() );
+#else
     m_Barriers[i]->Initialize( this->GetNumberOfThreads() );
+#endif
     }
 }
 
@@ -67,7 +76,11 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
     m_Barriers[0]->Wait();
     if(threadId==0)
       {
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+      m_Barriers[2]->Initialize( this->GetNumberOfWorkUnits() );
+#else
       m_Barriers[2]->Initialize( this->GetNumberOfThreads() );
+#endif
       }
     m_Barriers[1]->Wait();
     if(threadId==0)
@@ -89,12 +102,20 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
       }
     if(threadId==0)
       {
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+      m_Barriers[0]->Initialize( this->GetNumberOfWorkUnits() );
+#else
       m_Barriers[0]->Initialize( this->GetNumberOfThreads() );
+#endif
       }
     m_Barriers[2]->Wait();
     if(threadId==0)
       {
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+      m_Barriers[1]->Initialize( this->GetNumberOfWorkUnits() );
+#else
       m_Barriers[1]->Initialize( this->GetNumberOfThreads() );
+#endif
       }
 
     // Get geometry information. We need the rotation matrix alone to rotate the direction
@@ -116,8 +137,13 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
 
     size_t nprotons = m_ProtonPairs->GetLargestPossibleRegion().GetSize()[1];
     ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+    region.SetIndex(1, threadId*nprotons/this->GetNumberOfWorkUnits());
+    region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
+#else
     region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
     region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
+#endif
 
     // Image information constants
     const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
@@ -318,7 +344,11 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
   // Merge the projection computed in each thread to the first one
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
+  for(unsigned int i=1; i<this->GetNumberOfWorkUnits(); i++)
+#else
   for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
+#endif
     {
     if(m_Outputs[i].GetPointer() == NULL)
       continue;
