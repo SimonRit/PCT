@@ -74,10 +74,12 @@ int main(int argc, char * argv[])
     std::cout << sqrt(Sigma1(0,0)) << std::endl;
     return EXIT_SUCCESS;
 
-  case(parameter_arg_mlpSD):
+    case(parameter_arg_mlpSD):
     mlp->EvaluateError(args_info.length_arg, error);
     std::cout << sqrt(error[0][0]) << std::endl;
-  default:
+    return EXIT_SUCCESS;
+
+    default:
     return EXIT_FAILURE;
     }
 
