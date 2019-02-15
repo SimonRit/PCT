@@ -83,7 +83,11 @@ int main(int argc, char * argv[])
   {
     // Read r-th set of pairs
     region.SetIndex(1, r*PAIRS_IN_RAM);
+#if ITK_VERSION_MAJOR <= 4
     region.SetSize(1, vnl_math_min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#else
+    region.SetSize(1, std::min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#endif
     reader->GetOutput()->SetRequestedRegion(region); //we work on one region "r"
     TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
 
@@ -133,8 +137,13 @@ int main(int argc, char * argv[])
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
+#if ITK_VERSION_MAJOR <= 4
       const double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       const double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+#else
+      const double anglex = std::acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      const double angley = std::acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+#endif
       const double energy = (data[0]==0.)?data[1]:data[0]-data[1];
 
       if(args_info.robust_flag || (args_info.plotpix_given && idx==(unsigned long)args_info.plotpix_arg ) )
@@ -252,7 +261,11 @@ int main(int argc, char * argv[])
     {
     // Read r-th set of pairs
     region.SetIndex(1, r*PAIRS_IN_RAM);
+#if ITK_VERSION_MAJOR <= 4
     region.SetSize(1, vnl_math_min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#else
+    region.SetSize(1, std::min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#endif
     reader->GetOutput()->SetRequestedRegion(region);
     TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
 
@@ -301,13 +314,22 @@ int main(int argc, char * argv[])
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
+#if ITK_VERSION_MAJOR <= 4
       const double anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
       const double angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+#else
+      const double anglex = std::acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+      const double angley = std::acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+#endif
       const double energy = (data[0]==0.)?data[1]:data[0]-data[1];
 
       if( anglex <= pSumAngleSq [idx] &&
           angley <= pSumAngleSq [idx] &&
+#if ITK_VERSION_MAJOR <= 4
           vcl_abs(energy-pSumEnergy[idx]) <= pSumEnergySq[idx] )
+#else
+          std::abs(energy-pSumEnergy[idx]) <= pSumEnergySq[idx] )
+#endif
         {
         if (args_info.primaries_flag && data[2]==1)
           {

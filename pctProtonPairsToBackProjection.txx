@@ -139,7 +139,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
     ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
 #if ( ( ITK_VERSION_MAJOR > 4 ) )
     region.SetIndex(1, threadId*nprotons/this->GetNumberOfWorkUnits());
-    region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
+    region.SetSize(1, std::min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
 #else
     region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
     region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));

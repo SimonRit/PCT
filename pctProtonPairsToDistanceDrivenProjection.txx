@@ -104,7 +104,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
 #if ( ( ITK_VERSION_MAJOR > 4 ) )
   region.SetIndex(1, threadId*nprotons/this->GetNumberOfWorkUnits());
-  region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
+  region.SetSize(1, std::min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
 #else
   region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
   region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
@@ -180,8 +180,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
+#if ITK_VERSION_MAJOR <= 4
       angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+#else
+      angley = std::acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
+      anglex = std::acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
+#endif
       }
 
     if(pIn[2] > pOut[2])
