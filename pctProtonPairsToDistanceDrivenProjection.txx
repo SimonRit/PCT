@@ -278,10 +278,18 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
           {
           if(m_Robust)
             {
+#if ITK_VERSION_MAJOR <= 4
             m_AnglesVectorsMutex.Lock();
+#else
+            m_AnglesVectorsMutex.lock();
+#endif
             m_AnglesVectors[idx].push_back(anglex);
             m_AnglesVectors[idx].push_back(angley);
+#if ITK_VERSION_MAJOR <= 4
             m_AnglesVectorsMutex.Unlock();
+#else
+            m_AnglesVectorsMutex.unlock();
+#endif
             }
           else
             {

@@ -66,16 +66,28 @@
 
 /// Unique static instance
 pct::pctGeant4 *pct::pctGeant4::mSingleton = 0;
+#if ITK_VERSION_MAJOR <= 4
 itk::FastMutexLock::Pointer pct::pctGeant4::m_Lock = itk::FastMutexLock::New();
+#else
+std::mutex* pct::pctGeant4::m_Lock = new std::mutex;
+#endif
 
 //------------------------------------------------------------------------------
 pct::pctGeant4 * pct::pctGeant4::GetInstance()
 {
+#if ITK_VERSION_MAJOR <= 4
   m_Lock->Lock();
+#else
+  m_Lock->lock();
+#endif
   if (mSingleton == 0) {
     mSingleton = new pctGeant4();
   }
+#if ITK_VERSION_MAJOR <= 4
   m_Lock->Unlock();
+#else
+  m_Lock->unlock();
+#endif
   return mSingleton;
 }
 

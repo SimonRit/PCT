@@ -6,7 +6,11 @@
 
 #include <rtkQuadricShape.h>
 #include <itkInPlaceImageFilter.h>
+#if ITK_VERSION_MAJOR <= 4
 #include <itkSimpleFastMutexLock.h>
+#else
+#include <mutex>
+#endif
 
 namespace pct
 {
@@ -111,7 +115,11 @@ private:
   AngleImagePointer                 m_Angle;
   std::vector<AngleImagePointer>    m_Angles;
   std::vector< std::vector<float> > m_AnglesVectors;
+#if ITK_VERSION_MAJOR <= 4
   itk::SimpleFastMutexLock          m_AnglesVectorsMutex;
+#else
+  std::mutex                        m_AnglesVectorsMutex;
+#endif
 
   AngleImagePointer m_AngleSq;
   std::vector<AngleImagePointer> m_AnglesSq;
