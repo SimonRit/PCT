@@ -95,7 +95,11 @@ protected:
 
   /** The two inputs should not be in the same space so there is nothing
    * to verify. */
+#if ITK_VERSION_MAJOR <= 4
   virtual void VerifyInputInformation() ITK_OVERRIDE {}
+#else
+  virtual void VerifyInputInformation() const ITK_OVERRIDE {}
+#endif
 
 private:
   ProtonPairsToBackProjection(const Self&); //purposely not implemented
