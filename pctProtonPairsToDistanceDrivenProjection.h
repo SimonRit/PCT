@@ -89,7 +89,11 @@ public:
   itkBooleanMacro(ComputeScattering);
 
 protected:
+#if ITK_VERSION_MAJOR <= 4
   ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false) {}
+#else
+  ProtonPairsToDistanceDrivenProjection();
+#endif
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;

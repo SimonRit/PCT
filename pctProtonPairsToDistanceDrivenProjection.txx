@@ -9,6 +9,13 @@ namespace pct
 {
 
 template <class TInputImage, class TOutputImage>
+ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
+::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false)
+{
+  this->DynamicMultiThreadingOff();
+}
+
+template <class TInputImage, class TOutputImage>
 void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::BeforeThreadedGenerateData()

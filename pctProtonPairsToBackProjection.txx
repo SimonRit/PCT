@@ -10,6 +10,15 @@
 namespace pct
 {
 
+#if ITK_VERSION_MAJOR > 4
+template <class TInputImage, class TOutputImage>
+ProtonPairsToBackProjection<TInputImage, TOutputImage>
+::ProtonPairsToBackProjection()
+{
+  this->DynamicMultiThreadingOff();
+}
+#endif
+
 template <class TInputImage, class TOutputImage>
 void
 ProtonPairsToBackProjection<TInputImage, TOutputImage>

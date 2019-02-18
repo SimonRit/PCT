@@ -86,7 +86,11 @@ public:
   itkSetMacro(Geometry, GeometryPointer);
 
 protected:
+#if ITK_VERSION_MAJOR <= 4
   ProtonPairsToBackProjection() {}
+#else
+  ProtonPairsToBackProjection();
+#endif
   virtual ~ProtonPairsToBackProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
