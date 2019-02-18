@@ -13,6 +13,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false)
 {
   this->DynamicMultiThreadingOff();
+  this->SetNumberOfWorkUnits( itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() );
 }
 
 template <class TInputImage, class TOutputImage>

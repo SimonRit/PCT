@@ -16,6 +16,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
 ::ProtonPairsToBackProjection()
 {
   this->DynamicMultiThreadingOff();
+  this->SetNumberOfWorkUnits( itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() );
 }
 #endif
 
