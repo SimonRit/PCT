@@ -41,6 +41,7 @@ int main(int argc, char * argv[])
   projection->SetProtonPairsFileName( args_info.input_arg );
   projection->SetSourceDistance( args_info.source_arg );
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
+  projection->SetMostLikelyPathPolynomialDegree( args_info.mlppolydeg_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
   projection->SetRobust( args_info.robust_flag );
   projection->SetComputeScattering( args_info.scatwepl_given );

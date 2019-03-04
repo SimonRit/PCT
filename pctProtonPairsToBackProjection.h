@@ -67,6 +67,9 @@ public:
   itkGetMacro(MostLikelyPathType, std::string);
   itkSetMacro(MostLikelyPathType, std::string);
 
+  itkGetMacro(MostLikelyPathPolynomialDegree, int);
+  itkSetMacro(MostLikelyPathPolynomialDegree, int);
+
   /** Get/Set the boundaries of the object. */
   itkGetMacro(QuadricIn, RQIType::Pointer);
   itkSetMacro(QuadricIn, RQIType::Pointer);
@@ -110,6 +113,7 @@ private:
   FileNamesContainer m_ProtonPairsFileNames;
 
   std::string m_MostLikelyPathType;
+  int m_MostLikelyPathPolynomialDegree;
 
   /** Count event in each thread */
   CountImagePointer m_Counts;

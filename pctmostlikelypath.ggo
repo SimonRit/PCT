@@ -11,7 +11,8 @@ option "trajectory"    - "Output trajectory file name"                         s
 option "intersections" - "Output intersections file name"                      string          yes
 option "quadricIn"     - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm" double multiple no
 option "quadricOut"    - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"     double multiple no
-option "type"          - "Type of most likely path (schulte or polynomial)"    string          no   default="schulte"
+option "type"          - "Type of most likely path (schulte, polynomial, or krah)"    string          no   default="schulte"
+option "mlppolydeg" - "Degree of the polynomial to approximate 1/beta^2p^2"      int             no  default="5"
 
 section "Sampling parameters"
 option "origin"    - "Origin (default=centered)" double no

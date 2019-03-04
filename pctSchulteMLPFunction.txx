@@ -79,7 +79,6 @@ SchulteMLPFunction
   m_Sigma2 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(u1,m_u2);
 
 #ifdef MLP_TIMING
-  m_EvaluateProbe1.Stop();
   m_EvaluateProbe2.Start();
 #endif
 
@@ -103,6 +102,7 @@ SchulteMLPFunction
   y = yMLP[0];
 
 #ifdef MLP_TIMING
+  m_EvaluateProbe1.Stop();
   m_EvaluateProbe2.Stop();
 #endif
 }

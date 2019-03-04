@@ -3,6 +3,7 @@
 
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
+#include "pctPolynomialMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
 
 namespace pct
@@ -49,13 +50,22 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 {
   // Create MLP depending on type
   pct::MostLikelyPathFunction<double>::Pointer mlp;
+  pct::PolynomialMLPFunction::Pointer mlp_poly; // NK: must declare outside of if clause because mlp_poly is needed later
   if(m_MostLikelyPathType == "polynomial")
     mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
-  else if (m_MostLikelyPathType == "schulte")
+  else if(m_MostLikelyPathType == "krah")
+    {
+    mlp_poly = pct::PolynomialMLPFunction::New();
+    // pct::PolynomialMLPFunction::Pointer polynomial_mlp = dynamic_cast<pct::PolynomialMLPFunction*>(mlp.GetPointer());
+    std::cout << "before SetPolynomialDegree: " << m_MostLikelyPathPolynomialDegree << std::endl;
+    mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
+    mlp = mlp_poly;
+    }
+  else if(m_MostLikelyPathType == "schulte")
     mlp = pct::SchulteMLPFunction::New();
   else
     {
-    itkGenericExceptionMacro("MLP must either be schulte or polynomial, not [" << m_MostLikelyPathType << ']');
+    itkGenericExceptionMacro("MLP must either be schulte, polynomial, or krah, not [" << m_MostLikelyPathType << ']');
     }
 
   // Create thread image and corresponding stack to count events

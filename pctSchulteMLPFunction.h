@@ -198,8 +198,8 @@ private:
   double m_IntForSigmaSqT2;
 
 #ifdef MLP_TIMING
-  TimeProbe m_EvaluateProbe1;
-  TimeProbe m_EvaluateProbe2;
+  itk::TimeProbe m_EvaluateProbe1;
+  itk::TimeProbe m_EvaluateProbe2;
 #endif
 
 };

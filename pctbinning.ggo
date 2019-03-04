@@ -13,7 +13,8 @@ option "robust"     r "Use robust estimation of scattering using 19.1 %ile."    
 option "source"     s "Source position"                                          double          no  default="0."
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
-option "mlptype"    - "Type of most likely path (schulte or polynomial)"         string          no  default="schulte"
+option "mlptype"    - "Type of most likely path (schulte, polynomial, or krah)"         string          no  default="schulte"
+option "mlppolydeg" - "Degree of the polynomial to approximate 1/beta^2p^2"      int             no  default="5"
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"       - "Fill holes, i.e. pixels that were not hit by protons"     flag            off
 
@@ -23,4 +24,3 @@ option "dimension" - "Dimension"                 int    multiple no default="256
 option "spacing"   - "Spacing"                   double multiple no default="1"
 option "direction" - "Direction"                 double multiple no
 option "like"      - "Copy information from this image (origin, dimension, spacing, direction)"  string no
-

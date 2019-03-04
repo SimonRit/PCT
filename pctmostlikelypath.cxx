@@ -6,6 +6,7 @@
 
 #include "pctSchulteMLPFunction.h"
 #include "pctThirdOrderPolynomialMLPFunction.h"
+#include "pctPolynomialMLPFunction.h"
 
 #include <itkImageFileWriter.h>
 
@@ -100,6 +101,14 @@ int main(int argc, char * argv[])
     mlp = pct::SchulteMLPFunction::New();
   else if(args_info.type_arg==std::string("polynomial"))
     mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
+  else if(args_info.type_arg==std::string("krah"))
+    {
+      pct::PolynomialMLPFunction::Pointer mlp_poly;
+      mlp_poly = pct::PolynomialMLPFunction::New();
+      // pct::PolynomialMLPFunction::Pointer polynomial_mlp = dynamic_cast<pct::PolynomialMLPFunction*>(mlp.GetPointer());
+      mlp_poly->SetPolynomialDegree(args_info.mlppolydeg_arg);
+      mlp = mlp_poly;
+    }
   else
     {
     std::cerr << "Unknown mlp type: " << args_info.type_arg << std::endl;

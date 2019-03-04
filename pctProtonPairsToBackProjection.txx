@@ -5,6 +5,7 @@
 
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
+#include "pctPolynomialMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
 
 namespace pct
@@ -33,6 +34,24 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
 {
   this->AllocateOutputs();
   this->BeforeThreadedGenerateData();
+
+  // Create MLP depending on type
+  pct::MostLikelyPathFunction<double>::Pointer mlp;
+  if(m_MostLikelyPathType == "polynomial")
+    mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
+  else if (m_MostLikelyPathType == "schulte")
+    mlp = pct::SchulteMLPFunction::New();
+  else if(m_MostLikelyPathType == "krah")
+    {
+      pct::PolynomialMLPFunction::Pointer mlp_poly;
+      mlp_poly = pct::PolynomialMLPFunction::New();
+      mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
+      mlp = mlp_poly;
+    }
+  else
+    {
+    itkGenericExceptionMacro("MLP must either be schulte, krah, or polynomial, not [" << m_MostLikelyPathType << ']');
+    }
 
   // Create thread image and corresponding stack to count events
   m_Counts = CountImageType::New();
