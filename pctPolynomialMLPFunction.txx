@@ -6,6 +6,16 @@ PolynomialMLPFunction
 {
   // We operate a change of origin, u0 is always 0
   m_u0=0.;
+  m_ScalarTest = -1.;
+}
+
+PolynomialMLPFunction
+::PolynomialMLPFunction(int const polydeg)
+{
+  // We operate a change of origin, u0 is always 0
+  PolynomialMLPFunction();
+  m_PolynomialDegree = polydeg;
+
 }
 
 void
@@ -13,17 +23,15 @@ PolynomialMLPFunction
 ::SetPolynomialDegree(const int polydeg)
 {
   m_PolynomialDegree = polydeg;
-  std::cout << "setting b_m coefficients for m_PolynomialDegree = " << m_PolynomialDegree << std::endl;
+  m_PolynomialDegreePlusThree = m_PolynomialDegree+3;
 
   switch (polydeg)
     {
     case 0:
-      std::cout << "case 0" << std::endl;
       m_bm.reserve(Functor::PolynomialMLP::bm_0.size());
       std::copy(Functor::PolynomialMLP::bm_0.begin(),Functor::PolynomialMLP::bm_0.end(),std::back_inserter(m_bm));
       break;
     case 1:
-      std::cout << "case 1" << std::endl;
       m_bm.reserve(Functor::PolynomialMLP::bm_1.size());
       std::copy(Functor::PolynomialMLP::bm_1.begin(),Functor::PolynomialMLP::bm_1.end(),std::back_inserter(m_bm));
       break;
@@ -40,7 +48,6 @@ PolynomialMLPFunction
       std::copy(Functor::PolynomialMLP::bm_4.begin(),Functor::PolynomialMLP::bm_4.end(),std::back_inserter(m_bm));
       break;
     case 5:
-      std::cout << "case 5" << std::endl;
       m_bm.reserve(Functor::PolynomialMLP::bm_5.size());
       std::copy(Functor::PolynomialMLP::bm_5.begin(),Functor::PolynomialMLP::bm_5.end(),std::back_inserter(m_bm));
       break;
@@ -112,7 +119,6 @@ m_dm_x[1] = m_x0[1];
 m_dm_x[2] = m_c_x[0]*m_bm[0]/2;
 for(int i = 3; i != m_PolynomialDegree+3; i++)
 {
-  // m_dm_y[i+3] = m_c_y[0]*m_bm[i+1] + m_c_y[1]*m_bm[i]) / (i+3) / (i+2);
   m_dm_x[i] = (m_c_x[0]*m_bm[i-2] + m_c_x[1]*m_bm[i-3]) / i / (i-1);
 }
 m_dm_x[m_PolynomialDegree+3] = m_c_x[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
@@ -122,15 +128,20 @@ m_dm_y[1] = m_y0[1];
 m_dm_y[2] = m_c_y[0]*m_bm[0]/2;
 for(int i = 3; i != m_PolynomialDegree+3; i++)
 {
-  // m_dm_y[i+3] = m_c_y[0]*m_bm[i+1] + m_c_y[1]*m_bm[i]) / (i+3) / (i+2);
   m_dm_y[i] = (m_c_y[0]*m_bm[i-2] + m_c_y[1]*m_bm[i-3]) / i / (i-1);
 }
 m_dm_y[m_PolynomialDegree+3] = m_c_y[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
 
-// std::cout << "m_dm_y.size() = " << m_dm_y.size() << std::endl;
+// // For testing stuff only
+// itk::Vector<double, 9> test = m_dm_y[0] * m_dm_y;
+// for(int i = 0; i <= m_PolynomialDegree+3; i++)
+// {
+//   // std::cout << i << ": d_x = " << m_dm_x[i] << std::endl;
+//   std::cout << i << ": d_y = " << m_dm_y[i] << std::endl;
+//   std::cout << i << ": test = " << test[i] << std::endl;
+// }
+// ****
 
-// Functor::PolynomialMLP::CoefficientsD::GetValue(m_dm_x, m_x0, m_c_x, m_bm);
-// Functor::PolynomialMLP::CoefficientsD::GetValue(m_dm_y, m_y0, m_c_y, m_bm);
 }
 
 void
@@ -149,14 +160,17 @@ PolynomialMLPFunction
 //   m_EvaluateProbe2.Start();
 // #endif
 
-  for(int i = m_PolynomialDegree+3; i != 0; i--)
+  x = 0;
+  y = 0;
+
+  for(int i = 0; i != m_PolynomialDegreePlusThree; i++)
   {
-    // std::cout << "for loop " << i << std::endl;
-    x += m_dm_x[i];
+    x += m_dm_x[m_PolynomialDegreePlusThree-i];
     x *= u1;
-    y += m_dm_y[i];
+    y += m_dm_y[m_PolynomialDegreePlusThree-i];
     y *= u1;
   }
+
   x += m_dm_x[0];
   y += m_dm_y[0];
 
@@ -165,6 +179,44 @@ PolynomialMLPFunction
   m_EvaluateProbe1.Stop();
 #endif
 }
+
+// vectorised version
+void
+PolynomialMLPFunction
+::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
+{
+  for(auto& element : u)
+    element -= m_uOrigin;
+
+  std::fill(x.begin(), x.end(), 0.);
+  std::fill(y.begin(), y.end(), 0.);
+
+  #ifdef MLP_TIMING
+    m_EvaluateProbe1.Start();
+  #endif
+
+  for(int i = 0; i != m_PolynomialDegreePlusThree; i++)
+  {
+    for(auto& element : x)
+      element += m_dm_x[m_PolynomialDegreePlusThree-i];
+    std::transform(x.begin(), x.end(), u.begin(), x.begin(), std::multiplies<double>() );
+
+    for(auto& element : y)
+      element += m_dm_y[m_PolynomialDegreePlusThree-i];
+    std::transform(y.begin(), y.end(), u.begin(), y.begin(), std::multiplies<double>() );
+  }
+
+  for(auto& element : x)
+    element += m_dm_x[0];
+  for(auto& element : y)
+    element += m_dm_y[0];
+
+
+#ifdef MLP_TIMING
+  m_EvaluateProbe1.Stop();
+#endif
+}
+
 
 void
 PolynomialMLPFunction

@@ -56,8 +56,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   else if(m_MostLikelyPathType == "krah")
     {
     mlp_poly = pct::PolynomialMLPFunction::New();
-    // pct::PolynomialMLPFunction::Pointer polynomial_mlp = dynamic_cast<pct::PolynomialMLPFunction*>(mlp.GetPointer());
-    std::cout << "before SetPolynomialDegree: " << m_MostLikelyPathPolynomialDegree << std::endl;
     mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
     mlp = mlp_poly;
     }
@@ -244,26 +242,66 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // Init MLP before mm to voxel conversion
     mlp->Init(pSIn, pSOut, dIn, dOut);
 
+      std::vector<double> zmmMLP;
+      std::vector<unsigned int> kMLP;
+      double xxArr[imgSize[2]], yyArr[imgSize[2]];
+
+      // loop to populate a vector to be passed to Evaluate if MLP type is elgible
+      for(unsigned int k=0; k<imgSize[2]; k++)
+      {
+        const double dk = zmm[k];
+        if(dk<=pSIn[2]) //before entrance
+          {
+          const double z = (dk-pIn[2]);
+          xxArr[k] = pIn[0]+z*dIn[0];
+          yyArr[k] = pIn[1]+z*dIn[1];
+          }
+        else if(dk>=pSOut[2]) //after exit
+          {
+          const double z = (dk-pSOut[2]);
+          xxArr[k] = pSOut[0]+z*dOut[0];
+          yyArr[k] = pSOut[1]+z*dOut[1];
+          }
+        else
+          {
+            if(m_MostLikelyPathType == "krah") // maybe more flexible to use a m_CanBeVectorised boolean flag and set it when creating the mlp object
+            {
+              // stock in vector for later if vectorisable
+              zmmMLP.push_back(dk);
+              kMLP.push_back(k);
+            }
+            else
+            {
+              // evaluate directly if not vectorisable
+              mlp->Evaluate(zmm[k], xxArr[k], yyArr[k]);
+            }
+          }
+      }
+
+      // call Evaluate with vector as argument and insert result into result array
+      // would be prefeable to avoid the copying step and use the xxMLP and yyMLP vectors directly
+      // but that requires the reste of the function further down to be restructured a bit
+      if(m_MostLikelyPathType == "krah")
+      {
+        std::vector<double> xxMLP;
+        std::vector<double> yyMLP;
+        xxMLP.resize(zmmMLP.size());
+        yyMLP.resize(zmmMLP.size());
+
+        mlp->Evaluate(zmmMLP, xxMLP, yyMLP);
+        for(std::vector<int>::size_type i = 0; i != kMLP.size(); i++)
+          {
+          xxArr[kMLP[i]] = xxMLP[i];
+          yyArr[kMLP[i]] = yyMLP[i];
+          }
+      }
+
     for(unsigned int k=0; k<imgSize[2]; k++)
       {
       double xx, yy;
-      const double dk = zmm[k];
-      if(dk<=pSIn[2]) //before entrance
-        {
-        const double z = (dk-pIn[2]);
-        xx = pIn[0]+z*dIn[0];
-        yy = pIn[1]+z*dIn[1];
-        }
-      else if(dk>=pSOut[2]) //after exit
-        {
-        const double z = (dk-pSOut[2]);
-        xx = pSOut[0]+z*dOut[0];
-        yy = pSOut[1]+z*dOut[1];
-        }
-      else //MLP
-        {
-        mlp->Evaluate(zmm[k], xx, yy);
-        }
+
+      xx = xxArr[k];
+      yy = yyArr[k];
 
       // Source at (0,0,args_info.source_arg), mag then to voxel
       xx = (xx*zmag[k] - imgOrigin[0]) * imgSpacingInv[0];

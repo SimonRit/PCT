@@ -29,10 +29,13 @@ public:
   typedef typename Superclass::VectorType VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) ITK_OVERRIDE;
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
 
   /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y ) ITK_OVERRIDE;
+  virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y ) override;
+
+  // vectorised version:
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
 protected:
 

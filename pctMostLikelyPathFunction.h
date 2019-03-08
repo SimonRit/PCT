@@ -38,6 +38,9 @@ public:
   /** Evaluate the coordinates (x,y) at depth z. */
   virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y ) = 0;
 
+  /** Vectorised version of the above method. Implement dummy in derived class if not applicable for the type of MLP */
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) = 0;
+
 #ifdef MLP_TIMING
   /** Print timing information */
   virtual void PrintTiming(std::ostream& os){}

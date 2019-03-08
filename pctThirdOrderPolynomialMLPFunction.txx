@@ -36,4 +36,12 @@ ThirdOrderPolynomialMLPFunction<TCoordRep>
   y = ay+zz*(by+zz*(cy+zz*dy));
 }
 
+template < class TCoordRep >
+void
+ThirdOrderPolynomialMLPFunction<TCoordRep>
+::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
+{
+  std::cout << "Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction." << std::endl;
+}
+
 }

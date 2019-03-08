@@ -17,12 +17,18 @@ namespace PolynomialMLP
 static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
 
 // fill coefficient vectors for each available polynomial degree
-static const std::vector<double> bm_0 = {9.49630815e-05};
-static const std::vector<double> bm_1 = {-1.05510415e-06, 8.36579169e-06};
-static const std::vector<double> bm_2 = {6.21890334e-05, -8.18381804e-06, 7.20960235e-07};
-static const std::vector<double> bm_3 = {2.52246816e-05, 1.11946929e-05, -1.39072921e-06, 6.13285004e-08};
-static const std::vector<double> bm_4 = {4.562500e-05, -6.670635e-06, 2.116152e-06, -1.764070e-07, 5.178304e-09};
-static const std::vector<double> bm_5 = {3.474283e-05, 7.665043e-06, -2.265353e-06, 3.330223e-07, -1.979538e-08, 4.351773e-10};
+// polynomial order N = 0
+static const std::vector<double> bm_0 = {9.496308e-06};
+// polynomial order N = 1
+static const std::vector<double> bm_1 = {-1.055104e-07, 8.365792e-08};
+// polynomial order N = 2
+static const std::vector<double> bm_2 = {6.218903e-06, -8.183818e-08, 7.209602e-10};
+// polynomial order N = 3
+static const std::vector<double> bm_3 = {2.522468e-06, 1.119469e-07, -1.390729e-09, 6.132850e-12};
+// polynomial order N = 4
+static const std::vector<double> bm_4 = {4.562500e-06, -6.670635e-08, 2.116152e-09, -1.764070e-11, 5.178304e-14};
+// polynomial order N = 5
+static const std::vector<double> bm_5 = {3.474283e-06, 7.665043e-08, -2.265353e-09, 3.330223e-11, -1.979538e-13, 4.351773e-16};
 
 // ADD COMMENT HERE
 class FactorsABCD
@@ -133,6 +139,9 @@ public:
   /** Evaluate the coordinates (x,y) at depth z. */
   virtual void Evaluate( const double u1, double &x, double&y ) ITK_OVERRIDE;
 
+  // vectorised version:
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) ITK_OVERRIDE;
+
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
 
@@ -142,13 +151,14 @@ public:
 
 #ifdef MLP_TIMING
   /** Print timing information */
-  virtual void PrintTiming(std::ostream& os);
+  virtual void PrintTiming(std::ostream& os) override;
 #endif
 
 protected:
 
   /// Constructor
   PolynomialMLPFunction();
+  PolynomialMLPFunction(const int polydeg);
 
   /// Destructor
   ~PolynomialMLPFunction(){}
@@ -159,13 +169,15 @@ private:
 
   // parameters of the polynomial to describe 1/beta^2p^2 term
   int m_PolynomialDegree;
+  int m_PolynomialDegreePlusThree;
   std::vector<double> m_bm;
 
   // std::vector<double> m_dm_x;
   // std::vector<double> m_dm_y;
-
   itk::Vector<double, 9> m_dm_x;
   itk::Vector<double, 9> m_dm_y;
+
+  itk::Vector<double, 1> m_ScalarTest;
 
   // vectors holding the constants c0 and c1
   itk::Vector<double, 2> m_c_x;

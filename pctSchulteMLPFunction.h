@@ -145,12 +145,15 @@ public:
   /** Evaluate the coordinates (x,y) at depth z. */
   virtual void Evaluate( const double u1, double &x, double&y ) ITK_OVERRIDE;
 
+  // vectorised version:
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
+
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
 
 #ifdef MLP_TIMING
   /** Print timing information */
-  virtual void PrintTiming(std::ostream& os);
+  virtual void PrintTiming(std::ostream& os) override;
 #endif
 
 protected:

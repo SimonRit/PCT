@@ -109,6 +109,14 @@ SchulteMLPFunction
 
 void
 SchulteMLPFunction
+::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
+{
+  std::cout << "Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction." << std::endl;
+}
+
+
+void
+SchulteMLPFunction
 ::EvaluateError( const double u, itk::Matrix<double, 2, 2> &error )
 {
   double x, y;

@@ -116,34 +116,69 @@ int main(int argc, char * argv[])
     }
   mlp->Init(pSIn, pSOut, dIn, dOut);
 
-  for(int k=0; k<args_info.dimension_arg; k++)
-    {
-    double x, y;
-    const double u = args_info.origin_arg+k*args_info.spacing_arg;
-    if(u<=pSIn[2])
+
+  std::vector<double> zmmMLP;
+  std::vector<unsigned int> kMLP;
+  double xxArr[args_info.dimension_arg], yyArr[args_info.dimension_arg];
+
+  // loop to populate MLP array
+  for(unsigned int k=0; k<args_info.dimension_arg; k++)
+  {
+    const double dk = args_info.origin_arg+k*args_info.spacing_arg;
+    if(dk<=pSIn[2]) //before entrance
       {
-      const double z = (u-pIn[2]);
-      x = pIn[0]+z*dIn[0];
-      y = pIn[1]+z*dIn[1];
+      const double z = (dk-pIn[2]);
+      xxArr[k] = pIn[0]+z*dIn[0];
+      yyArr[k] = pIn[1]+z*dIn[1];
       }
-    else if(u>=pSOut[2])
+    else if(dk>=pSOut[2]) //after exit
       {
-      const double z = (u-pSOut[2]);
-      x = pSOut[0]+z*dOut[0];
-      y = pSOut[1]+z*dOut[1];
+      const double z = (dk-pSOut[2]);
+      xxArr[k] = pSOut[0]+z*dOut[0];
+      yyArr[k] = pSOut[1]+z*dOut[1];
       }
     else
       {
-      mlp->Evaluate(u, x, y);
+        if(args_info.type_arg==std::string("krah"))
+        {
+          zmmMLP.push_back(dk);
+          kMLP.push_back(k);
+        }
+        else
+        {
+          mlp->Evaluate(dk, xxArr[k], yyArr[k]);
+        }
       }
+  }
+
+  if(args_info.type_arg==std::string("krah"))
+  {
+    std::vector<double> xxMLP;
+    std::vector<double> yyMLP;
+    xxMLP.resize(zmmMLP.size());
+    yyMLP.resize(zmmMLP.size());
+
+    mlp->Evaluate(zmmMLP, xxMLP, yyMLP);
+    for(std::vector<int>::size_type i = 0; i != kMLP.size(); i++)
+      {
+      xxArr[kMLP[i]] = xxMLP[i];
+      yyArr[kMLP[i]] = yyMLP[i];
+      }
+  }
+
+
+  for(int k=0; k<args_info.dimension_arg; k++)
+  {
+    const double u = args_info.origin_arg+k*args_info.spacing_arg;
     VectorType point;
-    point[0] = x;
-    point[1] = y;
+    point[0] = xxArr[k];
+    point[1] = yyArr[k];
     point[2] = u;
 
     index[0] = k;
     trajectory->SetPixel(index, point);
-    }
+
+  }
 
 
   // Write
