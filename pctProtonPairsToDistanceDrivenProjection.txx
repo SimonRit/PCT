@@ -8,6 +8,7 @@
 namespace pct
 {
 
+#if ( ( ITK_VERSION_MAJOR > 4 ) )
 template <class TInputImage, class TOutputImage>
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false)
@@ -15,6 +16,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   this->DynamicMultiThreadingOff();
   this->SetNumberOfWorkUnits( itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() );
 }
+#endif
 
 template <class TInputImage, class TOutputImage>
 void
