@@ -55,7 +55,11 @@ public:
     // Constant out of integral, use [Schulte, 2008] and not [Williams, 2004]
     static const double c = 13.6*CLHEP::MeV * 13.6*CLHEP::MeV / (36.1*CLHEP::cm);
     static const double invX0 = 1./(36.1*CLHEP::cm);
+#if ITK_VERSION_MAJOR <= 4
     double v = 1.+0.038*vcl_log((uy-ux)*invX0);
+#else
+    double v = 1.+0.038*std::log((uy-ux)*invX0);
+#endif
     return c*v*v;
     }
 };

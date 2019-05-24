@@ -26,7 +26,7 @@ ZengBackProjectionImageFilter<TInputImage, TOutputImage>
   typename OutputImageType::PointType origin;
   typename OutputImageType::SpacingType spacing;
 
-  for(int i=0; i<TOutputImage::ImageDimension; i++)
+  for(unsigned int i=0; i<TOutputImage::ImageDimension; i++)
     {
     region.SetIndex(i, this->GetInput()->GetLargestPossibleRegion().GetIndex(i));
     region.SetSize(i, this->GetInput()->GetLargestPossibleRegion().GetSize(i));
@@ -45,11 +45,15 @@ ZengBackProjectionImageFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 ZengBackProjectionImageFilter<TInputImage, TOutputImage>
+#if ITK_VERSION_MAJOR <= 4
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
                        rtk::ThreadIdType itkNotUsed(threadId) )
+#else
+::DynamicThreadedGenerateData(const OutputImageRegionType& outputRegionForThread)
+#endif
 {
   typename TInputImage::IndexType idxIn;
-  for(int i=0; i<TOutputImage::ImageDimension; i++)
+  for(unsigned int i=0; i<TOutputImage::ImageDimension; i++)
     idxIn[i] = outputRegionForThread.GetIndex(i);
   idxIn[TOutputImage::ImageDimension] = 0;
   const typename TInputImage::PixelType *pIn = this->GetInput()->GetBufferPointer() + this->GetInput()->ComputeOffset(idxIn);

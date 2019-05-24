@@ -32,7 +32,11 @@ int main(int argc, char * argv[])
     {
     // Read r-th set of pairs
     region.SetIndex(1, r*PAIRS_IN_RAM);
+#if ITK_VERSION_MAJOR <= 4
     region.SetSize(1, vnl_math_min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#else
+    region.SetSize(1, std::min(PAIRS_IN_RAM, int(nprotons-region.GetIndex(1))));
+#endif
     reader->GetOutput()->SetRequestedRegion(region); //we work on one region "r"
     TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
 

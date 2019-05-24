@@ -6,7 +6,11 @@
 
 #include <rtkQuadricShape.h>
 #include <itkInPlaceImageFilter.h>
+#if ITK_VERSION_MAJOR <= 4
 #include <itkSimpleFastMutexLock.h>
+#else
+#include <mutex>
+#endif
 
 namespace pct
 {
@@ -85,7 +89,11 @@ public:
   itkBooleanMacro(ComputeScattering);
 
 protected:
+#if ITK_VERSION_MAJOR <= 4
   ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false) {}
+#else
+  ProtonPairsToDistanceDrivenProjection();
+#endif
   virtual ~ProtonPairsToDistanceDrivenProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
@@ -94,7 +102,11 @@ protected:
 
   /** The two inputs should not be in the same space so there is nothing
    * to verify. */
+#if ITK_VERSION_MAJOR <= 4
   virtual void VerifyInputInformation() ITK_OVERRIDE {}
+#else
+  virtual void VerifyInputInformation() const ITK_OVERRIDE {}
+#endif
 
 private:
   ProtonPairsToDistanceDrivenProjection(const Self&); //purposely not implemented
@@ -111,7 +123,11 @@ private:
   AngleImagePointer                 m_Angle;
   std::vector<AngleImagePointer>    m_Angles;
   std::vector< std::vector<float> > m_AnglesVectors;
+#if ITK_VERSION_MAJOR <= 4
   itk::SimpleFastMutexLock          m_AnglesVectorsMutex;
+#else
+  std::mutex                        m_AnglesVectorsMutex;
+#endif
 
   AngleImagePointer m_AngleSq;
   std::vector<AngleImagePointer> m_AnglesSq;

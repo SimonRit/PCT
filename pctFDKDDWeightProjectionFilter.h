@@ -52,7 +52,11 @@ protected:
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
 
+#if ITK_VERSION_MAJOR <= 4
   virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId) ITK_OVERRIDE;
+#else
+  virtual void DynamicThreadedGenerateData(const OutputImageRegionType& outputRegionForThread) ITK_OVERRIDE;
+#endif
 
 private:
   FDKDDWeightProjectionFilter(const Self&); //purposely not implemented
