@@ -13,6 +13,7 @@ option "robustopt" - "Use newer options for robust cut."            int       no
 option "plotpix"   p "Pixel index of binning for output plot"       int       no
 option "primaries" - "Consider only primary protons"                flag      off
 option "nonuclear" - "Consider only primary protons without nuclear interactions"                flag      off
+option "wet" - "Write WET instead of initial energy"                flag      off
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no
