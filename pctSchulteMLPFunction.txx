@@ -34,30 +34,14 @@ SchulteMLPFunction
 
   // Parameters vectors
   m_x0[0] = posIn[0];
-#if ITK_VERSION_MAJOR <= 4
-  m_x0[1] = vcl_atan(dirIn[0]);  //dirIn[2] is implicitely 1.
-#else
   m_x0[1] = std::atan(dirIn[0]);  //dirIn[2] is implicitely 1.
-#endif
   m_x2[0] = posOut[0];
-#if ITK_VERSION_MAJOR <= 4
-  m_x2[1] = vcl_atan(dirOut[0]); //dirOut[2] is implicitely 1.
-#else
   m_x2[1] = std::atan(dirOut[0]); //dirOut[2] is implicitely 1.
-#endif
 
   m_y0[0] = posIn[1];
-#if ITK_VERSION_MAJOR <= 4
-  m_y0[1] = vcl_atan(dirIn[1]);  //dirIn[2] is implicitely 1.
-#else
   m_y0[1] = std::atan(dirIn[1]);  //dirIn[2] is implicitely 1.
-#endif
   m_y2[0] = posOut[1];
-#if ITK_VERSION_MAJOR <= 4
-  m_y2[1] = vcl_atan(dirOut[1]); //dirOut[2] is implicitely 1.
-#else
   m_y2[1] = std::atan(dirOut[1]); //dirOut[2] is implicitely 1.
-#endif
 }
 
 void

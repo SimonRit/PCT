@@ -8,7 +8,6 @@
 namespace pct
 {
 
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
 template <class TInputImage, class TOutputImage>
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false)
@@ -16,33 +15,19 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   this->DynamicMultiThreadingOff();
   this->SetNumberOfWorkUnits( itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() );
 }
-#endif
 
 template <class TInputImage, class TOutputImage>
 void
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 ::BeforeThreadedGenerateData()
 {
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
   m_Outputs.resize( this->GetNumberOfWorkUnits() );
   m_Counts.resize( this->GetNumberOfWorkUnits() );
-#else
-  m_Outputs.resize( this->GetNumberOfThreads() );
-  m_Counts.resize( this->GetNumberOfThreads() );
-#endif
   if(m_ComputeScattering)
     {
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
     m_Angles.resize( this->GetNumberOfWorkUnits() );
-#else
-    m_Angles.resize( this->GetNumberOfThreads() );
-#endif
     m_AnglesVectors.resize( this->GetInput()->GetLargestPossibleRegion().GetNumberOfPixels() );
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
     m_AnglesSq.resize( this->GetNumberOfWorkUnits() );
-#else
-    m_AnglesSq.resize( this->GetNumberOfThreads() );
-#endif
     }
 
   if(m_QuadricOut.GetPointer()==NULL)
@@ -112,13 +97,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
   size_t nprotons = m_ProtonPairs->GetLargestPossibleRegion().GetSize()[1];
   ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
   region.SetIndex(1, threadId*nprotons/this->GetNumberOfWorkUnits());
   region.SetSize(1, std::min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
-#else
-  region.SetIndex(1, threadId*nprotons/this->GetNumberOfThreads());
-  region.SetSize(1, vnl_math_min((unsigned long)nprotons/this->GetNumberOfThreads(), nprotons-region.GetIndex(1)));
-#endif
 
   // Image information constants
   const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
@@ -190,13 +170,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       dOutY[0] = dOut[1];
       dOutY[1] = dOut[2];
 
-#if ITK_VERSION_MAJOR <= 4
-      angley = vcl_acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
-      anglex = vcl_acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
-#else
       angley = std::acos( std::min(1.,dInY*dOutY / ( dInY.GetNorm() * dOutY.GetNorm() ) ) );
       anglex = std::acos( std::min(1.,dInX*dOutX / ( dInX.GetNorm() * dOutX.GetNorm() ) ) );
-#endif
       }
 
     if(pIn[2] > pOut[2])
@@ -293,18 +268,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
           {
           if(m_Robust)
             {
-#if ITK_VERSION_MAJOR <= 4
-            m_AnglesVectorsMutex.Lock();
-#else
             m_AnglesVectorsMutex.lock();
-#endif
             m_AnglesVectors[idx].push_back(anglex);
             m_AnglesVectors[idx].push_back(angley);
-#if ITK_VERSION_MAJOR <= 4
-            m_AnglesVectorsMutex.Unlock();
-#else
             m_AnglesVectorsMutex.unlock();
-#endif
             }
           else
             {
@@ -342,11 +309,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
   // Merge the projection computed in each thread to the first one
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
   for(unsigned int i=1; i<this->GetNumberOfWorkUnits(); i++)
-#else
-  for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
-#endif
     {
     if(m_Outputs[i].GetPointer() == NULL)
       continue;
@@ -391,11 +354,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
     if(!m_Robust)
       {
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
       for(unsigned int i=1; i<this->GetNumberOfWorkUnits(); i++)
-#else
-      for(unsigned int i=1; i<this->GetNumberOfThreads(); i++)
-#endif
         {
         if(m_Outputs[i].GetPointer() == NULL)
           continue;

@@ -26,11 +26,7 @@ int main(int argc, char * argv[])
   const unsigned int Dimension = 3;
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 
-#if ( ( ITK_VERSION_MAJOR > 4 ) )
   itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads( std::min<double>(8., itk::MultiThreaderBase::GetGlobalMaximumNumberOfThreads() ) );
-#else
-  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( std::min<double>(8., itk::MultiThreader::GetGlobalMaximumNumberOfThreads() ) );
-#endif
 
   // Create a stack of empty projection images
   typedef rtk::ConstantImageSource< OutputImageType > ConstantImageSourceType;

@@ -7,7 +7,7 @@
 #include <rtkQuadricShape.h>
 #include <rtkThreeDCircularProjectionGeometry.h>
 #include <itkInPlaceImageFilter.h>
-#include <itkBarrier.h>
+#include <mutex>
 
 namespace pct
 {
@@ -74,8 +74,8 @@ public:
   itkSetMacro(QuadricOut, RQIType::Pointer);
 
   /** Get/Set the count of proton pairs per pixel. */
-  itkGetMacro(Count, CountImagePointer);
-  itkSetMacro(Count, CountImagePointer);
+  itkGetMacro(Counts, CountImagePointer);
+  itkSetMacro(Counts, CountImagePointer);
 
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
@@ -86,24 +86,16 @@ public:
   itkSetMacro(Geometry, GeometryPointer);
 
 protected:
-#if ITK_VERSION_MAJOR <= 4
-  ProtonPairsToBackProjection() {}
-#else
   ProtonPairsToBackProjection();
-#endif
   virtual ~ProtonPairsToBackProjection() {}
 
   virtual void BeforeThreadedGenerateData() ITK_OVERRIDE;
-  virtual void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, rtk::ThreadIdType threadId ) ITK_OVERRIDE;
+  virtual void GenerateData() ITK_OVERRIDE;
   virtual void AfterThreadedGenerateData() ITK_OVERRIDE;
 
   /** The two inputs should not be in the same space so there is nothing
    * to verify. */
-#if ITK_VERSION_MAJOR <= 4
-  virtual void VerifyInputInformation() ITK_OVERRIDE {}
-#else
   virtual void VerifyInputInformation() const ITK_OVERRIDE {}
-#endif
 
 private:
   ProtonPairsToBackProjection(const Self&); //purposely not implemented
@@ -111,16 +103,11 @@ private:
 
   /** A list of filenames to be processed. */
   FileNamesContainer m_ProtonPairsFileNames;
-  itk::Barrier::Pointer m_Barriers[3];
 
   std::string m_MostLikelyPathType;
 
   /** Count event in each thread */
-  CountImagePointer m_Count;
-  std::vector<CountImagePointer> m_Counts;
-
-  /** Create one output per thread */
-  std::vector<OutputImagePointer> m_Outputs;
+  CountImagePointer m_Counts;
 
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
@@ -136,6 +123,8 @@ private:
 
   /** RTK geometry object */
   GeometryPointer m_Geometry;
+
+  std::mutex m_Mutex;
 };
 
 } // end namespace pct

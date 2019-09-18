@@ -45,12 +45,7 @@ ZengBackProjectionImageFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 ZengBackProjectionImageFilter<TInputImage, TOutputImage>
-#if ITK_VERSION_MAJOR <= 4
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       rtk::ThreadIdType itkNotUsed(threadId) )
-#else
 ::DynamicThreadedGenerateData(const OutputImageRegionType& outputRegionForThread)
-#endif
 {
   typename TInputImage::IndexType idxIn;
   for(unsigned int i=0; i<TOutputImage::ImageDimension; i++)

@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
   // Projection filter
   ProjectionFilter::Pointer projection = ProjectionFilter::New();
   projection->SetInput( inBp );
-  projection->SetCount( inCount );
+  projection->SetCounts( inCount );
   projection->SetProtonPairsFileNames( names->GetFileNames() );
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
@@ -163,7 +163,7 @@ int main(int argc, char * argv[])
     typedef itk::ImageFileWriter< ProjectionFilter::CountImageType > CountWriterType;
     CountWriterType::Pointer cwriter = CountWriterType::New();
     cwriter->SetFileName( args_info.count_arg );
-    cwriter->SetInput( projection->GetCount() );
+    cwriter->SetInput( projection->GetCounts() );
     TRY_AND_EXIT_ON_ITK_EXCEPTION( cwriter->Update() )
     }
 

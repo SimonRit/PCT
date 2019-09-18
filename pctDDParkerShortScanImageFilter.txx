@@ -10,12 +10,7 @@ namespace pct
 template <class TInputImage, class TOutputImage>
 void
 DDParkerShortScanImageFilter<TInputImage, TOutputImage>
-#if ITK_VERSION_MAJOR <= 4
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       rtk::ThreadIdType itkNotUsed(threadId) )
-#else
 ::DynamicThreadedGenerateData(const OutputImageRegionType& outputRegionForThread)
-#endif
 {
   // Get angular gaps and max gap
   std::vector<double> angularGaps = m_Geometry->GetAngularGapsWithNext( m_Geometry->GetGantryAngles() );
