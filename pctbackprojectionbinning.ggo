@@ -15,6 +15,7 @@ option "fill"        - "Fill holes, i.e. pixels that were not hit by protons"   
 option "geometry"    - "XML geometry file name"                                   string          yes
 option "bpVal"       - "Input backprojection image values"                        string          no
 option "bpCount"     - "Input backprojection image counts"                        string          no
+option "norotation"  - "Bin in parallel coordinate system"                        flag            off
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no

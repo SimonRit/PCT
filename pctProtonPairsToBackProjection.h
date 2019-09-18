@@ -85,6 +85,11 @@ public:
   itkGetMacro(Geometry, GeometryPointer);
   itkSetMacro(Geometry, GeometryPointer);
 
+  /** Get / Set the boolean desactivating rotation to bin in coordinate orientation. Default is off. */
+  itkGetMacro(DisableRotation, bool);
+  itkSetMacro(DisableRotation, bool);
+  itkBooleanMacro(DisableRotation);
+
 protected:
   ProtonPairsToBackProjection();
   virtual ~ProtonPairsToBackProjection() {}
@@ -123,6 +128,9 @@ private:
 
   /** RTK geometry object */
   GeometryPointer m_Geometry;
+
+  /** Disable rotation to bin in coordinate orientation. Default is off. */
+  bool m_DisableRotation = false;
 
   std::mutex m_Mutex;
 };

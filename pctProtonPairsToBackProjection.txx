@@ -105,6 +105,16 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
           minSpacing = std::min(imgSpacing[i], minSpacing);
           }
 
+        // Create matrices to cancel rotation
+        std::vector< GeometryType::ThreeDHomogeneousMatrixType > noRotationMatrices;
+        for(unsigned int i = 0; i<imgSize[3]; i++)
+          {
+          GeometryType::ThreeDHomogeneousMatrixType m;
+          m =  m_Geometry->ComputeRotationHomogeneousMatrix(0, -1.*i*itk::Math::pi/imgSize[3], 0);
+          m =  rotAndVoxConvMat.GetVnlMatrix() * m.GetVnlMatrix();
+          noRotationMatrices.push_back( m );
+          }
+
         // Corrections
         typedef itk::Vector<double,3> VectorType;
 
@@ -230,31 +240,54 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
             dCurr[2] *= -1.;
             pCurr[2] *= -1.;
 
-            // rotation + mm to voxel conversion
-            VectorType pCurrRot, dCurrRot(0.);
+            // estimate direction
+            VectorType dCurrRot(0.);
             for(unsigned int i=0; i<3; i++)
               {
-              pCurrRot[i] = rotAndVoxConvMat[i][3];
               for(unsigned int j=0; j<3; j++)
                 {
-                pCurrRot[i] += rotAndVoxConvMat[i][j] * pCurr[j];
                 dCurrRot[i] += rotMat[i][j] * dCurr[j];
                 }
               }
-
+            double theta = std::atan( dCurrRot[0] / dCurrRot[2] );
+	    theta /= itk::Math::pi;     // Convert to half turns
+	    theta -= std::floor(theta); // Between 0 and 1 (i.e., 0 and pi)
+            theta *= 180.;              // To degrees
+            // To pixel index
+            theta -= this->GetOutput()->GetOrigin()[3];
+            theta /= this->GetOutput()->GetSpacing()[3];
             typename OutputImageType::IndexType idx;
+            idx[3] = itk::Math::Floor<int, double>(theta);
+            if( idx[3] < 0 || idx[3] >= (int)imgSize[3] )
+              continue;
+
+            // rotation + mm to voxel conversion
+            VectorType pCurrRot;
+            if(m_DisableRotation)
+              {
+              for(unsigned int i=0; i<3; i++)
+                {
+                pCurrRot[i] = noRotationMatrices[idx[3]][i][3];
+                for(unsigned int j=0; j<3; j++)
+                  pCurrRot[i] += noRotationMatrices[idx[3]][i][j] * pCurr[j];
+                }
+              }
+            else
+              {
+              for(unsigned int i=0; i<3; i++)
+                {
+                pCurrRot[i] = rotAndVoxConvMat[i][3];
+                for(unsigned int j=0; j<3; j++)
+                  pCurrRot[i] += rotAndVoxConvMat[i][j] * pCurr[j];
+                }
+              }
+
             for(int i=0; i<3; i++)
               idx[i] = itk::Math::Round<int,double>(pCurrRot[i]);
             if(idx[0]>=0 && idx[0]<(int)imgSize[0] &&
                idx[1]>=0 && idx[1]<(int)imgSize[1] &&
                idx[2]>=0 && idx[2]<(int)imgSize[2])
               {
-              if(dCurrRot[2]<0.)
-                dCurrRot[0] *= -1.;
-              double theta = acos(dCurrRot[0] / sqrt(dCurrRot[0]*dCurrRot[0]+dCurrRot[2]*dCurrRot[2]));
-              theta *= imgSize[3] / itk::Math::pi;
-              theta = std::max(0., theta);
-              idx[3] = itk::Math::Floor<int, double>(theta) % imgSize[3];
               typename OutputImageType::OffsetValueType offset = this->GetOutput()->ComputeOffset(idx);
               m_Mutex.lock();
               imgData[ offset ] += value;
