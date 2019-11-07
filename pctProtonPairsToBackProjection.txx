@@ -94,6 +94,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
         // Image information constants
         const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
         const typename OutputImageType::SpacingType imgSpacing = this->GetInput()->GetSpacing();
+        const double halfSpacingRadian = imgSpacing[3]*itk::Math::pi/360.;
 
         typename OutputImageType::PixelType *imgData = this->GetOutput()->GetBufferPointer();
         unsigned int *imgCountData = m_Counts->GetBufferPointer();
@@ -249,7 +250,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
                 dCurrRot[i] += rotMat[i][j] * dCurr[j];
                 }
               }
-            double theta = std::atan( dCurrRot[0] / dCurrRot[2] );
+            double theta = std::atan( dCurrRot[0] / dCurrRot[2] ) + halfSpacingRadian;
 	    theta /= itk::Math::pi;     // Convert to half turns
 	    theta -= std::floor(theta); // Between 0 and 1 (i.e., 0 and pi)
             theta *= 180.;              // To degrees
@@ -257,7 +258,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
             theta -= this->GetOutput()->GetOrigin()[3];
             theta /= this->GetOutput()->GetSpacing()[3];
             typename OutputImageType::IndexType idx;
-            idx[3] = itk::Math::Floor<int, double>(theta);
+            idx[3] = itk::Math::Floor<int>(theta);
             if( idx[3] < 0 || idx[3] >= (int)imgSize[3] )
               continue;
 
