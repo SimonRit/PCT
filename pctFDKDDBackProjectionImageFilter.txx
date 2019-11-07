@@ -77,6 +77,8 @@ FDKDDBackProjectionImageFilter<TInputImage,TOutputImage>
       double projOffsetX = geometry->GetProjectionOffsetsX()[iProj];
       double projOffsetY = geometry->GetProjectionOffsetsY()[iProj];
       matProjTrans = rtk::ThreeDCircularProjectionGeometry::ComputeTranslationHomogeneousMatrix(sourceOffsetX-projOffsetX, sourceOffsetY-projOffsetY, 0.);
+      // Flip because disance-driven binning puts the source on the negative side and the backprojection on the positive side
+      matProjTrans[2][2] = -1.;
 
       itk::Matrix<double, Dimension+1, Dimension+1> matrixVol =
             rtk::GetIndexToPhysicalPointMatrix< TOutputImage >( this->GetOutput() );
