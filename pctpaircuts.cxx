@@ -57,7 +57,7 @@ int main(int argc, char * argv[])
   std::vector< std::vector<double> > angles(npixels);
 
   pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double> *ConvFunc;
-  ConvFunc = new pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(68.9984, 600.*CLHEP::MeV, 0.1*CLHEP::keV);
+  ConvFunc = new pct::Functor::IntegratedBetheBlochProtonStoppingPowerInverse<float, double>(68.9984*CLHEP::eV, 600.*CLHEP::MeV, 0.1*CLHEP::keV);
 
   // Read pairs
   typedef itk::Vector<float, 3> VectorType;
