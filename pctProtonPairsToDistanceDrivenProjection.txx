@@ -96,9 +96,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   m_Outputs[threadId]->FillBuffer(0.);
 
   size_t nprotons = m_ProtonPairs->GetLargestPossibleRegion().GetSize()[1];
+  size_t nprotonsPerThread = nprotons/this->GetMultiThreader()->GetNumberOfWorkUnits();
   ProtonPairsImageType::RegionType region = m_ProtonPairs->GetLargestPossibleRegion();
-  region.SetIndex(1, threadId*nprotons/this->GetNumberOfWorkUnits());
-  region.SetSize(1, std::min((unsigned long)nprotons/this->GetNumberOfWorkUnits(), nprotons-region.GetIndex(1)));
+  region.SetIndex(1, threadId*nprotonsPerThread);
+  if(threadId == this->GetMultiThreader()->GetNumberOfWorkUnits()-1)
+    region.SetSize(1, nprotons-region.GetIndex(1));
+  else
+    region.SetSize(1, nprotons/this->GetMultiThreader()->GetNumberOfWorkUnits());
 
   // Image information constants
   const typename OutputImageType::SizeType    imgSize    = this->GetInput()->GetBufferedRegion().GetSize();
