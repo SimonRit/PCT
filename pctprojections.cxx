@@ -26,6 +26,12 @@ int main(int argc, char * argv[])
   typedef rtk::ProjectionsReader< OutputImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
+  if(args_info.wpc_given)
+    {
+    std::vector<double> coeffs;
+    coeffs.assign(args_info.wpc_arg, args_info.wpc_arg+args_info.wpc_given);
+    reader->SetWaterPrecorrectionCoefficients(coeffs);
+    }
 
   // Write
   typedef itk::ImageFileWriter<  OutputImageType > WriterType;

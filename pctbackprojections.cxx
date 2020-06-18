@@ -2,6 +2,7 @@
 #include "rtkGgoFunctions.h"
 
 #include "rtkThreeDCircularProjectionGeometryXMLFile.h"
+#include "rtkProjectionsReader.h"
 #include "pctFDKDDBackProjectionImageFilter.h"
 #include "rtkJosephBackProjectionImageFilter.h"
 
@@ -9,7 +10,6 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkTimeProbe.h>
-#include <itkImageSeriesReader.h>
 
 int main(int argc, char * argv[])
 {
@@ -53,10 +53,17 @@ int main(int argc, char * argv[])
               << std::flush;
 
   // Projections reader
-  typedef itk::ImageSeriesReader< ProjectionImageType > ReaderType;
+  typedef rtk::ProjectionsReader< ProjectionImageType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileNames( names->GetFileNames() );
+  if(args_info.wpc_given)
+    {
+    std::vector<double> coeffs;
+    coeffs.assign(args_info.wpc_arg, args_info.wpc_arg+args_info.wpc_given);
+    reader->SetWaterPrecorrectionCoefficients(coeffs);
+    }
   TRY_AND_EXIT_ON_ITK_EXCEPTION( reader->Update() );
+
   if(args_info.verbose_flag)
     std::cout << " done." << std::endl;
 

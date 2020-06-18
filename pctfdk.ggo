@@ -8,11 +8,11 @@ option "path"      p  "Path containing projections"                             
 option "regexp"    r  "Regular expression to select projection files in path"    string                       yes
 option "output"    o "Output file name"                                          string                       yes
 option "lowmem"    l "Load only one projection per thread in memory"             flag                         off
+option "wpc"       - "Water precorrection coefficients (default is no correction)" double  multiple no
 
 section "Ramp filter"
 option "pad"       - "Data padding parameter to correct for truncation"           double                       no   default="0.0"
 option "hann"      - "Cut frequency for hann window in ]0,1] (0.0 disables it)"   double                       no   default="0.0"
-option "wpc"       - "Water precorrection coefficients (default is no correction)"double  multiple no
 
 section "Volume properties"
 option "origin"    - "Origin (default=centered)" double multiple no

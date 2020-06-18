@@ -8,6 +8,7 @@ option "path"      p  "Path containing projections"                             
 option "regexp"    r  "Regular expression to select projection files in path"    string   yes
 option "output"    o "Output projections file name"                              string   yes
 option "method"    m "Forward projection method" values="VoxelBasedBackProjection","FDKBackProjection","Joseph" enum no default="VoxelBasedBackProjection"
+option "wpc"       - "Water precorrection coefficients (default is no correction)" double  multiple no
 
 section "Volume properties"
 option "origin"    - "Origin (default=centered)" double multiple no
