@@ -76,6 +76,7 @@ int main(int argc, char * argv[])
   feldkamp->SetGeometry( geometryReader->GetOutputObject() );
   feldkamp->GetRampFilter()->SetTruncationCorrection(args_info.pad_arg);
   feldkamp->GetRampFilter()->SetHannCutFrequency(args_info.hann_arg);
+  feldkamp->GetRampFilter()->SetHannCutFrequencyY(args_info.hannY_arg);                                                       \
 
   // Write
   typedef itk::ImageFileWriter<  OutputImageType > WriterType;
