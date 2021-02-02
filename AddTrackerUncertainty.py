@@ -5,6 +5,16 @@ import hepunits
 import numpy as np
 import click
 
+
+# Equation (27) and (28) from [Krah et al, PMB, 2018]
+def GetSigmaSc(energy, xOverX0):
+    proton_mass_c2 = 938.272013 * hepunits.MeV
+    betap = (energy + 2 * proton_mass_c2) * energy / (energy + proton_mass_c2)
+    sigmaSc = 13.6 * hepunits.MeV / betap * np.sqrt(xOverX0) * (1 + 0.038 * np.log(xOverX0))
+    SigmaSc = np.zeros((energy.size, 2, 2))
+    SigmaSc[:,1,1] = sigmaSc**2
+    return np.tile(sp**2*T@T.T,(energy.size,1,1)) + SigmaSc
+
 @click.command()
 @click.option("xOverX0", "--xOverX0", default=5e-3, help="Material budget (unitless)")
 @click.option("--sp", default=0.15, help="Standard deviation of the tracker uncertainty (mm)")
@@ -13,7 +23,6 @@ import click
 @click.option("-o", "--output", required=True, help="Output file name")
 @click.option("entryTranslation", "--entryTranslation", default=0., help="Amount of translation of the entry detector position in the direction perpendicular to the detector (mm)")
 @click.option("exitTranslation", "--exitTranslation", default=0., help="Amount of translation of the exit detector position in the direction perpendicular to the detector (mm)")
-
 def AddTrackerUncertainty(xOverX0, sp, dt, input, output, entryTranslation, exitTranslation):
     dt = dt * hepunits.cm
     sp = sp * hepunits.mm
@@ -23,15 +32,6 @@ def AddTrackerUncertainty(xOverX0, sp, dt, input, output, entryTranslation, exit
     T[0,1] = 1
     T[1,0] = -1/dt
     T[1,1] = 1/dt
-    
-    # Equation (27) and (28) from [Krah et al, PMB, 2018]
-    def GetSigmaSc(energy, xOverX0):
-        proton_mass_c2 = 938.272013 * hepunits.MeV
-        betap = (energy + 2*proton_mass_c2)*energy / (energy + proton_mass_c2)
-        sigmaSc = 13.6 * hepunits.MeV / betap * np.sqrt(xOverX0) * (1+0.038*np.log(xOverX0))
-        SigmaSc = np.zeros((energy.size,2,2))
-        SigmaSc[:,1,1] = sigmaSc**2
-        return np.tile(sp**2*T@T.T,(energy.size,1,1)) + SigmaSc
 
     pairs = itk.imread(input)
     pairs = itk.GetArrayFromImage(pairs)
@@ -64,9 +64,8 @@ def AddTrackerUncertainty(xOverX0, sp, dt, input, output, entryTranslation, exit
     pairs[:,2,0:2] += dYuncertEntry[:,1,:] # Entrance direction X/Y
     pairs[:,1,0:2] += dYuncertExit[:,0,:] # Exit position X/Y
     pairs[:,3,0:2] += dYuncertExit[:,1,:] # Exit direction X/Y
-    
+
     itk.imwrite(itk.GetImageFromArray(pairs, is_vector=True), output)
 
 if __name__ == '__main__':
     AddTrackerUncertainty()
-
