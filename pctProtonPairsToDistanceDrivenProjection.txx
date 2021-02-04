@@ -460,8 +460,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   typedef typename itk::ImageRegionIterator<TOutputImage> ImageIteratorType;
   ImageIteratorType itOut(m_Outputs[0], m_Outputs[0]->GetLargestPossibleRegion());
 
-  ImageIteratorType itSqOut(m_SquaredOutputs[0], m_SquaredOutputs[0]->GetLargestPossibleRegion());
-
   typedef itk::ImageRegionIterator<CountImageType> ImageCountIteratorType;
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
@@ -471,7 +469,6 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     if(m_Outputs[i].GetPointer() == NULL)
       continue;
     ImageIteratorType itOutThread(m_Outputs[i], m_Outputs[i]->GetLargestPossibleRegion());
-    ImageIteratorType itSqOutThread(m_SquaredOutputs[i], m_SquaredOutputs[i]->GetLargestPossibleRegion());
     ImageCountIteratorType itCOutThread(m_Counts[i], m_Outputs[i]->GetLargestPossibleRegion());
 
     while(!itOut.IsAtEnd())
@@ -483,44 +480,58 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itCOut.Set(itCOut.Get()+itCOutThread.Get());
       ++itCOutThread;
       ++itCOut;
-
-      if(m_ComputeNoise)
-        {
-        itSqOut.Set(itSqOut.Get()+itSqOutThread.Get());
-        ++itSqOutThread;
-        ++itSqOut;
-        }
       }
 
     itOut.GoToBegin();
     itCOut.GoToBegin();
-    if(m_ComputeNoise)
-      itSqOut.GoToBegin();
     }
 
   // Set count image information
   m_Count->SetSpacing( this->GetOutput()->GetSpacing() );
   m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
 
-  if(m_ComputeNoise)
-    {
-    m_SquaredOutput->SetSpacing( this->GetOutput()->GetSpacing() );
-    m_SquaredOutput->SetOrigin( this->GetOutput()->GetOrigin() );
-    }
   // Normalize eloss wepl with proton count (average)
   while(!itCOut.IsAtEnd())
     {
     if(itCOut.Get())
       itOut.Set(itOut.Get()/itCOut.Get());
-      if(m_ComputeNoise)
+    ++itOut;
+    ++itCOut;
+    }
+
+  if(m_ComputeNoise)
+    {
+    ImageIteratorType itSqOut(m_SquaredOutputs[0], m_SquaredOutputs[0]->GetLargestPossibleRegion());
+    for(unsigned int i=1; i<this->GetNumberOfWorkUnits(); i++)
       {
+      if(m_SquaredOutputs[i].GetPointer() == NULL)
+        continue;
+      ImageIteratorType itSqOutThread(m_SquaredOutputs[i], m_SquaredOutputs[i]->GetLargestPossibleRegion());
+      while(!itOut.IsAtEnd())
+        {
+        itSqOut.Set(itSqOut.Get()+itSqOutThread.Get());
+        ++itSqOutThread;
+        ++itSqOut;
+        }
+      itSqOut.GoToBegin();
+      }
+
+    m_SquaredOutput->SetSpacing( this->GetOutput()->GetSpacing() );
+    m_SquaredOutput->SetOrigin( this->GetOutput()->GetOrigin() );
+
+    // Calculate RMSE of WEPL
+    itCOut.GoToBegin();
+    while(!itCOut.IsAtEnd())
+      {
+      if(itCOut.Get())
+        {
         itSqOut.Set(itSqOut.Get()/itCOut.Get());
         itSqOut.Set(itSqOut.Get() - itOut.Get()*itOut.Get()); // Subtract mean value to get mean sqaure error (MSE)
         itSqOut.Set(itSqOut.Get()/itCOut.Get()); // devide by counts to get MSE of the mean value
-        ++itSqOut;
+        }
+      ++itSqOut;
+      ++itCOut;
       }
-    ++itOut;
-    ++itCOut;
     }
 
   if(m_ComputeScattering)
