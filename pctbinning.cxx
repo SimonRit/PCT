@@ -49,6 +49,8 @@ int main(int argc, char * argv[])
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
   projection->SetRobust( args_info.robust_flag );
   projection->SetComputeScattering( args_info.scatwepl_given );
+  projection->SetComputeNoise( args_info.noise_given );
+  projection->SetBeamEnergy( args_info.beamenergy_arg );
 
   if(args_info.quadricIn_given)
     {
@@ -136,6 +138,16 @@ int main(int argc, char * argv[])
     swriter->SetFileName( args_info.scatwepl_arg );
     swriter->SetInput( projection->GetAngle() );
     TRY_AND_EXIT_ON_ITK_EXCEPTION( swriter->Update() )
+    }
+
+  if(args_info.noise_given)
+    {
+    // Write
+    typedef itk::ImageFileWriter<  OutputImageType > WriterType;
+    WriterType::Pointer nwriter = WriterType::New();
+    nwriter->SetFileName( args_info.noise_arg );
+    nwriter->SetInput( projection->GetSquaredOutput() );
+    TRY_AND_EXIT_ON_ITK_EXCEPTION( nwriter->Update() )
     }
 
   return EXIT_SUCCESS;

@@ -24,9 +24,6 @@ SchulteMLPFunction
   m_Sin(1,1) = 1.;
   m_Sout = m_Sin;
 
-  // Transpose
-  m_SinT = m_Sin.GetTranspose();
-  m_SoutT = m_Sout.GetTranspose();
 }
 
 // Initialize terms needed to include tracker uncertainties
@@ -34,15 +31,21 @@ void
 SchulteMLPFunction
 ::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double TrackerResolution, double TrackerPairSpacing, double MaterialBudget)
 {
-  // NK: this should actually go into constructor
-  m_considerTrackerUncertainties = true;
+  m_considerTrackerUncertainties = true;  // NK: maybe this should actually go into constructor
   m_u2 = posOut[2]-posIn[2];
   const double sigmaPSq = TrackerResolution * TrackerResolution;
   // Finish constructing Sin and Sout matrices (Eq. 14 & 15 in Krah 2018, PMB)
   m_Sin(0,1) = dEntry;
   m_Sout(0,1) = dExit;
-  m_SinT(1,0) = m_Sin(0,1);
-  m_SoutT(1,0) = m_Sout(0,1);
+
+  // Transpose
+  m_SinT = m_Sin.GetTranspose();
+  m_SoutT = m_Sout.GetTranspose();
+
+  m_Sout_Inv = m_Sout;
+  InverseMatrix(m_Sout_Inv);
+  m_SoutT_Inv = m_SoutT;
+  InverseMatrix(m_SoutT_Inv);
 
   m_SigmaIn(0,0) = 1;
   m_SigmaIn(0,1) = 1 / TrackerPairSpacing;
@@ -108,6 +111,11 @@ SchulteMLPFunction
   m_R0T(1,0) = m_R0(0,1);
   m_R1T(1,0) = m_R1(0,1);
 
+  itk::Matrix<double, 2, 2> R1T_Inv(m_R1T);
+  InverseMatrix(R1T_Inv);
+  itk::Matrix<double, 2, 2> R1_Inv(m_R1);
+  InverseMatrix(R1_Inv);
+
   // Constants used in both integrals
   const double intForSigmaSqTheta1  = Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(u1);
   const double intForSigmaSqTTheta1 = Functor::SchulteMLP::IntegralForSigmaSqTTheta::GetValue(u1);
@@ -138,16 +146,12 @@ SchulteMLPFunction
 
   if(m_considerTrackerUncertainties)
   {
-    InverseMatrix(m_R1);
-    InverseMatrix(m_R1T);
-    InverseMatrix(m_Sout);
-    InverseMatrix(m_SoutT);
     itk::Matrix<double, 2, 2>  C1 = m_R0 * m_Sin * m_SigmaIn * m_SinT * m_R0T + m_Sigma1;
-    itk::Matrix<double, 2, 2>  C2 = m_R1 * m_Sout * m_SigmaOut * m_SoutT * m_R1T + m_R1 * m_Sigma2 * m_R1T;
+    itk::Matrix<double, 2, 2>  C2 = R1_Inv * m_Sout_Inv * m_SigmaOut * m_SoutT_Inv * R1T_Inv + R1_Inv * m_Sigma2 * R1T_Inv;
     itk::Matrix<double, 2, 2> C1plusC2(C1 + C2);
     InverseMatrix(C1plusC2);
     itk::Matrix<double, 2, 2> factorIn(C2 * C1plusC2 * m_R0);
-    itk::Matrix<double, 2, 2> factorOut(C1 * C1plusC2 * m_R1);
+    itk::Matrix<double, 2, 2> factorOut(C1 * C1plusC2 * R1_Inv);
 
     xMLP = factorIn * m_x0 + factorOut * m_x2;
     yMLP = factorIn * m_y0 + factorOut * m_y2;
@@ -158,11 +162,13 @@ SchulteMLPFunction
     // common calculations
     // InverseMatrix(m_Sigma1);
     // InverseMatrix(m_Sigma2);
-    itk::Matrix<double, 2, 2> R1T_Inv(m_R1T);
-    InverseMatrix(R1T_Inv);
-    itk::Matrix<double, 2, 2> R1_Inv(m_R1);
-    InverseMatrix(R1_Inv);
+    // itk::Matrix<double, 2, 2> R1T_Inv(m_R1T);
+    // InverseMatrix(R1T_Inv);
+    // itk::Matrix<double, 2, 2> R1_Inv(m_R1);
+    // InverseMatrix(R1_Inv);
 
+    // This version here is better because it avoids inverting the matrices Sigma
+    // See comment in [Krah 2018, PMB]
     itk::Matrix<double, 2, 2> sum1(R1_Inv * m_Sigma2 + m_Sigma1 * m_R1T);
     InverseMatrix(sum1);
     itk::Matrix<double, 2, 2> sum2(m_R1 * m_Sigma1 + m_Sigma2 * R1T_Inv);
@@ -198,9 +204,6 @@ SchulteMLPFunction
 
   x = xMLP[0];
   dx = xMLP[1];
-  // std::cout << "****" << '\n';
-  // std::cout << "xMLP = ( " << xMLP[0] << ", " << xMLP[1] << " )" << '\n';
-  // std::cout << "m_x0 = ( " << m_x0[0] << ", " << m_x0[1] << " )" << '\n';
   y = yMLP[0];
   dy = yMLP[1];
 

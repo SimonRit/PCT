@@ -11,7 +11,7 @@ namespace pct
 
 template <class TInputImage, class TOutputImage>
 ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
-::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false)
+::ProtonPairsToDistanceDrivenProjection():m_Robust(false),m_ComputeScattering(false),m_ComputeNoise(false)
 {
   this->DynamicMultiThreadingOff();
   this->SetNumberOfWorkUnits( itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() );
@@ -29,6 +29,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     m_Angles.resize( this->GetNumberOfWorkUnits() );
     m_AnglesVectors.resize( this->GetInput()->GetLargestPossibleRegion().GetNumberOfPixels() );
     m_AnglesSq.resize( this->GetNumberOfWorkUnits() );
+    }
+
+  if(m_ComputeNoise)
+    {
+    m_SquaredOutputs.resize( this->GetNumberOfWorkUnits() );
     }
 
   if(m_QuadricOut.GetPointer()==NULL)
@@ -57,6 +62,16 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     {
     mlp_poly = pct::PolynomialMLPFunction::New();
     mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
+    std::cout << "MLP type KRAH; " << "beam energy = " << m_BeamEnergy << std::endl;
+    if(m_BeamEnergy==200)
+    {
+      mlp_poly->SetScatteringPowerCoefficients(); // setting to hard-coded coefficients for 200 Mev
+      m_VariableBeamEnergy=false;
+    }
+    else
+    {
+      m_VariableBeamEnergy=true;
+    }
     mlp = mlp_poly;
     }
   else if(m_MostLikelyPathType == "schulte")
@@ -68,16 +83,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     itkGenericExceptionMacro("MLP must either be schulte, polynomial, or krah, not [" << m_MostLikelyPathType << ']');
     }
   if(m_MostLikelyPathTrackerUncertainties && m_MostLikelyPathType != "schulte")
-    {
-    itkGenericExceptionMacro("Tracker uncertainties can only be considered with MLP type 'Schulte'.")
-    }
+  {
+    itkGenericExceptionMacro("Tracker uncertainties can currently only be considered with MLP type 'Schulte'.")
+  }
+
   // Create thread image and corresponding stack to count events
   m_Counts[threadId] = CountImageType::New();
   m_Counts[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
   m_Counts[threadId]->Allocate();
   m_Counts[threadId]->FillBuffer(0);
 
-  if( m_ComputeScattering && (!m_Robust || threadId==0) )
+  if( m_ComputeScattering && (!m_Robust || threadId==0) ) // Note NK: is this condition correct? Should it not be !(m_Robust || threadId==0) ?
     {
     m_Angles[threadId] = AngleImageType::New();
     m_Angles[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
@@ -90,6 +106,14 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     m_AnglesSq[threadId]->FillBuffer(0);
     }
 
+  if( m_ComputeNoise )
+    {
+    m_SquaredOutputs[threadId] = OutputImageType::New();
+    m_SquaredOutputs[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
+    m_SquaredOutputs[threadId]->Allocate();
+    m_SquaredOutputs[threadId]->FillBuffer(0);
+    }
+
   if(threadId==0)
     {
     m_Outputs[0] = this->GetOutput();
@@ -99,6 +123,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       m_Angle = m_Angles[0];
       m_AngleSq = m_AnglesSq[0];
       }
+    if(m_ComputeNoise)
+      m_SquaredOutput = m_SquaredOutputs[0];
     }
   else
     {
@@ -124,6 +150,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   const unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
+  typename OutputImageType::PixelType *imgSquaredData = m_SquaredOutputs[threadId]->GetBufferPointer();
   unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
   float *imgAngleData = NULL, *imgAngleSqData = NULL;
   if(m_ComputeScattering && !m_Robust)
@@ -193,6 +220,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
     if(pIn[2] > pOut[2])
       {
+        // NK: maybe this check should consider the incoming direction of the protons
+        // because pIn > pOut if the beam goes e.g. along -x. That should not cause an exception.
       itkGenericExceptionMacro("Required condition pIn[2] < pOut[2] is not met, check coordinate system.");
       }
     if(dIn[2] < 0.)
@@ -204,7 +233,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     const double eOut = it.Get()[1];
     double value = 0.;
     if(eIn==0.)
+      {
+      if(m_VariableBeamEnergy)
+        {
+        itkGenericExceptionMacro("Variable beam energy is not supported if WEPL values are directed provided instead of energy.");
+        }
       value = eOut; // Directly read WEPL
+      }
     else
       {
       value = m_ConvFunc->GetValue(eOut, eIn); // convert to WEPL
@@ -266,6 +301,10 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
     else
     {
+      if(m_VariableBeamEnergy)
+      {
+        mlp_poly->SetScatteringPowerCoefficients(eIn, eOut, pSOut[2]-pSIn[2], 0.5);
+      }
       mlp->Init(pSIn, pSOut, dIn, dOut);
       xIn = pSIn[0];
       yIn = pSIn[1];
@@ -371,8 +410,11 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         {
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
         imgData[ idx ] += value;
-        imgCountData[ idx ]++; // added for debugging -> REMOVE
-        // if(QuadricIntersected) imgCountData[ idx ]++; // added condition for debugging -> REMOVE
+        if(m_ComputeNoise)
+        {
+          imgSquaredData[idx] += value*value;
+        }
+        imgCountData[ idx ]++;
         if(m_ComputeScattering)
           {
           if(m_Robust)
@@ -414,6 +456,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   typedef typename itk::ImageRegionIterator<TOutputImage> ImageIteratorType;
   ImageIteratorType itOut(m_Outputs[0], m_Outputs[0]->GetLargestPossibleRegion());
 
+  ImageIteratorType itSqOut(m_SquaredOutputs[0], m_SquaredOutputs[0]->GetLargestPossibleRegion());
+
   typedef itk::ImageRegionIterator<CountImageType> ImageCountIteratorType;
   ImageCountIteratorType itCOut(m_Counts[0], m_Outputs[0]->GetLargestPossibleRegion());
 
@@ -423,6 +467,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     if(m_Outputs[i].GetPointer() == NULL)
       continue;
     ImageIteratorType itOutThread(m_Outputs[i], m_Outputs[i]->GetLargestPossibleRegion());
+    ImageIteratorType itSqOutThread(m_SquaredOutputs[i], m_SquaredOutputs[i]->GetLargestPossibleRegion());
     ImageCountIteratorType itCOutThread(m_Counts[i], m_Outputs[i]->GetLargestPossibleRegion());
 
     while(!itOut.IsAtEnd())
@@ -434,21 +479,42 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       itCOut.Set(itCOut.Get()+itCOutThread.Get());
       ++itCOutThread;
       ++itCOut;
+
+      if(m_ComputeNoise)
+        {
+        itSqOut.Set(itSqOut.Get()+itSqOutThread.Get());
+        ++itSqOutThread;
+        ++itSqOut;
+        }
       }
 
     itOut.GoToBegin();
     itCOut.GoToBegin();
+    if(m_ComputeNoise)
+      itSqOut.GoToBegin();
     }
 
   // Set count image information
   m_Count->SetSpacing( this->GetOutput()->GetSpacing() );
   m_Count->SetOrigin( this->GetOutput()->GetOrigin() );
 
+  if(m_ComputeNoise)
+    {
+    m_SquaredOutput->SetSpacing( this->GetOutput()->GetSpacing() );
+    m_SquaredOutput->SetOrigin( this->GetOutput()->GetOrigin() );
+    }
   // Normalize eloss wepl with proton count (average)
   while(!itCOut.IsAtEnd())
     {
     if(itCOut.Get())
       itOut.Set(itOut.Get()/itCOut.Get());
+      if(m_ComputeNoise)
+      {
+        itSqOut.Set(itSqOut.Get()/itCOut.Get());
+        itSqOut.Set(itSqOut.Get() - itOut.Get()*itOut.Get()); // Subtract mean value to get mean sqaure error (MSE)
+        itSqOut.Set(itSqOut.Get()/itCOut.Get()); // devide by counts to get MSE of the mean value
+        ++itSqOut;
+      }
     ++itOut;
     ++itCOut;
     }
@@ -532,6 +598,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
   // Free images created in threads
   m_Outputs.resize( 0 );
+  m_SquaredOutputs.resize( 0 );
   m_Counts.resize( 0 );
   m_Angles.resize( 0 );
   m_AnglesSq.resize( 0 );

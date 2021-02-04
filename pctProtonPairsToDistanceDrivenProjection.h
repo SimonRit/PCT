@@ -81,9 +81,16 @@ public:
  /** Get/Set the angle of proton pairs per pixel. */
   itkGetMacro(Angle, AngleImagePointer);
 
+ /** Get/Set the angle of proton pairs per pixel. */
+  itkGetMacro(SquaredOutput, OutputImagePointer);
+
   /** Get/Set the ionization potential used in the Bethe-Bloch equation. */
   itkGetMacro(IonizationPotential, double);
   itkSetMacro(IonizationPotential, double);
+
+  /** Get the beam energy. */
+  itkGetMacro(BeamEnergy, double);
+  itkSetMacro(BeamEnergy, double);
 
   /** Convert the projection data to line integrals after pre-processing.
   ** Default is off. */
@@ -96,6 +103,12 @@ public:
   itkSetMacro(ComputeScattering, bool);
   itkGetConstMacro(ComputeScattering, bool);
   itkBooleanMacro(ComputeScattering);
+
+  /** Compute WEPL variance per pixel in the projections
+  ** Default is off. */
+  itkSetMacro(ComputeNoise, bool);
+  itkGetConstMacro(ComputeNoise, bool);
+  itkBooleanMacro(ComputeNoise);
 
 protected:
   ProtonPairsToDistanceDrivenProjection();
@@ -118,6 +131,9 @@ private:
   std::string m_MostLikelyPathType;
   int m_MostLikelyPathPolynomialDegree;
 
+  double m_BeamEnergy;
+  bool m_VariableBeamEnergy=false;
+
   // MLP considering tracker uncertainties
   bool m_MostLikelyPathTrackerUncertainties;
   double m_TrackerResolution;
@@ -136,11 +152,14 @@ private:
   AngleImagePointer m_AngleSq;
   std::vector<AngleImagePointer> m_AnglesSq;
 
+  OutputImagePointer m_SquaredOutput;
+  std::vector<OutputImagePointer> m_SquaredOutputs; // NK: squared WEPL for noise projections
+
 
   /** Create one output per thread */
   std::vector<OutputImagePointer> m_Outputs;
-  std::vector<OutputImagePointer> m_AngleOutputs;
-  std::vector<OutputImagePointer> m_AngleSqOutputs;
+  // std::vector<OutputImagePointer> m_AngleOutputs; // Note NK: check these declarations. Are these members really used?
+  // std::vector<OutputImagePointer> m_AngleSqOutputs; // ... probably only m_Angles and m_AngleSq, declared above, are used.
 
   /** The two quadric functions defining the object support. */
   RQIType::Pointer m_QuadricIn;
@@ -155,6 +174,7 @@ private:
   ProtonPairsImageType::Pointer m_ProtonPairs;
   bool                          m_Robust;
   bool                          m_ComputeScattering;
+  bool                          m_ComputeNoise;
 };
 
 } // end namespace pct

@@ -213,7 +213,8 @@ private:
   itk::Matrix<double, 2, 2> m_SinT;
   itk::Matrix<double, 2, 2> m_Sout;
   itk::Matrix<double, 2, 2> m_SoutT;
-
+  itk::Matrix<double, 2, 2> m_Sout_Inv;
+  itk::Matrix<double, 2, 2> m_SoutT_Inv;
   // Part common to all positions along the trajectory
   //double m_IntForSigmaSqTheta0;  //Always 0. because m_u0=0.
   //double m_IntForSigmaSqTTheta0; //Always 0. because m_u0=0.

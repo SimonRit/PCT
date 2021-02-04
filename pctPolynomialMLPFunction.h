@@ -5,6 +5,17 @@
 
 #include "pctMostLikelyPathFunction.h"
 
+#include "itkMath.h"
+// C++11 does not guarantee that assert can be used in constexpr
+// functions. This is a work-around for GCC 4.8, 4.9. Originating
+// from Andrzej's C++ blog:
+//  https://akrzemi1.wordpress.com/2017/05/18/asserts-in-constexpr-functions/
+#if defined NDEBUG
+#  define ITK_X_ASSERT(CHECK) void(0)
+#else
+#  define ITK_X_ASSERT(CHECK) ((CHECK) ? void(0) : [] { assert(!#CHECK); }())
+#endif
+
 namespace pct
 {
 
@@ -168,6 +179,10 @@ public:
   // itkSetMacro(PolynomialDegree, int)
   // itkGetMacro(PolynomialDegree, int)
 
+  void SetScatteringPowerCoefficients( const double E_in, const double E_out, const double deltaU, const double aroundWhere);
+  void SetScatteringPowerCoefficients();
+
+
 #ifdef MLP_TIMING
   /** Print timing information */
   virtual void PrintTiming(std::ostream& os) override;
@@ -185,6 +200,13 @@ protected:
 private:
   PolynomialMLPFunction( const Self& ); //purposely not implemented
   void operator=( const Self& ); //purposely not implemented
+
+  static constexpr std::uintmax_t
+  CalculateBinomialCoefficient(const std::uintmax_t n, const std::uintmax_t k) ITK_NOEXCEPT
+  {
+    return (k > n) ? (ITK_X_ASSERT(!"Out of range!"), 0)
+                   : (k == 0) ? 1 : itk::Math::UnsignedProduct(n, CalculateBinomialCoefficient(n - 1, k - 1)) / k;
+  }
 
   // parameters of the polynomial to describe 1/beta^2p^2 term
   int m_PolynomialDegree;
