@@ -150,13 +150,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
   const unsigned long npixelsPerSlice = imgSize[0] * imgSize[1];
 
   typename OutputImageType::PixelType *imgData = m_Outputs[threadId]->GetBufferPointer();
-  typename OutputImageType::PixelType *imgSquaredData = m_SquaredOutputs[threadId]->GetBufferPointer();
+  typename OutputImageType::PixelType *imgSquaredData = NULL;
   unsigned int *imgCountData = m_Counts[threadId]->GetBufferPointer();
   float *imgAngleData = NULL, *imgAngleSqData = NULL;
   if(m_ComputeScattering && !m_Robust)
     {
     imgAngleData = m_Angles[threadId]->GetBufferPointer();
     imgAngleSqData = m_AnglesSq[threadId]->GetBufferPointer();
+    }
+  if(m_ComputeNoise)
+    {
+    imgSquaredData = m_SquaredOutputs[threadId]->GetBufferPointer();
     }
 
   itk::Vector<float, 3> imgSpacingInv;
