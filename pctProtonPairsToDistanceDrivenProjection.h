@@ -56,8 +56,18 @@ public:
   itkGetMacro(MostLikelyPathType, std::string);
   itkSetMacro(MostLikelyPathType, std::string);
 
+  itkGetMacro(MostLikelyPathTrackerUncertainties, bool);
+  itkSetMacro(MostLikelyPathTrackerUncertainties, bool);
+
   itkGetMacro(MostLikelyPathPolynomialDegree, int);
   itkSetMacro(MostLikelyPathPolynomialDegree, int);
+
+  itkGetMacro(TrackerResolution, double);
+  itkSetMacro(TrackerResolution, double);
+  itkGetMacro(TrackerPairSpacing, double);
+  itkSetMacro(TrackerPairSpacing, double);
+  itkGetMacro(MaterialBudget, double);
+  itkSetMacro(MaterialBudget, double);
 
   /** Get/Set the boundaries of the object. */
   itkGetMacro(QuadricIn, RQIType::Pointer);
@@ -107,6 +117,12 @@ private:
   double m_SourceDistance;
   std::string m_MostLikelyPathType;
   int m_MostLikelyPathPolynomialDegree;
+
+  // MLP considering tracker uncertainties
+  bool m_MostLikelyPathTrackerUncertainties;
+  double m_TrackerResolution;
+  double m_TrackerPairSpacing;
+  double m_MaterialBudget;
 
   /** Count event in each thread */
   CountImagePointer m_Count;

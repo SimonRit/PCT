@@ -14,9 +14,13 @@ option "source"     s "Source position"                                         
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
 option "mlptype"    - "Type of most likely path (schulte, polynomial, or krah)"         string          no  default="schulte"
+option "mlptrackeruncert"    - "Consider tracker uncertainties in MLP [Krah 2018, PMB]"         flag          off
 option "mlppolydeg" - "Degree of the polynomial to approximate 1/beta^2p^2"      int             no  default="5"
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"       - "Fill holes, i.e. pixels that were not hit by protons"     flag            off
+option "trackerresolution"       - "Tracker resolution in mm"     double no
+option "trackerspacing"       - "Tracker pair spacing in mm"     double no
+option "materialbudget"       - "Material budget x/X0 of tracker"     double no
 
 section "Projections parameters"
 option "origin"    - "Origin (default=centered)" double multiple no

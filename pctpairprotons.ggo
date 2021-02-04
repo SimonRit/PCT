@@ -15,3 +15,5 @@ option "proju"     - "Provide the name of the first axis in the root file"  stri
 option "projv"     - "Provide the name of the second axis in the root file" string no default="Z"
 option "projw"     - "Provide the name of the third axis in the root file" string no default="X"
 option "wweight"   - "Weight for the third axis" double no default="-1."
+option "psin"  - "Name of Tree in PhaseSpaceIn.root; default PhaseSpace"      string  no   default="PhaseSpace"
+option "psout"  - "Name of Tree in PhaseSpaceOut.root; default PhaseSpace"      string  no   default="PhaseSpace"

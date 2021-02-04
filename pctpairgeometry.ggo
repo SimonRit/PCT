@@ -7,4 +7,3 @@ option "input"   i "Input file name containing the proton pairs"	         string
 option "weplmax" - "WEPL threshold for protons in air."                    double  no   default="5."
 option "mindist" - "Minimum projected distance from central line"          double  no   default="5."
 option "ionpot"  - "Ionization potential used in the reconstruction in eV" double  no   default="68.9984"
-

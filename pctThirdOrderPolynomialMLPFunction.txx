@@ -4,6 +4,15 @@ namespace pct
 template < class TCoordRep >
 void
 ThirdOrderPolynomialMLPFunction<TCoordRep>
+::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
+{
+  std::cout << "Not implemented for this derived class." << std::endl;
+}
+
+
+template < class TCoordRep >
+void
+ThirdOrderPolynomialMLPFunction<TCoordRep>
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   // Parameters of the 3rd order polynomial. The function goes from
@@ -29,7 +38,7 @@ ThirdOrderPolynomialMLPFunction<TCoordRep>
 template < class TCoordRep >
 void
 ThirdOrderPolynomialMLPFunction<TCoordRep>
-::Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y )
+::Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y, TCoordRep &dx, TCoordRep&dy )
 {
   const TCoordRep zz = (z-zoffset);
   x = ax+zz*(bx+zz*(cx+zz*dx));

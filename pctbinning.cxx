@@ -42,6 +42,10 @@ int main(int argc, char * argv[])
   projection->SetSourceDistance( args_info.source_arg );
   projection->SetMostLikelyPathType( args_info.mlptype_arg );
   projection->SetMostLikelyPathPolynomialDegree( args_info.mlppolydeg_arg );
+  projection->SetMostLikelyPathTrackerUncertainties( args_info.mlptrackeruncert_flag );
+  projection->SetTrackerResolution( args_info.trackerresolution_arg );
+  projection->SetTrackerPairSpacing( args_info.trackerspacing_arg );
+  projection->SetMaterialBudget( args_info.materialbudget_arg );
   projection->SetIonizationPotential( args_info.ionpot_arg * CLHEP::eV );
   projection->SetRobust( args_info.robust_flag );
   projection->SetComputeScattering( args_info.scatwepl_given );

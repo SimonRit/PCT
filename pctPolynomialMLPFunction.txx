@@ -60,6 +60,13 @@ PolynomialMLPFunction
 
 void
 PolynomialMLPFunction
+::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
+{
+  std::cout << "Not implemented for this derived class." << std::endl;
+}
+
+void
+PolynomialMLPFunction
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   m_uOrigin = posIn[2];
@@ -92,13 +99,13 @@ PolynomialMLPFunction
   m_y2[1] = std::atan(dirOut[1]); //dirOut[2] is implicitely 1.
 #endif
 
-const double A = Functor::PolynomialMLP::FactorsABCD::GetA(m_u2, m_bm);
-const double B = Functor::PolynomialMLP::FactorsABCD::GetB(m_u2, m_bm);
-const double C = Functor::PolynomialMLP::FactorsABCD::GetC(m_u2, m_bm);
-const double D = Functor::PolynomialMLP::FactorsABCD::GetD(m_u2, m_bm);
+  const double A = Functor::PolynomialMLP::FactorsABCD::GetA(m_u2, m_bm);
+  const double B = Functor::PolynomialMLP::FactorsABCD::GetB(m_u2, m_bm);
+  const double C = Functor::PolynomialMLP::FactorsABCD::GetC(m_u2, m_bm);
+  const double D = Functor::PolynomialMLP::FactorsABCD::GetD(m_u2, m_bm);
 
-Functor::PolynomialMLP::CoefficientsC::GetValue(m_c_x, m_u2, m_x0, m_x2, A, B, C, D);
-Functor::PolynomialMLP::CoefficientsC::GetValue(m_c_y, m_u2, m_y0, m_y2, A, B, C, D);
+  Functor::PolynomialMLP::CoefficientsC::GetValue(m_c_x, m_u2, m_x0, m_x2, A, B, C, D);
+  Functor::PolynomialMLP::CoefficientsC::GetValue(m_c_y, m_u2, m_y0, m_y2, A, B, C, D);
 
 // std::cout << "m_bm.size() = " << m_bm.size() << std::endl;
 
@@ -114,23 +121,23 @@ Functor::PolynomialMLP::CoefficientsC::GetValue(m_c_y, m_u2, m_y0, m_y2, A, B, C
 // m_dm_x.push_back(m_c_x[1] * m_bm[M] / (M+2) / (M+3));
 // std::cout << "m_dm_x.size() = " << m_dm_x.size() << std::endl;
 
-m_dm_x[0] = m_x0[0];
-m_dm_x[1] = m_x0[1];
-m_dm_x[2] = m_c_x[0]*m_bm[0]/2;
-for(int i = 3; i != m_PolynomialDegree+3; i++)
-{
-  m_dm_x[i] = (m_c_x[0]*m_bm[i-2] + m_c_x[1]*m_bm[i-3]) / i / (i-1);
-}
-m_dm_x[m_PolynomialDegree+3] = m_c_x[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
+  m_dm_x[0] = m_x0[0];
+  m_dm_x[1] = m_x0[1];
+  m_dm_x[2] = m_c_x[0]*m_bm[0]/2;
+  for(int i = 3; i != m_PolynomialDegree+3; i++)
+  {
+    m_dm_x[i] = (m_c_x[0]*m_bm[i-2] + m_c_x[1]*m_bm[i-3]) / i / (i-1);
+  }
+  m_dm_x[m_PolynomialDegree+3] = m_c_x[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
 
-m_dm_y[0] = m_y0[0];
-m_dm_y[1] = m_y0[1];
-m_dm_y[2] = m_c_y[0]*m_bm[0]/2;
-for(int i = 3; i != m_PolynomialDegree+3; i++)
-{
-  m_dm_y[i] = (m_c_y[0]*m_bm[i-2] + m_c_y[1]*m_bm[i-3]) / i / (i-1);
-}
-m_dm_y[m_PolynomialDegree+3] = m_c_y[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
+  m_dm_y[0] = m_y0[0];
+  m_dm_y[1] = m_y0[1];
+  m_dm_y[2] = m_c_y[0]*m_bm[0]/2;
+  for(int i = 3; i != m_PolynomialDegree+3; i++)
+  {
+    m_dm_y[i] = (m_c_y[0]*m_bm[i-2] + m_c_y[1]*m_bm[i-3]) / i / (i-1);
+  }
+  m_dm_y[m_PolynomialDegree+3] = m_c_y[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
 
 // // For testing stuff only
 // itk::Vector<double, 9> test = m_dm_y[0] * m_dm_y;
@@ -146,7 +153,7 @@ m_dm_y[m_PolynomialDegree+3] = m_c_y[1] * m_bm[m_PolynomialDegree] / (m_Polynomi
 
 void
 PolynomialMLPFunction
-::Evaluate( const double u, double &x, double&y )
+::Evaluate( const double u, double &x, double&y, double &dx, double&dy )
 {
 #ifdef MLP_TIMING
   m_EvaluateProbe1.Start();

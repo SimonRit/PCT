@@ -44,6 +44,13 @@ static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
   static const double a3 = -4.216e-11 * aunit / (CLHEP::cm3);
   static const double a4 =  1.601e-12 * aunit / (CLHEP::cm3 * CLHEP::cm);
   static const double a5 =  1.467e-13 * aunit / (CLHEP::cm3 * CLHEP::cm2);
+#elif defined(KRAH_COEFF_180MEV)
+  static const double a0 =  6.576282e-06 * aunit;
+  static const double a1 =  5.202820e-06 * aunit / (CLHEP::cm);
+  static const double a2 = -2.017266e-06 * aunit / (CLHEP::cm2);
+  static const double a3 =  3.289456e-07 * aunit / (CLHEP::cm3);
+  static const double a4 = -2.215321e-08 * aunit / (CLHEP::cm3 * CLHEP::cm);
+  static const double a5 =  5.398933e-10 * aunit / (CLHEP::cm3 * CLHEP::cm2);
 #endif
 
 // [Schulte, Med Phys, 2008], constant part of equations 7, 8 and 9
@@ -55,7 +62,9 @@ public:
     // Constant out of integral, use [Schulte, 2008] and not [Williams, 2004]
     static const double c = 13.6*CLHEP::MeV * 13.6*CLHEP::MeV / (36.1*CLHEP::cm);
     static const double invX0 = 1./(36.1*CLHEP::cm);
-    double v = 1.+0.038*std::log((uy-ux)*invX0);
+    double diffU = uy-ux;
+    if(diffU<1e-3) diffU = 1e-3 * CLHEP::mm; // avoid divergence of log for small values
+    double v = 1.+0.038*std::log((diffU)*invX0);
     return c*v*v;
     }
 };
@@ -140,10 +149,13 @@ public:
   typedef Superclass::VectorType VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) ITK_OVERRIDE;
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
+
+  /** Init with additional parameters to consider tracker uncertainties */
+  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double TrackerResolution, double TrackerPairSpacing, double MaterialBudget) override;
 
   /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const double u1, double &x, double&y ) ITK_OVERRIDE;
+  virtual void Evaluate( const double u1, double &x, double &y, double &dx, double &dy ) override;
 
   // vectorised version:
   virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
@@ -191,6 +203,16 @@ private:
   // Scattering matrices
   itk::Matrix<double, 2, 2> m_Sigma1;
   itk::Matrix<double, 2, 2> m_Sigma2;
+
+  bool m_considerTrackerUncertainties;
+
+  // Addtional matrices needed for MLP with tracker uncertainties
+  itk::Matrix<double, 2, 2> m_SigmaIn;
+  itk::Matrix<double, 2, 2> m_SigmaOut;
+  itk::Matrix<double, 2, 2> m_Sin;
+  itk::Matrix<double, 2, 2> m_SinT;
+  itk::Matrix<double, 2, 2> m_Sout;
+  itk::Matrix<double, 2, 2> m_SoutT;
 
   // Part common to all positions along the trajectory
   //double m_IntForSigmaSqTheta0;  //Always 0. because m_u0=0.

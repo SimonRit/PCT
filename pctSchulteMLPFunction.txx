@@ -16,8 +16,57 @@ SchulteMLPFunction
   // Transpose
   m_R0T = m_R0.GetTranspose();
   m_R1T = m_R1.GetTranspose();
+
+  // Construct the constant part of Sin and Sout (Eq. 14 & 15 in Krah 2018, PMB)
+  // Needed only when tracker uncertainties are considered
+  m_Sin(0,0) = 1.;
+  m_Sin(1,0) = 0.;
+  m_Sin(1,1) = 1.;
+  m_Sout = m_Sin;
+
+  // Transpose
+  m_SinT = m_Sin.GetTranspose();
+  m_SoutT = m_Sout.GetTranspose();
 }
 
+// Initialize terms needed to include tracker uncertainties
+void
+SchulteMLPFunction
+::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double TrackerResolution, double TrackerPairSpacing, double MaterialBudget)
+{
+  // NK: this should actually go into constructor
+  m_considerTrackerUncertainties = true;
+  m_u2 = posOut[2]-posIn[2];
+  const double sigmaPSq = TrackerResolution * TrackerResolution;
+  // Finish constructing Sin and Sout matrices (Eq. 14 & 15 in Krah 2018, PMB)
+  m_Sin(0,1) = dEntry;
+  m_Sout(0,1) = dExit;
+  m_SinT(1,0) = m_Sin(0,1);
+  m_SoutT(1,0) = m_Sout(0,1);
+
+  m_SigmaIn(0,0) = 1;
+  m_SigmaIn(0,1) = 1 / TrackerPairSpacing;
+  m_SigmaIn(1,0) = m_SigmaIn(0,1);
+  m_SigmaIn(1,1) = 2 / TrackerPairSpacing / TrackerPairSpacing;
+  m_SigmaIn *= sigmaPSq;
+
+  m_SigmaOut(0,0) = m_SigmaIn(0,0);
+  m_SigmaOut(0,1) = -m_SigmaIn(0,1);
+  m_SigmaOut(1,0) = -m_SigmaIn(1,0);
+  m_SigmaOut(1,1) = m_SigmaIn(1,1);
+  m_SigmaOut *= sigmaPSq;
+
+  const double c = 13.6*CLHEP::MeV * 13.6*CLHEP::MeV / (36.1*CLHEP::cm);
+  const double trackerThickness = MaterialBudget * 36.1*CLHEP::cm;
+  m_SigmaIn(1,1) += Functor::SchulteMLP::IntegralForSigmaSqTheta::GetValue(trackerThickness) * c;
+  // m_SigmaOut(1,1) += Functor::SchulteMLP::IntegralForSigmaSqTheta::GetValue(trackerThickness) * c;
+  m_SigmaOut(1,1) += (Functor::SchulteMLP::IntegralForSigmaSqTheta::GetValue(m_u2 + trackerThickness) - Functor::SchulteMLP::IntegralForSigmaSqTheta::GetValue(m_u2)) * c;
+
+  SchulteMLPFunction::Init(posIn, posOut, dirIn, dirOut);
+
+}
+
+// standard part of the Initialization
 void
 SchulteMLPFunction
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
@@ -46,7 +95,7 @@ SchulteMLPFunction
 
 void
 SchulteMLPFunction
-::Evaluate( const double u, double &x, double&y )
+::Evaluate( const double u, double &x, double &y, double &dx, double &dy )
 {
 #ifdef MLP_TIMING
   m_EvaluateProbe1.Start();
@@ -71,6 +120,8 @@ SchulteMLPFunction
   m_Sigma1(0,0) = u1 * ( 2*m_Sigma1(0,1) - u1*m_Sigma1(1,1) ) + intForSigmaSqT1/* - m_IntForSigmaSqT0*/;
   m_Sigma1 *= Functor::SchulteMLP::ConstantPartOfIntegrals::GetValue(m_u0,u1);
 
+  double sigma1 = std::sqrt(m_Sigma2(1,1));
+
   // Construct Sigma2 (equations 15-18)
   m_Sigma2(1,1) = m_IntForSigmaSqTheta2 - intForSigmaSqTheta1;
   m_Sigma2(0,1) = m_u2 * m_Sigma2(1,1) - m_IntForSigmaSqTTheta2 + intForSigmaSqTTheta1;
@@ -82,24 +133,76 @@ SchulteMLPFunction
   m_EvaluateProbe2.Start();
 #endif
 
-  // x and y, equation 24
-  // common calculations
-  InverseMatrix(m_Sigma1);
-  InverseMatrix(m_Sigma2);
-  itk::Matrix<double, 2, 2> Sigma1Inv_R0 = m_Sigma1 * m_R0;
-  itk::Matrix<double, 2, 2> R1T_Sigma2Inv = m_R1T * m_Sigma2;
-  itk::Matrix<double, 2, 2> part(m_Sigma1 + R1T_Sigma2Inv * m_R1);
-  InverseMatrix(part);
-
-  // x
   itk::Vector<double, 2> xMLP;
-  xMLP = part * (Sigma1Inv_R0 * m_x0 + R1T_Sigma2Inv * m_x2);
-  x = xMLP[0];
-
-  // y
   itk::Vector<double, 2> yMLP;
-  yMLP = part * (Sigma1Inv_R0 * m_y0 + R1T_Sigma2Inv * m_y2);
+
+  if(m_considerTrackerUncertainties)
+  {
+    InverseMatrix(m_R1);
+    InverseMatrix(m_R1T);
+    InverseMatrix(m_Sout);
+    InverseMatrix(m_SoutT);
+    itk::Matrix<double, 2, 2>  C1 = m_R0 * m_Sin * m_SigmaIn * m_SinT * m_R0T + m_Sigma1;
+    itk::Matrix<double, 2, 2>  C2 = m_R1 * m_Sout * m_SigmaOut * m_SoutT * m_R1T + m_R1 * m_Sigma2 * m_R1T;
+    itk::Matrix<double, 2, 2> C1plusC2(C1 + C2);
+    InverseMatrix(C1plusC2);
+    itk::Matrix<double, 2, 2> factorIn(C2 * C1plusC2 * m_R0);
+    itk::Matrix<double, 2, 2> factorOut(C1 * C1plusC2 * m_R1);
+
+    xMLP = factorIn * m_x0 + factorOut * m_x2;
+    yMLP = factorIn * m_y0 + factorOut * m_y2;
+  }
+  else
+  {
+    // x and y, equation 24
+    // common calculations
+    // InverseMatrix(m_Sigma1);
+    // InverseMatrix(m_Sigma2);
+    itk::Matrix<double, 2, 2> R1T_Inv(m_R1T);
+    InverseMatrix(R1T_Inv);
+    itk::Matrix<double, 2, 2> R1_Inv(m_R1);
+    InverseMatrix(R1_Inv);
+
+    itk::Matrix<double, 2, 2> sum1(R1_Inv * m_Sigma2 + m_Sigma1 * m_R1T);
+    InverseMatrix(sum1);
+    itk::Matrix<double, 2, 2> sum2(m_R1 * m_Sigma1 + m_Sigma2 * R1T_Inv);
+    InverseMatrix(sum2);
+
+    itk::Matrix<double, 2, 2> part1(R1_Inv * m_Sigma2 * sum1 * m_R0);
+    itk::Matrix<double, 2, 2> part2(m_Sigma1 * sum2);
+
+    xMLP = part1 * m_x0 + part2 * m_x2;
+    yMLP = part1 * m_y0 + part2 * m_y2;
+
+    // // x and y, equation 24
+    // // common calculations
+    // InverseMatrix(m_Sigma1);
+    // InverseMatrix(m_Sigma2);
+    // itk::Matrix<double, 2, 2> Sigma1Inv_R0 = m_Sigma1 * m_R0;
+    // itk::Matrix<double, 2, 2> R1T_Sigma2Inv = m_R1T * m_Sigma2;
+    // itk::Matrix<double, 2, 2> part(m_Sigma1 + R1T_Sigma2Inv * m_R1);
+    // InverseMatrix(part);
+    //
+    // // x
+    // itk::Vector<double, 2> xMLP;
+    // xMLP = part * (Sigma1Inv_R0 * m_x0 + R1T_Sigma2Inv * m_x2);
+    // x = xMLP[0];
+    // std::cout << "****" << '\n';
+    // std::cout << "xMLP = ( " << xMLP[0] << ", " << xMLP[1] << " )" << '\n';
+    // std::cout << "m_x0 = ( " << m_x0[0] << ", " << m_x0[1] << " )" << '\n';
+    // // y
+    // itk::Vector<double, 2> yMLP;
+    // yMLP = part * (Sigma1Inv_R0 * m_y0 + R1T_Sigma2Inv * m_y2);
+    // y = yMLP[0];
+  }
+
+  x = xMLP[0];
+  dx = xMLP[1];
+  // std::cout << "****" << '\n';
+  // std::cout << "xMLP = ( " << xMLP[0] << ", " << xMLP[1] << " )" << '\n';
+  // std::cout << "m_x0 = ( " << m_x0[0] << ", " << m_x0[1] << " )" << '\n';
   y = yMLP[0];
+  dy = yMLP[1];
 
 #ifdef MLP_TIMING
   m_EvaluateProbe1.Stop();
@@ -120,7 +223,8 @@ SchulteMLPFunction
 ::EvaluateError( const double u, itk::Matrix<double, 2, 2> &error )
 {
   double x, y;
-  Evaluate(u,x,y);
+  double dx, dy;
+  Evaluate(u,x,y,dx,dy);
   error = m_Sigma1 + m_R1T * m_Sigma2 * m_R1;
   InverseMatrix(error);
   error *= 2.;

@@ -142,8 +142,8 @@ int main(int argc, char * argv[])
   GGO(pctpairprotons, args_info); //RTK macro parsing options from .ggo file (rtkMacro.h)
 
   // Create root trees
-  TChain *treeIn = new TChain("PhaseSpace");
-  TChain *treeOut = new TChain("PhaseSpace");
+  TChain *treeIn = new TChain(args_info.psin_arg);
+  TChain *treeOut = new TChain(args_info.psout_arg);
   treeIn->AddFile(args_info.inputIn_arg);
   treeOut->AddFile(args_info.inputOut_arg);
 

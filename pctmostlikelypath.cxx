@@ -121,6 +121,7 @@ int main(int argc, char * argv[])
   std::vector<unsigned int> kMLP;
   double xxArr[args_info.dimension_arg], yyArr[args_info.dimension_arg];
 
+  double dx, dy;
   // loop to populate MLP array
   for(unsigned int k=0; k<args_info.dimension_arg; k++)
   {
@@ -146,7 +147,7 @@ int main(int argc, char * argv[])
         }
         else
         {
-          mlp->Evaluate(dk, xxArr[k], yyArr[k]);
+          mlp->Evaluate(dk, xxArr[k], yyArr[k], dx, dy); // dx and dy are dummies here as the directions are not needed.
         }
       }
   }

@@ -250,10 +250,11 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
               }
             else //MLP
               {
+              double dx, dy;
               dCurr[0] = pCurr[0];
               dCurr[1] = pCurr[1];
               dCurr[2] = minSpacing;
-              mlp->Evaluate(zmm[k], pCurr[0], pCurr[1]);
+              mlp->Evaluate(zmm[k], pCurr[0], pCurr[1], dx, dy);
               dCurr[0] = pCurr[0] - dCurr[0];
               dCurr[1] = pCurr[1] - dCurr[1];
               }

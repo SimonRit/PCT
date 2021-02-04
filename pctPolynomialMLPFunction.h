@@ -16,19 +16,35 @@ namespace PolynomialMLP
 
 static const double aunit = 1./(CLHEP::MeV*CLHEP::MeV);
 
+// *** 200 MeV ***
 // fill coefficient vectors for each available polynomial degree
+// // polynomial order N = 0
+// static const std::vector<double> bm_0 = {9.496308e-06};
+// // polynomial order N = 1
+// static const std::vector<double> bm_1 = {-1.055104e-07, 8.365792e-08};
+// // polynomial order N = 2
+// static const std::vector<double> bm_2 = {6.218903e-06, -8.183818e-08, 7.209602e-10};
+// // polynomial order N = 3
+// static const std::vector<double> bm_3 = {2.522468e-06, 1.119469e-07, -1.390729e-09, 6.132850e-12};
+// // polynomial order N = 4
+// static const std::vector<double> bm_4 = {4.562500e-06, -6.670635e-08, 2.116152e-09, -1.764070e-11, 5.178304e-14};
+// // polynomial order N = 5
+// static const std::vector<double> bm_5 = {3.474283e-06, 7.665043e-08, -2.265353e-09, 3.330223e-11, -1.979538e-13, 4.351773e-16};
+
+
+// *** 180 MeV ***
 // polynomial order N = 0
-static const std::vector<double> bm_0 = {9.496308e-06};
+static const std::vector<double> bm_0 = {1.125895e-05};
 // polynomial order N = 1
-static const std::vector<double> bm_1 = {-1.055104e-07, 8.365792e-08};
+static const std::vector<double> bm_1 = {2.221018e-07, 1.176787e-07};
 // polynomial order N = 2
-static const std::vector<double> bm_2 = {6.218903e-06, -8.183818e-08, 7.209602e-10};
+static const std::vector<double> bm_2 = {7.256003e-06, -1.075769e-07, 1.200877e-09};
 // polynomial order N = 3
-static const std::vector<double> bm_3 = {2.522468e-06, 1.119469e-07, -1.390729e-09, 6.132850e-12};
+static const std::vector<double> bm_3 = {3.279817e-06, 1.475374e-07, -2.201247e-09, 1.209155e-11};
 // polynomial order N = 4
-static const std::vector<double> bm_4 = {4.562500e-06, -6.670635e-08, 2.116152e-09, -1.764070e-11, 5.178304e-14};
+static const std::vector<double> bm_4 = {5.401888e-06, -7.991486e-08, 3.262799e-09, -3.323899e-11, 1.208325e-13};
 // polynomial order N = 5
-static const std::vector<double> bm_5 = {3.474283e-06, 7.665043e-08, -2.265353e-09, 3.330223e-11, -1.979538e-13, 4.351773e-16};
+static const std::vector<double> bm_5 = {4.307328e-06, 9.657939e-08, -3.338966e-09, 6.069645e-11, -4.427153e-13, 1.201749e-15};
 
 // ADD COMMENT HERE
 class FactorsABCD
@@ -136,8 +152,11 @@ public:
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) ITK_OVERRIDE;
 
+  /** Init with additional parameters to consider tracker uncertainties */
+  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) ITK_OVERRIDE;
+
   /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const double u1, double &x, double&y ) ITK_OVERRIDE;
+  virtual void Evaluate( const double u1, double &x, double&y, double &dx, double&dy ) ITK_OVERRIDE;
 
   // vectorised version:
   virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) ITK_OVERRIDE;

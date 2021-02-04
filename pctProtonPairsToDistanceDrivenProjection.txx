@@ -60,12 +60,17 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     mlp = mlp_poly;
     }
   else if(m_MostLikelyPathType == "schulte")
+    {
     mlp = pct::SchulteMLPFunction::New();
+    }
   else
     {
     itkGenericExceptionMacro("MLP must either be schulte, polynomial, or krah, not [" << m_MostLikelyPathType << ']');
     }
-
+  if(m_MostLikelyPathTrackerUncertainties && m_MostLikelyPathType != "schulte")
+    {
+    itkGenericExceptionMacro("Tracker uncertainties can only be considered with MLP type 'Schulte'.")
+    }
   // Create thread image and corresponding stack to count events
   m_Counts[threadId] = CountImageType::New();
   m_Counts[threadId]->SetRegions(this->GetInput()->GetLargestPossibleRegion());
@@ -188,7 +193,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
     if(pIn[2] > pOut[2])
       {
-      itkGenericExceptionMacro("Required condition pIn[2] > pOut[2] is not met, check coordinate system.");
+      itkGenericExceptionMacro("Required condition pIn[2] < pOut[2] is not met, check coordinate system.");
       }
     if(dIn[2] < 0.)
       {
@@ -217,17 +222,28 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     VectorType pSIn  = pIn;
     VectorType pSOut = pOut;
     double nearDistIn, nearDistOut, farDistIn, farDistOut;
+    double distanceEntry, distanceExit;
+    bool QuadricIntersected = false;
     if(m_QuadricIn.GetPointer()!=NULL)
       {
       if(m_QuadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
          m_QuadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
         {
+        QuadricIntersected = true;
         pSIn  = pIn  + dIn  * nearDistIn;
+        distanceEntry = nearDistIn;
         if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
+          {
           pSIn  = pIn  + dIn  * farDistIn;
+          distanceEntry = farDistIn;
+          }
         pSOut = pOut + dOut * nearDistOut;
+        distanceExit = -nearDistOut; // nearDistOut is negative, but distanceExit must be positive
         if(pSOut[2]<pIn[2] || pSOut[2]>pOut[2])
+          {
           pSOut = pOut + dOut * farDistOut;
+          distanceExit = -farDistOut;
+          }
         }
       }
 
@@ -240,61 +256,101 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     //dOut[2] = 1.; SR: implicit in the following
 
     // Init MLP before mm to voxel conversion
-    mlp->Init(pSIn, pSOut, dIn, dOut);
-
-      std::vector<double> zmmMLP;
-      std::vector<unsigned int> kMLP;
-      double xxArr[imgSize[2]], yyArr[imgSize[2]];
-
-      // loop to populate a vector to be passed to Evaluate if MLP type is elgible
-      for(unsigned int k=0; k<imgSize[2]; k++)
+    double xIn, xOut, yIn, yOut;
+    double dxIn, dxOut, dyIn, dyOut;
+    if(m_MostLikelyPathTrackerUncertainties)
       {
-        const double dk = zmm[k];
-        if(dk<=pSIn[2]) //before entrance
-          {
-          const double z = (dk-pIn[2]);
-          xxArr[k] = pIn[0]+z*dIn[0];
-          yyArr[k] = pIn[1]+z*dIn[1];
-          }
-        else if(dk>=pSOut[2]) //after exit
-          {
-          const double z = (dk-pSOut[2]);
-          xxArr[k] = pSOut[0]+z*dOut[0];
-          yyArr[k] = pSOut[1]+z*dOut[1];
-          }
-        else
-          {
-            if(m_MostLikelyPathType == "krah") // maybe more flexible to use a m_CanBeVectorised boolean flag and set it when creating the mlp object
-            {
-              // stock in vector for later if vectorisable
-              zmmMLP.push_back(dk);
-              kMLP.push_back(k);
-            }
-            else
-            {
-              // evaluate directly if not vectorisable
-              mlp->Evaluate(zmm[k], xxArr[k], yyArr[k]);
-            }
-          }
+      mlp->InitUncertain(pSIn, pSOut, dIn, dOut, distanceEntry, distanceExit, m_TrackerResolution, m_TrackerPairSpacing, m_MaterialBudget);
+      mlp->Evaluate(pSIn[2], xIn, yIn, dxIn, dyIn); // get entrance and exit position according to MLP
+      mlp->Evaluate(pSOut[2], xOut, yOut, dxOut, dyOut);
       }
+    else
+    {
+      mlp->Init(pSIn, pSOut, dIn, dOut);
+      xIn = pSIn[0];
+      yIn = pSIn[1];
+      xOut = pSOut[0];
+      yOut = pSOut[1];
+    }
 
-      // call Evaluate with vector as argument and insert result into result array
-      // would be prefeable to avoid the copying step and use the xxMLP and yyMLP vectors directly
-      // but that requires the reste of the function further down to be restructured a bit
-      if(m_MostLikelyPathType == "krah")
+    std::vector<double> zmmMLP;
+    std::vector<unsigned int> kMLP;
+    double xxArr[imgSize[2]], yyArr[imgSize[2]];
+    double dxDummy, dyDummy;
+
+    double dInMLP[2];
+    if(m_MostLikelyPathTrackerUncertainties && QuadricIntersected)
+    {
+      dInMLP[0] = dxIn;
+      dInMLP[1] = dyIn;
+    }
+    else
+    {
+      dInMLP[0] = dIn[0];
+      dInMLP[1] = dIn[1];
+    }
+
+    double dOutMLP[2];
+    if(m_MostLikelyPathTrackerUncertainties && QuadricIntersected)
+    {
+      dOutMLP[0] = dxOut;
+      dOutMLP[1] = dyOut;
+    }
+    else
+    {
+      dOutMLP[0] = dOut[0];
+      dOutMLP[1] = dOut[1];
+    }
+
+    // loop to populate a vector to be passed to Evaluate if MLP type is elgible
+    for(unsigned int k=0; k<imgSize[2]; k++)
+    {
+      const double dk = zmm[k];
+      if(dk<=pSIn[2]) //before entrance
       {
-        std::vector<double> xxMLP;
-        std::vector<double> yyMLP;
-        xxMLP.resize(zmmMLP.size());
-        yyMLP.resize(zmmMLP.size());
-
-        mlp->Evaluate(zmmMLP, xxMLP, yyMLP);
-        for(std::vector<int>::size_type i = 0; i != kMLP.size(); i++)
-          {
-          xxArr[kMLP[i]] = xxMLP[i];
-          yyArr[kMLP[i]] = yyMLP[i];
-          }
+        const double z = (dk-pSIn[2]);
+        xxArr[k] = xIn+z*dInMLP[0];
+        yyArr[k] = yIn+z*dInMLP[1];
       }
+      else if(dk>=pSOut[2]) //after exit
+      {
+        const double z = (dk-pSOut[2]);
+        xxArr[k] = xOut+z*dOutMLP[0];
+        yyArr[k] = yOut+z*dOutMLP[1];
+      }
+      else
+        {
+          if(m_MostLikelyPathType == "krah") // maybe more flexible to use a m_CanBeVectorised boolean flag and set it when creating the mlp object
+            {
+            // stock in vector for later if vectorisable
+            zmmMLP.push_back(dk);
+            kMLP.push_back(k);
+            }
+          else
+          {
+            // evaluate directly if not vectorisable
+            mlp->Evaluate(zmm[k], xxArr[k], yyArr[k], dxDummy, dyDummy);
+          }
+        }
+    }
+
+    // call Evaluate with vector as argument and insert result into result array
+    // would be prefeable to avoid the copying step and use the xxMLP and yyMLP vectors directly
+    // but that requires the rest of the function further down to be restructured a bit
+    if(m_MostLikelyPathType == "krah")
+    {
+      std::vector<double> xxMLP;
+      std::vector<double> yyMLP;
+      xxMLP.resize(zmmMLP.size());
+      yyMLP.resize(zmmMLP.size());
+
+      mlp->Evaluate(zmmMLP, xxMLP, yyMLP);
+      for(std::vector<int>::size_type i = 0; i != kMLP.size(); i++)
+        {
+        xxArr[kMLP[i]] = xxMLP[i];
+        yyArr[kMLP[i]] = yyMLP[i];
+        }
+    }
 
     for(unsigned int k=0; k<imgSize[2]; k++)
       {
@@ -315,7 +371,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         {
         const unsigned long idx = i+j*imgSize[0]+k*npixelsPerSlice;
         imgData[ idx ] += value;
-        imgCountData[ idx ]++;
+        imgCountData[ idx ]++; // added for debugging -> REMOVE
+        // if(QuadricIntersected) imgCountData[ idx ]++; // added condition for debugging -> REMOVE
         if(m_ComputeScattering)
           {
           if(m_Robust)
