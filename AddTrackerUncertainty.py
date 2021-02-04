@@ -7,9 +7,16 @@ import click
 
 
 # Equation (27) and (28) from [Krah et al, PMB, 2018]
-def GetSigmaSc(energy, xOverX0):
+def GetSigmaSc(energy, xOverX0, sp, dt):
     proton_mass_c2 = 938.272013 * hepunits.MeV
     betap = (energy + 2 * proton_mass_c2) * energy / (energy + proton_mass_c2)
+
+    # Equation (25) and (26) from [Krah et al, PMB, 2018]:
+    T = np.zeros((2,2))
+    T[0,1] = 1
+    T[1,0] = -1/dt
+    T[1,1] = 1/dt
+
     sigmaSc = 13.6 * hepunits.MeV / betap * np.sqrt(xOverX0) * (1 + 0.038 * np.log(xOverX0))
     SigmaSc = np.zeros((energy.size, 2, 2))
     SigmaSc[:,1,1] = sigmaSc**2
@@ -27,12 +34,6 @@ def AddTrackerUncertainty(xOverX0, sp, dt, input, output, entryTranslation, exit
     dt = dt * hepunits.cm
     sp = sp * hepunits.mm
 
-    # Equation (25) and (26) from [Krah et al, PMB, 2018]
-    T = np.zeros((2,2))
-    T[0,1] = 1
-    T[1,0] = -1/dt
-    T[1,1] = 1/dt
-
     pairs = itk.imread(input)
     pairs = itk.GetArrayFromImage(pairs)
 
@@ -42,8 +43,8 @@ def AddTrackerUncertainty(xOverX0, sp, dt, input, output, entryTranslation, exit
 
     eEntry = pairs[:,4,0]
     eExit = pairs[:,4,1]
-    SigmaEntry = GetSigmaSc(eEntry, xOverX0)
-    SigmaExit = GetSigmaSc(eExit, xOverX0)
+    SigmaEntry = GetSigmaSc(eEntry, xOverX0, sp, dt)
+    SigmaExit = GetSigmaSc(eExit, xOverX0, sp, dt)
     wEntry, Qentry = np.linalg.eig(np.linalg.inv(SigmaEntry))
     wExit, Qexit = np.linalg.eig(np.linalg.inv(SigmaExit))
     xrEntry = np.random.randn(eEntry.size, 2, 2)
