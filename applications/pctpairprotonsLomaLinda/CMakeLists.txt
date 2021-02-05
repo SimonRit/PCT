@@ -1,0 +1,12 @@
+
+IF(NOT WIN32)
+  WRAP_GGO(pctpairprotonsLomaLinda_GGO_C pctpairprotonsLomaLinda.ggo)
+  add_executable(pctpairprotonsLomaLinda pctpairprotonsLomaLinda.cxx ${pctpairprotonsLomaLinda_GGO_C})
+  TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${RTK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${CLHEP_LIBRARIES})
+  IF(PCT_WITH_GEANT4)
+    TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda pctGeant4)
+  ENDIF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${ROOT_LIBRARIES})
+ENDIF(NOT WIN32)

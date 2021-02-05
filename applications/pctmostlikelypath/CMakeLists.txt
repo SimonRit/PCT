@@ -1,0 +1,8 @@
+WRAP_GGO(pctmostlikelypath_GGO_C pctmostlikelypath.ggo)
+add_executable(pctmostlikelypath pctmostlikelypath.cxx ${pctmostlikelypath_GGO_C})
+TARGET_LINK_LIBRARIES(pctmostlikelypath ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctmostlikelypath ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctmostlikelypath ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctmostlikelypath pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

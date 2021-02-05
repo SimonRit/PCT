@@ -1,0 +1,12 @@
+
+IF(NOT WIN32)
+  WRAP_GGO(pctpairprotons_GGO_C pctpairprotons.ggo)
+  add_executable(pctpairprotons pctpairprotons.cxx ${pctpairprotons_GGO_C})
+  TARGET_LINK_LIBRARIES(pctpairprotons ${RTK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctpairprotons ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctpairprotons ${CLHEP_LIBRARIES})
+  IF(PCT_WITH_GEANT4)
+    TARGET_LINK_LIBRARIES(pctpairprotons pctGeant4)
+  ENDIF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctpairprotons ${ROOT_LIBRARIES})
+ENDIF(NOT WIN32)

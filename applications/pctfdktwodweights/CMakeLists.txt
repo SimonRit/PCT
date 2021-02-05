@@ -1,0 +1,8 @@
+WRAP_GGO(pctfdktwodweights_GGO_C pctfdktwodweights.ggo)
+add_executable(pctfdktwodweights pctfdktwodweights.cxx ${pctfdktwodweights_GGO_C})
+TARGET_LINK_LIBRARIES(pctfdktwodweights ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfdktwodweights ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfdktwodweights ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctfdktwodweights pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

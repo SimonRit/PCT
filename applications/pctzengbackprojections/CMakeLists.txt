@@ -1,0 +1,8 @@
+WRAP_GGO(pctzengbackprojections_GGO_C pctzengbackprojections.ggo)
+add_executable(pctzengbackprojections pctzengbackprojections.cxx ${pctzengbackprojections_GGO_C})
+TARGET_LINK_LIBRARIES(pctzengbackprojections ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctzengbackprojections ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctzengbackprojections ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctzengbackprojections pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

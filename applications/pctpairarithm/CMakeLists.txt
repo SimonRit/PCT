@@ -1,0 +1,8 @@
+WRAP_GGO(pctpairarithm_GGO_C pctpairarithm.ggo)
+add_executable(pctpairarithm pctpairarithm.cxx ${pctpairarithm_GGO_C})
+TARGET_LINK_LIBRARIES(pctpairarithm ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctpairarithm ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctpairarithm ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctpairarithm pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

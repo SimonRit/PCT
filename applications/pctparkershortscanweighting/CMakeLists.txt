@@ -1,0 +1,8 @@
+WRAP_GGO(pctparkershortscanweighting_GGO_C pctparkershortscanweighting.ggo)
+add_executable(pctparkershortscanweighting pctparkershortscanweighting.cxx ${pctparkershortscanweighting_GGO_C})
+TARGET_LINK_LIBRARIES(pctparkershortscanweighting ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctparkershortscanweighting ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctparkershortscanweighting ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctparkershortscanweighting pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

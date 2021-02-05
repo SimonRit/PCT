@@ -1,0 +1,8 @@
+WRAP_GGO(pctprojections_GGO_C pctprojections.ggo)
+add_executable(pctprojections pctprojections.cxx ${pctprojections_GGO_C})
+TARGET_LINK_LIBRARIES(pctprojections ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctprojections ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctprojections ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctprojections pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

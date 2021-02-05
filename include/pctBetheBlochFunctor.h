@@ -8,7 +8,7 @@
 #include <itkImage.h>
 
 #ifdef PCT_GEANT4
-#  include "geant4/pctGeant4.h"
+#  include "../geant4/pctGeant4.h"
 #  include <G4Material.hh>
 #  include <G4Proton.hh>
 #  include <G4BetheBlochModel.hh>

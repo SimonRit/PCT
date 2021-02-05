@@ -1,0 +1,8 @@
+WRAP_GGO(pctfillholl_GGO_C pctfillholl.ggo)
+add_executable(pctfillholl pctfillholl.cxx ${pctfillholl_GGO_C})
+TARGET_LINK_LIBRARIES(pctfillholl ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfillholl ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfillholl ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctfillholl pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

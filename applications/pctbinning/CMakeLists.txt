@@ -1,0 +1,8 @@
+WRAP_GGO(pctbinning_GGO_C pctbinning.ggo)
+add_executable(pctbinning pctbinning.cxx ${pctbinning_GGO_C})
+TARGET_LINK_LIBRARIES(pctbinning ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctbinning ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctbinning ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctbinning pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

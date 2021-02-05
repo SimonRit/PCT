@@ -1,0 +1,8 @@
+WRAP_GGO(pctpairgeometry_GGO_C pctpairgeometry.ggo)
+add_executable(pctpairgeometry pctpairgeometry.cxx ${pctpairgeometry_GGO_C})
+TARGET_LINK_LIBRARIES(pctpairgeometry ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctpairgeometry ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctpairgeometry ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctpairgeometry pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

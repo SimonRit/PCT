@@ -1,0 +1,64 @@
+/*=========================================================================
+ *
+ *  Copyright RTK Consortium
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
+#ifndef __pctConfiguration_h
+#define __pctConfiguration_h
+//This file is interpreted by cmake, to define macros based on the cmake configuration options
+//
+
+#include <itkConfigure.h>
+#include <itkIntTypes.h>
+namespace pct
+{
+  using ThreadIdType = itk::ThreadIdType;
+}
+
+#if ITK_VERSION_MAJOR == 4 && ITK_VERSION_MINOR < 5
+namespace itk
+{
+  using SpacePrecisionType = double;
+}
+#endif
+
+#ifndef CUDA_FOUND
+#cmakedefine CUDA_FOUND
+#endif
+#cmakedefine PCT_PROBE_EACH_FILTER
+#cmakedefine PCT_USE_CUDA
+#cmakedefine PCT_BUILD_SHARED_LIBS 1
+#ifndef SLAB_SIZE
+  #define SLAB_SIZE @PCT_CUDA_PROJECTIONS_SLAB_SIZE@
+#endif
+
+#define PCT_BINARY_DIR "@PCT_BINARY_DIR@"
+#define PCT_DATA_ROOT "@PCT_DATA_ROOT@"
+
+/* Fix for ITK4 */
+#if defined(ITK_USE_FFTWF) && !defined(USE_FFTWF)
+#  define USE_FFTWF
+#endif
+#if defined(ITK_USE_FFTWD) && !defined(USE_FFTWD)
+#  define USE_FFTWD
+#endif
+
+#define PCT_VERSION_MAJOR @PCT_VERSION_MAJOR@
+#define PCT_VERSION_MINOR @PCT_VERSION_MINOR@
+#define PCT_VERSION_PATCH @PCT_VERSION_PATCH@
+#define PCT_VERSION_STRING "@PCT_VERSION_STRING@"
+
+#endif

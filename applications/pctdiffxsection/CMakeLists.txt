@@ -1,0 +1,8 @@
+IF(PCT_WITH_GEANT4)
+  WRAP_GGO(pctdiffxsection_GGO_C pctdiffxsection.ggo)
+  add_executable(pctdiffxsection pctdiffxsection.cxx ${pctdiffxsection_GGO_C})
+  TARGET_LINK_LIBRARIES(pctdiffxsection ${RTK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctdiffxsection ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctdiffxsection ${CLHEP_LIBRARIES})
+  TARGET_LINK_LIBRARIES(pctdiffxsection pctGeant4)
+ENDIF(PCT_WITH_GEANT4)

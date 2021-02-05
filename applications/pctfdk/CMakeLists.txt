@@ -1,0 +1,8 @@
+WRAP_GGO(pctfdk_GGO_C pctfdk.ggo)
+add_executable(pctfdk pctfdk.cxx ${pctfdk_GGO_C})
+TARGET_LINK_LIBRARIES(pctfdk ${RTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfdk ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(pctfdk ${CLHEP_LIBRARIES})
+IF(PCT_WITH_GEANT4)
+  TARGET_LINK_LIBRARIES(pctfdk pctGeant4)
+ENDIF(PCT_WITH_GEANT4)
