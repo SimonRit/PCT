@@ -7,8 +7,8 @@ option "path"        p "Path containing pair files"                             
 option "regexp"      r "Regular expression to select pair files in path"          string          yes
 option "output"      o "Output file name"                                         string          yes
 option "count"       c "Image of count of proton pairs per pixel"                 string          no
-option "quadricIn"   - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
-option "quadricOut"  - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
+option "quadricIn"   - "Parameters of the entrance quadric support function, see http://education.siggraph.org/static/HyperGraph/raytrace/rtinter4.htm"      double multiple no
+option "quadricOut"  - "Parameters of the exit quadric support function, see http://education.siggraph.org/static/HyperGraph/raytrace/rtinter4.htm"          double multiple no
 option "mlptype"     - "Type of most likely path (schulte or polynomial)"         string          no  default="schulte"
 option "ionpot"      - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"
 option "fill"        - "Fill holes, i.e. pixels that were not hit by protons"     flag            off

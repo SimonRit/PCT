@@ -13,8 +13,8 @@ option "robust"     r "Use robust estimation of scattering using 19.1 %ile."    
 option "beamenergy" - "Proton beam energy in MeV. Use '0' if energy is set proton-by-proton. Default: 200 MeV (for backwards compatibility)."      double    no  default="200"
 
 option "source"     s "Source position"                                          double          no  default="0."
-option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
-option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
+option "quadricIn"  - "Parameters of the entrance quadric support function, see http://education.siggraph.org/static/HyperGraph/raytrace/rtinter4.htm"      double multiple no
+option "quadricOut" - "Parameters of the exit quadric support function, see http://education.siggraph.org/static/HyperGraph/raytrace/rtinter4.htm"          double multiple no
 option "mlptype"    - "Type of most likely path (schulte, polynomial, or krah)"         string          no  default="schulte"
 option "mlptrackeruncert"    - "Consider tracker uncertainties in MLP [Krah 2018, PMB]"         flag          off
 option "mlppolydeg" - "Degree of the polynomial to approximate 1/beta^2p^2"      int             no  default="5"
