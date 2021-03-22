@@ -69,6 +69,13 @@ SchulteMLPFunction
 
 }
 
+void
+SchulteMLPFunction
+::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
+{
+  itkGenericExceptionMacro("This version of the Init method not implemented for derived class SchulteMLPFunction.");
+}
+
 // standard part of the Initialization
 void
 SchulteMLPFunction
@@ -217,7 +224,7 @@ void
 SchulteMLPFunction
 ::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
 {
-  std::cout << "Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction." << std::endl;
+  itkGenericExceptionMacro("Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction.");
 }
 
 

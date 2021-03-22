@@ -151,6 +151,9 @@ public:
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
 
+  /** Not implemented */
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut) override;
+
   /** Init with additional parameters to consider tracker uncertainties */
   virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double TrackerResolution, double TrackerPairSpacing, double MaterialBudget) override;
 

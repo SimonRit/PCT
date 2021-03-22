@@ -35,6 +35,9 @@ public:
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) = 0;
 
+  /** Init the mlp parameters from the input and output directions and positions, and energies. */
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut) = 0;
+
   /** Init with additional parameters to consider tracker uncertainties */
   virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) = 0;
 
@@ -44,6 +47,8 @@ public:
   /** Vectorised version of the above method. Implement dummy in derived class if not applicable for the type of MLP */
   // NK: maybe explicit <double> should be replaced with <TCoordRep>
   virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) = 0;
+
+  bool m_CanBeVectorised = false;
 
 #ifdef MLP_TIMING
   /** Print timing information */

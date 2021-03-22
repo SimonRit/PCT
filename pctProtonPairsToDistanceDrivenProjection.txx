@@ -4,6 +4,7 @@
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctPolynomialMLPFunction.h"
+#include "pctFlexibleMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
 
 namespace pct
@@ -55,24 +56,18 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 {
   // Create MLP depending on type
   pct::MostLikelyPathFunction<double>::Pointer mlp;
-  pct::PolynomialMLPFunction::Pointer mlp_poly; // NK: must declare outside of if clause because mlp_poly is needed later
   if(m_MostLikelyPathType == "polynomial")
     mlp = pct::ThirdOrderPolynomialMLPFunction<double>::New();
   else if(m_MostLikelyPathType == "krah")
     {
+    pct::PolynomialMLPFunction::Pointer mlp_poly;
     mlp_poly = pct::PolynomialMLPFunction::New();
     mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
-    std::cout << "MLP type KRAH; " << "beam energy = " << m_BeamEnergy << std::endl;
-    if(m_BeamEnergy==200)
-    {
-      mlp_poly->SetScatteringPowerCoefficients(); // setting to hard-coded coefficients for 200 Mev
-      m_VariableBeamEnergy=false;
-    }
-    else
-    {
-      m_VariableBeamEnergy=true;
-    }
     mlp = mlp_poly;
+    }
+  else if(m_MostLikelyPathType == "flexible")
+    {
+    mlp = pct::FlexibleMLPFunction::New();
     }
   else if(m_MostLikelyPathType == "schulte")
     {
@@ -80,7 +75,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
   else
     {
-    itkGenericExceptionMacro("MLP must either be schulte, polynomial, or krah, not [" << m_MostLikelyPathType << ']');
+    itkGenericExceptionMacro("MLP must either be schulte, polynomial, krah, or flexible, not [" << m_MostLikelyPathType << ']');
     }
   if(m_MostLikelyPathTrackerUncertainties && m_MostLikelyPathType != "schulte")
   {
@@ -238,9 +233,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     double value = 0.;
     if(eIn==0.)
       {
-      if(m_VariableBeamEnergy)
+      if(m_MostLikelyPathType == "flexible")
         {
-        itkGenericExceptionMacro("Variable beam energy is not supported if WEPL values are directed provided instead of energy.");
+        itkGenericExceptionMacro("The FlexibleMLP is not supported if WEPL values are directed provided instead of energy.");
         }
       value = eOut; // Directly read WEPL
       }
@@ -258,6 +253,8 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
 
     // Move straight to entrance and exit shapes
+
+
     VectorType pSIn  = pIn;
     VectorType pSOut = pOut;
     double nearDistIn, nearDistOut, farDistIn, farDistOut;
@@ -305,11 +302,14 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
     else
     {
-      if(m_VariableBeamEnergy)
+      if(m_MostLikelyPathType == "flexible")
       {
-        mlp_poly->SetScatteringPowerCoefficients(eIn, eOut, pSOut[2]-pSIn[2], 0.5);
+        mlp->Init(pSIn, pSOut, dIn, dOut, eIn, eOut);
       }
-      mlp->Init(pSIn, pSOut, dIn, dOut);
+      else
+      {
+        mlp->Init(pSIn, pSOut, dIn, dOut);
+      }
       xIn = pSIn[0];
       yIn = pSIn[1];
       xOut = pSOut[0];
@@ -363,7 +363,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
       }
       else
         {
-          if(m_MostLikelyPathType == "krah") // maybe more flexible to use a m_CanBeVectorised boolean flag and set it when creating the mlp object
+          if(mlp->m_CanBeVectorised) // maybe more flexible to use a m_CanBeVectorised boolean flag and set it when creating the mlp object
             {
             // stock in vector for later if vectorisable
             zmmMLP.push_back(dk);
@@ -380,7 +380,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     // call Evaluate with vector as argument and insert result into result array
     // would be prefeable to avoid the copying step and use the xxMLP and yyMLP vectors directly
     // but that requires the rest of the function further down to be restructured a bit
-    if(m_MostLikelyPathType == "krah")
+    if(mlp->m_CanBeVectorised)
     {
       std::vector<double> xxMLP;
       std::vector<double> yyMLP;
