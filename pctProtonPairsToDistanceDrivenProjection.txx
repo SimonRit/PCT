@@ -501,13 +501,13 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
   if(m_ComputeNoise)
     {
-    ImageIteratorType itSqOut(m_SquaredOutputs[0], m_SquaredOutputs[0]->GetLargestPossibleRegion());
+    ImageIteratorType itSqOut(m_SquaredOutputs[0], m_Outputs[0]->GetLargestPossibleRegion());
     for(unsigned int i=1; i<this->GetNumberOfWorkUnits(); i++)
       {
       if(m_SquaredOutputs[i].GetPointer() == NULL)
         continue;
-      ImageIteratorType itSqOutThread(m_SquaredOutputs[i], m_SquaredOutputs[i]->GetLargestPossibleRegion());
-      while(!itOut.IsAtEnd())
+      ImageIteratorType itSqOutThread(m_SquaredOutputs[i], m_Outputs[i]->GetLargestPossibleRegion());
+      while(!itSqOut.IsAtEnd())
         {
         itSqOut.Set(itSqOut.Get()+itSqOutThread.Get());
         ++itSqOutThread;
@@ -521,6 +521,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
 
     // Calculate RMSE of WEPL
     itCOut.GoToBegin();
+    itOut.GoToBegin();
     while(!itCOut.IsAtEnd())
       {
       if(itCOut.Get())
@@ -530,6 +531,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
         itSqOut.Set(itSqOut.Get()/itCOut.Get()); // devide by counts to get MSE of the mean value
         }
       ++itSqOut;
+      ++itOut;
       ++itCOut;
       }
     }
