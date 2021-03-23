@@ -1,5 +1,5 @@
-#ifndef __pctFlexibleMLPFunction_h
-#define __pctFlexibleMLPFunction_h
+#ifndef __pctEnergyAdaptiveMLPFunction_h
+#define __pctEnergyAdaptiveMLPFunction_h
 
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -79,20 +79,20 @@ public:
 };
 
 
-} // end namespace FlexibleMLPFunction
+} // end namespace EnergyAdaptiveMLPFunction
 
 } // end namespace Functor
 
-/** \class FlexibleMLPFunction
+/** \class EnergyAdaptiveMLPFunction
  *
  * \ingroup Functions
  */
-class ITK_EXPORT FlexibleMLPFunction:
+class ITK_EXPORT EnergyAdaptiveMLPFunction:
     public MostLikelyPathFunction<double>
 {
 public:
   /** Standard class typedefs. */
-  typedef FlexibleMLPFunction                       Self;
+  typedef EnergyAdaptiveMLPFunction                       Self;
   typedef MostLikelyPathFunction<double>           Superclass;
   typedef itk::SmartPointer<Self>                  Pointer;
   typedef itk::SmartPointer<const Self>            ConstPointer;
@@ -103,19 +103,10 @@ public:
   /** Useful defines. */
   typedef Superclass::VectorType VectorType;
 
-  /** Init the mlp parameters from the input and output directions and positions. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
-
-  /** Not implemented */
+  /* Initialize the MLP estimator */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut) override;
 
-  /** Init with additional parameters to consider tracker uncertainties */
-  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) override;
-
-  /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const double u1, double &x, double&y, double &dx, double&dy ) override;
-
-  // vectorised version:
+  /* Evaluate MLP in multiple depths u */ 
   virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
   /** Evaluate the error (x,y) (equation 27) at depth z. */
@@ -129,14 +120,14 @@ public:
 protected:
 
   /// Constructor
-  FlexibleMLPFunction();
-  FlexibleMLPFunction(const int polydeg);
+  EnergyAdaptiveMLPFunction();
+  EnergyAdaptiveMLPFunction(const int polydeg);
 
   /// Destructor
-  ~FlexibleMLPFunction(){}
+  ~EnergyAdaptiveMLPFunction(){}
 
 private:
-  FlexibleMLPFunction( const Self& ); //purposely not implemented
+  EnergyAdaptiveMLPFunction( const Self& ); //purposely not implemented
   void operator=( const Self& ); //purposely not implemented
 
   itk::Vector<double, 1> m_ScalarTest;
@@ -173,6 +164,6 @@ private:
 
 } // end namespace pct
 
-#include "pctFlexibleMLPFunction.txx"
+#include "pctEnergyAdaptiveMLPFunction.txx"
 
 #endif

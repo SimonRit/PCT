@@ -4,7 +4,7 @@
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
 #include "pctPolynomialMLPFunction.h"
-#include "pctFlexibleMLPFunction.h"
+#include "pctEnergyAdaptiveMLPFunction.h"
 #include "pctEnergyStragglingFunctor.h"
 
 namespace pct
@@ -65,9 +65,9 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     mlp_poly->SetPolynomialDegree(m_MostLikelyPathPolynomialDegree);
     mlp = mlp_poly;
     }
-  else if(m_MostLikelyPathType == "flexible")
+  else if(m_MostLikelyPathType == "adaptive")
     {
-    mlp = pct::FlexibleMLPFunction::New();
+    mlp = pct::EnergyAdaptiveMLPFunction::New();
     }
   else if(m_MostLikelyPathType == "schulte")
     {
@@ -75,7 +75,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     }
   else
     {
-    itkGenericExceptionMacro("MLP must either be schulte, polynomial, krah, or flexible, not [" << m_MostLikelyPathType << ']');
+    itkGenericExceptionMacro("MLP must either be schulte, polynomial, krah, or adaptive, not [" << m_MostLikelyPathType << ']');
     }
   if(m_MostLikelyPathTrackerUncertainties && m_MostLikelyPathType != "schulte")
   {

@@ -4,22 +4,6 @@ namespace pct
 template < class TCoordRep >
 void
 ThirdOrderPolynomialMLPFunction<TCoordRep>
-::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
-{
-  itkGenericExceptionMacro("InitUncertain not implemented for this derived class ThirdOrderPolynomialMLPFunction.");
-}
-
-template < class TCoordRep >
-void
-ThirdOrderPolynomialMLPFunction<TCoordRep>
-::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
-{
-  itkGenericExceptionMacro("This version of the Init method not implemented for derived class ThirdOrderPolynomialMLPFunction.");
-}
-
-template < class TCoordRep >
-void
-ThirdOrderPolynomialMLPFunction<TCoordRep>
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   // Parameters of the 3rd order polynomial. The function goes from
@@ -50,14 +34,6 @@ ThirdOrderPolynomialMLPFunction<TCoordRep>
   const TCoordRep zz = (z-zoffset);
   x = ax+zz*(bx+zz*(cx+zz*dx));
   y = ay+zz*(by+zz*(cy+zz*dy));
-}
-
-template < class TCoordRep >
-void
-ThirdOrderPolynomialMLPFunction<TCoordRep>
-::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
-{
-  itkGenericExceptionMacro("Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction.");
 }
 
 }

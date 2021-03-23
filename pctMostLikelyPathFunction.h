@@ -33,21 +33,36 @@ public:
   typedef itk::Vector<TCoordRep, 3> VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) = 0;
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
+  {
+    itkGenericExceptionMacro("This version of the Init method not implemented for derived class.");
+  }
 
   /** Init the mlp parameters from the input and output directions and positions, and energies. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut) = 0;
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
+  {
+    itkGenericExceptionMacro("This version of the Init method not implemented for derived class.");
+  }
 
   /** Init with additional parameters to consider tracker uncertainties */
-  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) = 0;
+  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
+  {
+    itkGenericExceptionMacro("Not implemented in the derived class.");
+  }
 
   /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y, TCoordRep &dx, TCoordRep&dy ) = 0;
+  virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y, TCoordRep &dx, TCoordRep&dy )
+  {
+    itkGenericExceptionMacro("Not implemented in the derived class.");
+  }
 
   /** Vectorised version of the above method. Implement dummy in derived class if not applicable for the type of MLP */
   // NK: maybe explicit <double> should be replaced with <TCoordRep>
-  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) = 0;
-
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
+  {
+    itkGenericExceptionMacro("Not implemented in the derived class.");
+  }
+  
   bool m_CanBeVectorised = false;
 
 #ifdef MLP_TIMING

@@ -4,7 +4,7 @@ namespace pct
 SchulteMLPFunction
 ::SchulteMLPFunction()
 {
-  // We operate a change of origin, u0 is always 0
+  // We apply a change of origin, u0 is always 0
   m_u0=0.;
 
   // Construct the constant part of R0 and R1 (equations 11 and 14)
@@ -69,22 +69,12 @@ SchulteMLPFunction
 
 }
 
-void
-SchulteMLPFunction
-::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
-{
-  itkGenericExceptionMacro("This version of the Init method not implemented for derived class SchulteMLPFunction.");
-}
-
 // standard part of the Initialization
 void
 SchulteMLPFunction
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
 {
   m_uOrigin = posIn[2];
-  //m_IntForSigmaSqTheta0  = Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(m_u0);
-  //m_IntForSigmaSqTTheta0 = Functor::SchulteMLP::IntegralForSigmaSqTTheta::GetValue(m_u0);
-  //m_IntForSigmaSqT0      = Functor::SchulteMLP::IntegralForSigmaSqT     ::GetValue(m_u0);
 
   m_u2 = posOut[2]-m_uOrigin;
   m_IntForSigmaSqTheta2  = Functor::SchulteMLP::IntegralForSigmaSqTheta ::GetValue(m_u2);
@@ -165,16 +155,8 @@ SchulteMLPFunction
   }
   else
   {
-    // x and y, equation 24
-    // common calculations
-    // InverseMatrix(m_Sigma1);
-    // InverseMatrix(m_Sigma2);
-    // itk::Matrix<double, 2, 2> R1T_Inv(m_R1T);
-    // InverseMatrix(R1T_Inv);
-    // itk::Matrix<double, 2, 2> R1_Inv(m_R1);
-    // InverseMatrix(R1_Inv);
-
-    // This version here is better because it avoids inverting the matrices Sigma
+    // This version here is better than the previously implemented one
+    // because it avoids inverting the matrices Sigma.
     // See comment in [Krah 2018, PMB]
     itk::Matrix<double, 2, 2> sum1(R1_Inv * m_Sigma2 + m_Sigma1 * m_R1T);
     InverseMatrix(sum1);
@@ -186,27 +168,6 @@ SchulteMLPFunction
 
     xMLP = part1 * m_x0 + part2 * m_x2;
     yMLP = part1 * m_y0 + part2 * m_y2;
-
-    // // x and y, equation 24
-    // // common calculations
-    // InverseMatrix(m_Sigma1);
-    // InverseMatrix(m_Sigma2);
-    // itk::Matrix<double, 2, 2> Sigma1Inv_R0 = m_Sigma1 * m_R0;
-    // itk::Matrix<double, 2, 2> R1T_Sigma2Inv = m_R1T * m_Sigma2;
-    // itk::Matrix<double, 2, 2> part(m_Sigma1 + R1T_Sigma2Inv * m_R1);
-    // InverseMatrix(part);
-    //
-    // // x
-    // itk::Vector<double, 2> xMLP;
-    // xMLP = part * (Sigma1Inv_R0 * m_x0 + R1T_Sigma2Inv * m_x2);
-    // x = xMLP[0];
-    // std::cout << "****" << '\n';
-    // std::cout << "xMLP = ( " << xMLP[0] << ", " << xMLP[1] << " )" << '\n';
-    // std::cout << "m_x0 = ( " << m_x0[0] << ", " << m_x0[1] << " )" << '\n';
-    // // y
-    // itk::Vector<double, 2> yMLP;
-    // yMLP = part * (Sigma1Inv_R0 * m_y0 + R1T_Sigma2Inv * m_y2);
-    // y = yMLP[0];
   }
 
   x = xMLP[0];
@@ -219,14 +180,6 @@ SchulteMLPFunction
   m_EvaluateProbe2.Stop();
 #endif
 }
-
-void
-SchulteMLPFunction
-::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
-{
-  itkGenericExceptionMacro("Vectorised version of Evaluate method not implemented for derived class SchulteMLPFunction.");
-}
-
 
 void
 SchulteMLPFunction

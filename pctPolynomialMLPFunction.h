@@ -141,27 +141,13 @@ public:
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
 
-  /** Not implemented */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut) override;
-
-  /** Init with additional parameters to consider tracker uncertainties */
-  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) override;
-
-  /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const double u1, double &x, double&y, double &dx, double&dy ) override;
-
-  // vectorised version:
+  /* Vectorised version of Evaluate function. */
   virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
 
   void SetPolynomialDegree( const int polydeg );
-  // itkSetMacro(PolynomialDegree, int)
-  // itkGetMacro(PolynomialDegree, int)
-
-  bool m_CanBeVectorised = true;
-
 
 #ifdef MLP_TIMING
   /** Print timing information */

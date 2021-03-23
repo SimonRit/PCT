@@ -1,8 +1,8 @@
 namespace pct
 {
 
-FlexibleMLPFunction
-::FlexibleMLPFunction()
+EnergyAdaptiveMLPFunction
+::EnergyAdaptiveMLPFunction()
 {
   // We operate a change of origin, u0 is always 0
   m_u0=0.;
@@ -11,22 +11,7 @@ FlexibleMLPFunction
 }
 
 void
-FlexibleMLPFunction
-::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
-{
-  itkGenericExceptionMacro("Method InitUncertain not implemented for this derived class FlexibleMLPFunction.");
-}
-
-void
-FlexibleMLPFunction
-::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut)
-{
-  itkGenericExceptionMacro("This version of the Init method not implemented for derived class PolynomialMLPFunction.");
-}
-
-
-void
-FlexibleMLPFunction
+EnergyAdaptiveMLPFunction
 ::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
 {
   m_uOrigin = posIn[2];
@@ -68,16 +53,9 @@ FlexibleMLPFunction
 
 }
 
-void
-FlexibleMLPFunction
-::Evaluate( const double u, double &x, double&y, double &dx, double&dy )
-{
-  itkGenericExceptionMacro("Method Evaluate not implemented for this derived class FlexibleMLPFunction.");
-}
-
 // vectorised version
 void
-FlexibleMLPFunction
+EnergyAdaptiveMLPFunction
 ::Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y )
 {
   // shift so u starts at 0 and scale by a/b to get u_tilde
@@ -129,7 +107,7 @@ FlexibleMLPFunction
 }
 
 void
-FlexibleMLPFunction
+EnergyAdaptiveMLPFunction
 ::EvaluateError( const double u, itk::Matrix<double, 2, 2> &error )
 {
   itkGenericExceptionMacro("The method PolynomialMLPFunction::EvaluateError is not implemented at the moment");
@@ -137,7 +115,7 @@ FlexibleMLPFunction
 
 #ifdef MLP_TIMING
 void
-FlexibleMLPFunction
+EnergyAdaptiveMLPFunction
 ::PrintTiming(std::ostream& os)
 {
   os << "PolynomialMLPFunction timing:" << std::endl;

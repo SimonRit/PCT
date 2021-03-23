@@ -52,117 +52,10 @@ PolynomialMLPFunction
       std::copy(Functor::PolynomialMLP::bm_5.begin(),Functor::PolynomialMLP::bm_5.end(),std::back_inserter(m_bm));
       break;
     default:
-      std::cerr << "Allowed values for polydeg are 0-5. Received " << m_PolynomialDegree << ". Using default (5)." << std::endl;
+      itkWarningMacro( << "Allowed values for polydeg are 0-5. Received " << m_PolynomialDegree << ". Using default (5).");
       std::copy(Functor::PolynomialMLP::bm_5.begin(),Functor::PolynomialMLP::bm_5.end(),std::back_inserter(m_bm));
       break;
     }
-}
-
-// void
-// PolynomialMLPFunction
-// ::SetScatteringPowerCoefficients()
-// {
-//   switch (m_PolynomialDegree)
-//     {
-//     case 0:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_0.size());
-//       std::copy(Functor::PolynomialMLP::bm_0.begin(),Functor::PolynomialMLP::bm_0.end(),std::back_inserter(m_bm));
-//       break;
-//     case 1:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_1.size());
-//       std::copy(Functor::PolynomialMLP::bm_1.begin(),Functor::PolynomialMLP::bm_1.end(),std::back_inserter(m_bm));
-//       break;
-//     case 2:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_2.size());
-//       std::copy(Functor::PolynomialMLP::bm_2.begin(),Functor::PolynomialMLP::bm_2.end(),std::back_inserter(m_bm));
-//       break;
-//     case 3:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_3.size());
-//       std::copy(Functor::PolynomialMLP::bm_3.begin(),Functor::PolynomialMLP::bm_3.end(),std::back_inserter(m_bm));
-//       break;
-//     case 4:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_4.size());
-//       std::copy(Functor::PolynomialMLP::bm_4.begin(),Functor::PolynomialMLP::bm_4.end(),std::back_inserter(m_bm));
-//       break;
-//     case 5:
-//       m_bm.reserve(Functor::PolynomialMLP::bm_5.size());
-//       std::copy(Functor::PolynomialMLP::bm_5.begin(),Functor::PolynomialMLP::bm_5.end(),std::back_inserter(m_bm));
-//       break;
-//     default:
-//       std::cerr << "Allowed values for polydeg are 0-5. Received " << m_PolynomialDegree << ". Using default (5)." << std::endl;
-//       std::copy(Functor::PolynomialMLP::bm_5.begin(),Functor::PolynomialMLP::bm_5.end(),std::back_inserter(m_bm));
-//       break;
-//     }
-// }
-//
-// void
-// PolynomialMLPFunction
-// ::SetScatteringPowerCoefficients( const double E_in, const double E_out, const double deltaU, const double aroundWhere)
-// {
-//   double inverseScatteringPower_in, inverseScatteringPower_out;
-//   double c0, c1;
-//   double uT = deltaU*aroundWhere;
-//
-//   if(aroundWhere < 0 || aroundWhere > 1) itkGenericExceptionMacro("aroundWhere argument must be >=0 and <= 1.");
-//
-//   // calculate 1/T = beta^2 p^2 / Omega0^2 * X0
-//   // 938.3 is the proton rest mass; would be better to avoid hard coding
-//   inverseScatteringPower_in = (E_in+2*938.3) * E_in / (E_in+938.3) / 13.6;
-//   inverseScatteringPower_in *= inverseScatteringPower_in * 36.1 * CLHEP::cm;
-//   inverseScatteringPower_out = (E_out+2*938.3) * E_out / (E_out+938.3) / 13.6;
-//   inverseScatteringPower_out *= inverseScatteringPower_out * 36.1*CLHEP::cm;
-//
-//   c0 = inverseScatteringPower_in;
-//   c1 = (inverseScatteringPower_out - inverseScatteringPower_in) / deltaU;
-//
-//   m_bm.resize(0);
-//   double new_bm;
-//   for(int m = 0; m != m_PolynomialDegree; m++)
-//   {
-//     new_bm = std::pow(c1, m) / std::pow(c0, m+1) / std::pow(1 + c1/c0*uT, m+1);
-//     if(m % 2 == 1) new_bm *= -1;
-//     m_bm.push_back(new_bm);
-//   }
-//
-//   std::vector<double> fl;
-//   fl.resize(0);
-//   double new_fl;
-//   if(aroundWhere > 0)
-//   {
-//     for(int l = 0; l != m_PolynomialDegree; l++)
-//     {
-//       new_fl = 0;
-//       for(int m = l; m != m_PolynomialDegree; m++)
-//       {
-//         // new_fl += m_bm[m] * std::pow(-uT, m-l) / (m+1) / std::beta(l+1, m-l+1);
-//         new_fl += m_bm[m] * std::pow(-uT, m-l) * CalculateBinomialCoefficient(m , m-l);
-//       }
-//       fl.push_back(new_fl);
-//     }
-//     std::copy(fl.begin(), fl.end(), std::back_inserter(m_bm));
-//   }
-//   // std::cout << "Polynomial coefficients bm:" << std::endl;
-//   // for(auto& element : m_bm)
-//   // {
-//   //   std::cout << element << "  ";
-//   // }
-//   // std::cout << std::endl;
-//
-// }
-
-
-void
-PolynomialMLPFunction
-::InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget)
-{
-  itkGenericExceptionMacro("Not implemented for this derived class PolynomialMLPFunction.");
-}
-
-void
-PolynomialMLPFunction
-::Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double eIn, double eOut)
-{
-  itkGenericExceptionMacro("This version of the Init method not implemented for derived class PolynomialMLPFunction.");
 }
 
 void
@@ -225,42 +118,6 @@ PolynomialMLPFunction
   }
   m_dm_y[m_PolynomialDegree+3] = m_c_y[1] * m_bm[m_PolynomialDegree] / (m_PolynomialDegree+2) / (m_PolynomialDegree+3);
 
-}
-
-void
-PolynomialMLPFunction
-::Evaluate( const double u, double &x, double&y, double &dx, double&dy )
-{
-#ifdef MLP_TIMING
-  m_EvaluateProbe1.Start();
-#endif
-  const double u1 = u-m_uOrigin;
-
-
-
-// #ifdef MLP_TIMING
-//   m_EvaluateProbe1.Stop();
-//   m_EvaluateProbe2.Start();
-// #endif
-
-  x = 0;
-  y = 0;
-
-  for(int i = 0; i != m_PolynomialDegreePlusThree; i++)
-  {
-    x += m_dm_x[m_PolynomialDegreePlusThree-i];
-    x *= u1;
-    y += m_dm_y[m_PolynomialDegreePlusThree-i];
-    y *= u1;
-  }
-
-  x += m_dm_x[0];
-  y += m_dm_y[0];
-
-
-#ifdef MLP_TIMING
-  m_EvaluateProbe1.Stop();
-#endif
 }
 
 // vectorised version
