@@ -112,28 +112,6 @@ public:
   }
 };
 
-// class CoefficientsD
-// {
-// public:
-//   static void GetValue(std::vector<double>& dm, const itk::Vector<double, 2> vIn, const itk::Vector<double, 2> c, std::vector<double> bm)
-//   {
-//     // std::vector<int>::size_type bmsize = bm.size();
-//     std::cout << "bm.size() = " << bm.size() << std::endl;
-//     dm.push_back(vIn[0]);
-//     dm.push_back(vIn[1]);
-//     dm.push_back(c[0]*bm[0]/2);
-//     for(std::vector<int>::size_type i = 0; i != (bm.size()-1); i++)
-//     {
-//       dm.push_back((c[0]*bm[i+1] + c[1]*bm[i]) / (i+3) / (i+2));
-//     }
-//     std::vector<int>::size_type M = bm.size() - 1;
-//     dm.push_back(c[1] * bm[M] / (M+2) / (M+3));
-//     std::cout << "dm.size() = " << dm.size() << std::endl;
-//
-//   }
-// };
-
-
 
 } // end namespace PolynomialMLP
 
@@ -161,27 +139,15 @@ public:
   typedef Superclass::VectorType VectorType;
 
   /** Init the mlp parameters from the input and output directions and positions. */
-  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) ITK_OVERRIDE;
+  virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
 
-  /** Init with additional parameters to consider tracker uncertainties */
-  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) ITK_OVERRIDE;
-
-  /** Evaluate the coordinates (x,y) at depth z. */
-  virtual void Evaluate( const double u1, double &x, double&y, double &dx, double&dy ) ITK_OVERRIDE;
-
-  // vectorised version:
-  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) ITK_OVERRIDE;
+  /* Vectorised version of Evaluate function. */
+  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
 
   void SetPolynomialDegree( const int polydeg );
-  // itkSetMacro(PolynomialDegree, int)
-  // itkGetMacro(PolynomialDegree, int)
-
-  void SetScatteringPowerCoefficients( const double E_in, const double E_out, const double deltaU, const double aroundWhere);
-  void SetScatteringPowerCoefficients();
-
 
 #ifdef MLP_TIMING
   /** Print timing information */
@@ -213,8 +179,6 @@ private:
   int m_PolynomialDegreePlusThree;
   std::vector<double> m_bm;
 
-  // std::vector<double> m_dm_x;
-  // std::vector<double> m_dm_y;
   itk::Vector<double, 9> m_dm_x;
   itk::Vector<double, 9> m_dm_y;
 

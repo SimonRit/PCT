@@ -31,14 +31,8 @@ public:
   /** Init the mlp parameters from the input and output directions and positions. */
   virtual void Init(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut) override;
 
-  /** Init with additional parameters to consider tracker uncertainties */
-  virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double m_TrackerResolution, double m_TrackerPairSpacing, double m_MaterialBudget) override;
-
   /** Evaluate the coordinates (x,y) at depth z. */
   virtual void Evaluate( const TCoordRep z, TCoordRep &x, TCoordRep&y, TCoordRep &dx, TCoordRep&dy ) override;
-
-  // vectorised version:
-  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
 protected:
 

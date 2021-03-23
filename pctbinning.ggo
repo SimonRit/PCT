@@ -10,12 +10,11 @@ option "count"      c "Image of count of proton pairs per pixel"                
 option "scatwepl"   - "Image of scattering WEPL of proton pairs per pixel"       string          no
 option "noise"      - "Image of WEPL variance per pixel"                         string          no
 option "robust"     r "Use robust estimation of scattering using 19.1 %ile."     flag            off
-option "beamenergy" - "Proton beam energy in MeV. Use '0' if energy is set proton-by-proton. Default: 200 MeV (for backwards compatibility)."      double    no  default="200"
 
 option "source"     s "Source position"                                          double          no  default="0."
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"      double multiple no
 option "quadricOut" - "Parameters of the exit quadric support function, see http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter4.htm"          double multiple no
-option "mlptype"    - "Type of most likely path (schulte, polynomial, or krah)"         string          no  default="schulte"
+option "mlptype"    - "Type of most likely path (schulte, polynomial, krah, or adaptive)"         string          no  default="schulte"
 option "mlptrackeruncert"    - "Consider tracker uncertainties in MLP [Krah 2018, PMB]"         flag          off
 option "mlppolydeg" - "Degree of the polynomial to approximate 1/beta^2p^2"      int             no  default="5"
 option "ionpot"     - "Ionization potential used in the reconstruction in eV"    double          no  default="68.9984"

@@ -154,11 +154,8 @@ public:
   /** Init with additional parameters to consider tracker uncertainties */
   virtual void InitUncertain(const VectorType posIn, const VectorType posOut, const VectorType dirIn, const VectorType dirOut, double dEntry, double dExit, double TrackerResolution, double TrackerPairSpacing, double MaterialBudget) override;
 
-  /** Evaluate the coordinates (x,y) at depth z. */
+  /** Evaluate the coordinates (x,y) at depth u1. */
   virtual void Evaluate( const double u1, double &x, double &y, double &dx, double &dy ) override;
-
-  // vectorised version:
-  virtual void Evaluate( std::vector<double> u, std::vector<double> &x, std::vector<double> &y ) override;
 
   /** Evaluate the error (x,y) (equation 27) at depth z. */
   void EvaluateError( const double u1, itk::Matrix<double, 2, 2> &error);
