@@ -14,11 +14,14 @@
 
 #define MAX_RUNS 4096
 
+#define WEPLRECOHACK 0
+
 struct ParticleData
   {
   itk::Vector<float,3> position;
   itk::Vector<float,3> direction;
   float ekine;
+  float wepl;
   int pdgID;
   int trackID;
   int eventID;
@@ -87,11 +90,20 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
 
   itk::ImageRegionIterator<ImageType> it(img, region);
   PixelType eet;
+#if WEPLRECOHACK
+  std::cerr << "WARNING: Performing reconstruction of ideal WEPL!" << std::endl;
+#endif
   for(size_t i=0; i<pairs.size(); i++)
     {
+#if WEPLRECOHACK
+    eet[0] = 0.;
+    eet[1] = pairs[i].second.wepl - pairs[i].first.wepl;
+    eet[2] = 0.;//pairs[i].second.time - pairs[i].first.time;
+#else
     eet[0] = pairs[i].first.ekine;
     eet[1] = pairs[i].second.ekine;
     eet[2] = 0.;//pairs[i].second.time - pairs[i].first.time;
+#endif
 
     it.Set( pairs[i].first.position );
     ++it;
@@ -122,6 +134,21 @@ void WritePairs(const std::vector< std::pair<ParticleData,ParticleData> > &pairs
 int main(int argc, char * argv[])
 {
   GGO(pctpairprotonsLMU_IMPCT, args_info); //RTK macro parsing options from .ggo file (rtkMacro.h)
+
+#if WEPLRECOHACK
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "Reads WEPL instead of energy information!!" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "Reads WEPL instead of energy information!!" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "Reads WEPL instead of energy information!!" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+  std::cout << "Reads WEPL instead of energy information!!" << std::endl;
+  std::cout << "WARNING WARNING WARNING WARNING" << std::endl;
+#endif
 
   // Create root trees
   TChain *treeIn = new TChain("PhaseSpaceTree");
@@ -211,16 +238,16 @@ int main(int argc, char * argv[])
     
 
     // Condition 1: both particles must be protons
-    if( pdOut.pdgID != 2212 )
-      {
-      iOut++;
-      continue;
-      }
-    if( pdIn.pdgID != 2212 )
-      {
-      iIn++;
-      continue;
-      }
+//    if( pdOut.pdgID != 2212 )
+//      {
+//      iOut++;
+//      continue;
+//      }
+//    if( pdIn.pdgID != 2212 )
+//      {
+//      iIn++;
+//      continue;
+//      }
 
     // Condition 2: absolute time difference must be small
 //    if( pIn.time-pOut.time<-100.f )
@@ -295,9 +322,11 @@ int main(int argc, char * argv[])
     if(pairs[i].size())
       {
       std::ostringstream os;
-      os << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
+      os << itksys::SystemTools::GetFilenamePath(args_info.output_arg) << "/"
+         << itksys::SystemTools::GetFilenameWithoutLastExtension(args_info.output_arg)
          << std::setw(4) << std::setfill ('0') << i
          << itksys::SystemTools::GetFilenameLastExtension(args_info.output_arg);
+      std::cout << "Writing into file:" << os.str() << std::endl;
       WritePairs(pairs[i], os.str());
       }
     }
