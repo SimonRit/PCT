@@ -10,7 +10,6 @@ option "count"      c "Image of count of proton pairs per pixel"                
 option "scatwepl"   - "Image of scattering WEPL of proton pairs per pixel"       string          no
 option "noise"      - "Image of WEPL variance per pixel"                         string          no
 option "robust"     r "Use robust estimation of scattering using 19.1 %ile."     flag            off
-option "beamenergy" - "Proton beam energy in MeV. Use '0' if energy is set proton-by-proton. Default: 200 MeV (for backwards compatibility)."      double    no  default="200"
 
 option "source"     s "Source position"                                          double          no  default="0."
 option "quadricIn"  - "Parameters of the entrance quadric support function, see http://education.siggraph.org/static/HyperGraph/raytrace/rtinter4.htm"      double multiple no
