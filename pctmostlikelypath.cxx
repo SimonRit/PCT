@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
   if(args_info.quadricIn_given &&
      args_info.quadricOut_given &&
      quadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
-     quadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
+     quadricOut->IsIntersectedByRay(pOut,dOut,farDistOut,nearDistOut))
     {
     pSIn  = pIn  + dIn  * nearDistIn;
     if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])

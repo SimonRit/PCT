@@ -263,7 +263,7 @@ ProtonPairsToDistanceDrivenProjection<TInputImage, TOutputImage>
     if(m_QuadricIn.GetPointer()!=NULL)
       {
       if(m_QuadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
-         m_QuadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
+         m_QuadricOut->IsIntersectedByRay(pOut,dOut,farDistOut,nearDistOut))
         {
         QuadricIntersected = true;
         pSIn  = pIn  + dIn  * nearDistIn;
