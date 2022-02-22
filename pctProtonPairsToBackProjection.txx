@@ -206,7 +206,7 @@ ProtonPairsToBackProjection<TInputImage, TOutputImage>
           if(m_QuadricIn.GetPointer()!=NULL)
             {
             if(m_QuadricIn->IsIntersectedByRay(pIn,dIn,nearDistIn,farDistIn) &&
-               m_QuadricOut->IsIntersectedByRay(pOut,dOut,nearDistOut,farDistOut))
+               m_QuadricOut->IsIntersectedByRay(pOut,dOut,farDistOut,nearDistOut))
               {
               pSIn  = pIn  + dIn  * nearDistIn;
               if(pSIn[2]<pIn[2]  || pSIn[2]>pOut[2])
