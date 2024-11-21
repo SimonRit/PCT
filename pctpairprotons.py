@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--plane-out', help="Plane position of outgoing protons", required=True, type=float)
     parser.add_argument('--min-run', help="Minimum run (inclusive)", default=0, type=int)
     parser.add_argument('--max-run', help="Maximum run (exclusive)", default=1e6, type=int)
+    parser.add_argument('--no-nuclear', help="Remove inelastic nuclear collisions", default=False, action='store_true')
     parser.add_argument('--verbose', '-v', help="Verbose execution", default=False, action='store_true')
     parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
     parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
@@ -73,6 +74,8 @@ def main():
     verbose("Read output phase space:\n" + str(df_out))
 
     merge_columns = ['RunID', 'EventID']
+    if args_info.no_nuclear:
+        merge_columns.append('TrackID')
     df_pairs = pd.merge(
         df_in.drop_duplicates(merge_columns),  # drop_duplicates to mimic the behavior of C++ pctpairprotons (see comment line 272, commit 8260d3)
         df_out,
@@ -110,7 +113,7 @@ def main():
         df_np[:,3,2] = df_run['dw_out']
         df_np[:,4,0] = df_run['KineticEnergy_in']
         df_np[:,4,1] = df_run['KineticEnergy_out']
-        df_np[:,4,2] = df_run['TrackID_out']
+        df_np[:,4,2] = df_run['TrackID'] if args_info.no_nuclear else df_run['TrackID_out']
         verbose("Converted pairs to NumPy:\n" + str(df_np))
 
         df_itk = itk.GetImageFromArray(df_np, ttype=ImageType)
