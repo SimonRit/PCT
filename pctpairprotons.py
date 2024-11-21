@@ -94,8 +94,6 @@ def main():
 
     run_range = range(args_info.min_run, min(number_of_runs, args_info.max_run))
     for r in run_range:
-        verbose(f"Processing run {r}…")
-
         df_run = df_pairs[df_pairs['RunID'] == r]
 
         df_np = np.empty(shape=(len(df_run), 5, 3), dtype=np.float32)
@@ -114,10 +112,8 @@ def main():
         df_np[:,4,0] = df_run['KineticEnergy_in']
         df_np[:,4,1] = df_run['KineticEnergy_out']
         df_np[:,4,2] = df_run['TrackID'] if args_info.no_nuclear else df_run['TrackID_out']
-        verbose("Converted pairs to NumPy:\n" + str(df_np))
 
         df_itk = itk.GetImageFromArray(df_np, ttype=ImageType)
-        verbose("Converted NumPy array to ITK image.")
 
         output_file = args_info.output.replace('.', f'{r:04d}.')
         itk.imwrite(df_itk, output_file)
