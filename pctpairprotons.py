@@ -14,6 +14,8 @@ def main():
     parser.add_argument('-o', '--output', help="Output file name", required=True)
     parser.add_argument('--plane-in', help="Plane position of incoming protons", required=True, type=float)
     parser.add_argument('--plane-out', help="Plane position of outgoing protons", required=True, type=float)
+    parser.add_argument('--min-run', help="Minimum run (inclusive)", default=0, type=int)
+    parser.add_argument('--max-run', help="Maximum run (exclusive)", default=1e6, type=int)
     parser.add_argument('--verbose', '-v', help="Verbose execution", default=False, action='store_true')
     parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
     parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
@@ -56,6 +58,8 @@ def main():
             'Direction_' + str(args_info.projw): 'dw',
         }, inplace=True)
 
+        df = df[(df['RunID'] >= args_info.min_run) & (df['RunID'] < args_info.max_run)]
+
         df['dw'] *= args_info.wweight
 
         return df
@@ -78,14 +82,15 @@ def main():
     )
     verbose("Merged input and output phase spaces:\n" + str(df_pairs))
 
-    max_runs = df_pairs['RunID'].max() + 1
-    verbose("Identified number of runs: " + str(max_runs))
+    number_of_runs = df_pairs['RunID'].max() + 1
+    verbose("Identified number of runs: " + str(number_of_runs))
 
     ComponentType = itk.ctype('float')
     PixelType = itk.Vector[ComponentType, 3]
     ImageType = itk.Image[PixelType, 2]
 
-    for r in range(max_runs):
+    run_range = range(args_info.min_run, min(number_of_runs, args_info.max_run))
+    for r in run_range:
         verbose(f"Processing run {r}…")
 
         df_run = df_pairs[df_pairs['RunID'] == r]
