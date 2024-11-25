@@ -61,8 +61,6 @@ def main():
 
         df = df[(df['RunID'] >= args_info.min_run) & (df['RunID'] < args_info.max_run)]
 
-        df['dw'] *= args_info.wweight
-
         return df
 
     df_in = load_tree_as_df(args_info.input_in, 'PhaseSpaceIn')
@@ -105,10 +103,10 @@ def main():
         df_np[:,1,2] = df_run['w_out']
         df_np[:,2,0] = df_run['du_in']
         df_np[:,2,1] = df_run['dv_in']
-        df_np[:,2,2] = df_run['dw_in']
+        df_np[:,2,2] = df_run['dw_in'] * args_info.wweight
         df_np[:,3,0] = df_run['du_out']
         df_np[:,3,1] = df_run['dv_out']
-        df_np[:,3,2] = df_run['dw_out']
+        df_np[:,3,2] = df_run['dw_out'] * args_info.wweight
         df_np[:,4,0] = df_run['KineticEnergy_in']
         df_np[:,4,1] = df_run['KineticEnergy_out']
         df_np[:,4,2] = df_run['TrackID'] if args_info.no_nuclear else df_run['TrackID_out']
