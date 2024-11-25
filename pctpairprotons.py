@@ -93,6 +93,8 @@ def main():
     run_range = range(args_info.min_run, min(number_of_runs, args_info.max_run))
     for r in run_range:
         df_run = df_pairs[df_pairs['RunID'] == r]
+        if len(df_run) == 0:
+            continue
 
         df_np = np.empty(shape=(len(df_run), 5, 3), dtype=np.float32)
         df_np[:,0,0] = df_run['u_in']
