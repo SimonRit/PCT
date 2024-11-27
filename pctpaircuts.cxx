@@ -4,6 +4,7 @@
 #include <rtkGgoFunctions.h>
 #include <rtkConstantImageSource.h>
 
+#include "pctConfiguration.h"
 #include "pctProtonPairsToDistanceDrivenProjection.h"
 #include "pctThirdOrderPolynomialMLPFunction.h"
 #include "pctSchulteMLPFunction.h"
@@ -14,7 +15,7 @@
 #include <itkRegularExpressionSeriesFileNames.h>
 #include <itkTimeProbe.h>
 
-#if PCT_USE_ROOT
+#if PCT_WITH_ROOT
 #include <RooRealVar.h>
 #include <RooDataSet.h>
 #include <RooGaussian.h>
@@ -28,7 +29,7 @@ int main(int argc, char * argv[])
 {
   GGO(pctpaircuts, args_info); //RTK macro parsing options from .ggo file (rtkMacro.h)
 
-  #if !(PCT_USE_ROOT)
+  #if !(PCT_WITH_ROOT)
   if(args_info.plotpix_given){
     std::cerr << "--plotpix requires PCT to be compiled with ROOT." << std::endl;
     return EXIT_FAILURE;
@@ -425,7 +426,7 @@ int main(int argc, char * argv[])
     TRY_AND_EXIT_ON_ITK_EXCEPTION(w->Update());
     }
 
-  #if PCT_USE_ROOT
+  #if PCT_WITH_ROOT
   if(args_info.plotpix_given)
     {
     // Energy plot

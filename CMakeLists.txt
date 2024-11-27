@@ -32,10 +32,8 @@ IF(PCT_WITH_ROOT AND NOT WIN32)
   FIND_PACKAGE(ROOT REQUIRED)
   INCLUDE_DIRECTORIES(${ROOT_INCLUDE_DIR})
   SET(LINK_DIRECTORIES ${ROOT_LIBRARY_DIR})
-  ADD_DEFINITIONS(-DPCT_USE_ROOT=1)
 ELSE()
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_DEFINITIONS(-DPCT_USE_ROOT=0)
 ENDIF()
 
 #=========================================================
@@ -57,6 +55,10 @@ ENDIF()
 # We remove the warning option "shadow", because there are tons of
 # such warning related to clhep/g4 system of units.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
+
+#=========================================================
+# Propagate cmake options in a header file
+configure_file(pctConfiguration.h.in pctConfiguration.h)
 
 #=========================================================
 # Executables
