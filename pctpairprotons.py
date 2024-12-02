@@ -6,27 +6,24 @@ import itk
 import numpy as np
 import numpy.lib.recfunctions as rfn
 
-def main():
-
-    parser = argparse.ArgumentParser(description="Pair corresponding protons from GATE ROOT files")
-    parser.add_argument('-i', '--input-in', help="Root phase space file of particles before object", required=True)
-    parser.add_argument('-j', '--input-out', help="Root phase space file of particles after object", required=True)
-    parser.add_argument('-o', '--output', help="Output file name", required=True)
-    parser.add_argument('--plane-in', help="Plane position of incoming protons", required=True, type=float)
-    parser.add_argument('--plane-out', help="Plane position of outgoing protons", required=True, type=float)
-    parser.add_argument('--min-run', help="Minimum run (inclusive)", default=0, type=int)
-    parser.add_argument('--max-run', help="Maximum run (exclusive)", default=1e6, type=int)
-    parser.add_argument('--no-nuclear', help="Remove inelastic nuclear collisions", default=False, action='store_true')
-    parser.add_argument('--verbose', '-v', help="Verbose execution", default=False, action='store_true')
-    parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
-    parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
-    parser.add_argument('--projw', help="Provide the name of the third axis in the root file", default='X')
-    parser.add_argument('--wweight', help="Weight of the third axis", default=-1.)
-    parser.add_argument('--psin', help="Name of tree in input phase space", default='PhaseSpace')
-    parser.add_argument('--psout', help="Name of tree in output phase space", default='PhaseSpace')
-    args_info = parser.parse_args()
-
-    if args_info.verbose:
+def pctpairprotons(
+    input_in,
+    input_out,
+    output,
+    plane_in,
+    plane_out,
+    min_run=0,
+    max_run=1e6,
+    no_nuclear=False,
+    verbose=False,
+    proju='Y',
+    projv='Z',
+    projw='X',
+    wweight=-1.,
+    psin='PhaseSpace',
+    psout='PhaseSpace'
+):
+    if verbose:
         def verbose(message):
             print(message)
     else:
@@ -58,32 +55,32 @@ def main():
             ps[branch_name] = branches[branch_name]
 
         ps = rfn.rename_fields(ps, {
-            'Position_' + str(args_info.proju): 'u',
-            'Position_' + str(args_info.projv): 'v',
-            'Position_' + str(args_info.projw): 'w',
+            'Position_' + str(proju): 'u',
+            'Position_' + str(projv): 'v',
+            'Position_' + str(projw): 'w',
         })
         ps = rfn.rename_fields(ps, {
-            'Direction_' + str(args_info.proju): 'du',
-            'Direction_' + str(args_info.projv): 'dv',
-            'Direction_' + str(args_info.projw): 'dw',
+            'Direction_' + str(proju): 'du',
+            'Direction_' + str(projv): 'dv',
+            'Direction_' + str(projw): 'dw',
         })
 
-        ps = ps[(ps['RunID'] >= args_info.min_run) & (ps['RunID'] < args_info.max_run)]
+        ps = ps[(ps['RunID'] >= min_run) & (ps['RunID'] < max_run)]
 
         return ps
 
-    ps_in = load_tree_as_df(args_info.input_in, args_info.psin)
-    ps_in['w'] = args_info.plane_in
+    ps_in = load_tree_as_df(input_in, psin)
+    ps_in['w'] = plane_in
     verbose("Read input phase space:\n" + str(ps_in))
 
-    ps_out = load_tree_as_df(args_info.input_out, args_info.psout)
-    ps_out['w'] = args_info.plane_out
+    ps_out = load_tree_as_df(input_out, psout)
+    ps_out['w'] = plane_out
     verbose("Read output phase space:\n" + str(ps_out))
 
     merge_columns = ['RunID', 'EventID']
-    if args_info.no_nuclear:
+    if no_nuclear:
         merge_columns.append('TrackID')
-    
+
     # Remove duplicates
     _, unique_index = np.unique(ps_in[merge_columns], return_index=True)
     ps_in = ps_in[unique_index]
@@ -93,7 +90,7 @@ def main():
     ps_in_uniques = [n for n in ps_in.dtype.names if n not in merge_columns]
     ps_out_uniques = [n for n in ps_out.dtype.names if n not in merge_columns]
 
-    if args_info.no_nuclear:
+    if no_nuclear:
         # Easy case, there should be at most one row in ps_in and ps_out for keys ['RunID', 'EventID', 'TrackID']
         intersect, intersect_in, intersect_out = np.intersect1d(ps_in[merge_columns], ps_out[merge_columns], return_indices=True)
         pairs = rfn.merge_arrays((intersect, ps_in[ps_in_uniques][intersect_in], ps_out[ps_out_uniques][intersect_out]), asrecarray=True, flatten=True)
@@ -120,7 +117,7 @@ def main():
     PixelType = itk.Vector[ComponentType, 3]
     ImageType = itk.Image[PixelType, 2]
 
-    run_range = range(args_info.min_run, min(number_of_runs, args_info.max_run))
+    run_range = range(min_run, min(number_of_runs, max_run))
     for r in run_range:
         ps_run = pairs[pairs['RunID'] == r]
         if len(ps_run) == 0:
@@ -135,19 +132,41 @@ def main():
         ps_np[:,1,2] = ps_run['w_out']
         ps_np[:,2,0] = ps_run['du_in']
         ps_np[:,2,1] = ps_run['dv_in']
-        ps_np[:,2,2] = ps_run['dw_in'] * args_info.wweight
+        ps_np[:,2,2] = ps_run['dw_in'] * wweight
         ps_np[:,3,0] = ps_run['du_out']
         ps_np[:,3,1] = ps_run['dv_out']
-        ps_np[:,3,2] = ps_run['dw_out'] * args_info.wweight
+        ps_np[:,3,2] = ps_run['dw_out'] * wweight
         ps_np[:,4,0] = ps_run['KineticEnergy_in']
         ps_np[:,4,1] = ps_run['KineticEnergy_out']
-        ps_np[:,4,2] = ps_run['TrackID'] if args_info.no_nuclear else ps_run['TrackID_out']
+        ps_np[:,4,2] = ps_run['TrackID'] if no_nuclear else ps_run['TrackID_out']
 
         df_itk = itk.GetImageFromArray(ps_np, ttype=ImageType)
 
-        output_file = args_info.output.replace('.', f'{r:04d}.')
+        output_file = output.replace('.', f'{r:04d}.')
         itk.imwrite(df_itk, output_file)
         verbose(f"Wrote file {output_file}.")
+
+def main():
+
+    parser = argparse.ArgumentParser(description="Pair corresponding protons from GATE ROOT files")
+    parser.add_argument('-i', '--input-in', help="Root phase space file of particles before object", required=True)
+    parser.add_argument('-j', '--input-out', help="Root phase space file of particles after object", required=True)
+    parser.add_argument('-o', '--output', help="Output file name", required=True)
+    parser.add_argument('--plane-in', help="Plane position of incoming protons", required=True, type=float)
+    parser.add_argument('--plane-out', help="Plane position of outgoing protons", required=True, type=float)
+    parser.add_argument('--min-run', help="Minimum run (inclusive)", default=0, type=int)
+    parser.add_argument('--max-run', help="Maximum run (exclusive)", default=1e6, type=int)
+    parser.add_argument('--no-nuclear', help="Remove inelastic nuclear collisions", default=False, action='store_true')
+    parser.add_argument('--verbose', '-v', help="Verbose execution", default=False, action='store_true')
+    parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
+    parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
+    parser.add_argument('--projw', help="Provide the name of the third axis in the root file", default='X')
+    parser.add_argument('--wweight', help="Weight of the third axis", default=-1.)
+    parser.add_argument('--psin', help="Name of tree in input phase space", default='PhaseSpace')
+    parser.add_argument('--psout', help="Name of tree in output phase space", default='PhaseSpace')
+    args_info = parser.parse_args()
+
+    pctpairprotons(**vars(args_info))
 
 if __name__ == '__main__':
   main()
