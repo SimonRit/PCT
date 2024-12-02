@@ -72,11 +72,11 @@ def main():
 
         return ps
 
-    ps_in = load_tree_as_df(args_info.input_in, 'PhaseSpaceIn')
+    ps_in = load_tree_as_df(args_info.input_in, args_info.psin)
     ps_in['w'] = args_info.plane_in
     verbose("Read input phase space:\n" + str(ps_in))
 
-    ps_out = load_tree_as_df(args_info.input_out, 'PhaseSpaceOut')
+    ps_out = load_tree_as_df(args_info.input_out, args_info.psout)
     ps_out['w'] = args_info.plane_out
     verbose("Read output phase space:\n" + str(ps_out))
 
