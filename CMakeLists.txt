@@ -93,3 +93,4 @@ IF(PCT_WITH_GEANT4)
   ADD_PCT_EXECUTABLE(pctdiffxsection pctdiffxsection.cxx)
 ENDIF(PCT_WITH_GEANT4)
 
+CONFIGURE_FILE("pcttoftowepl.py" "pcttoftowepl.py" COPYONLY)
