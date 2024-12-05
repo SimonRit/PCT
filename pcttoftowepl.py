@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import json
+import sys
 
 import matplotlib.pyplot as plt
 import opengate as gate
@@ -109,6 +110,7 @@ def tof_to_wepl_mc(
 def tof_to_wepl_fit(
     output='pcttoftowepl',
     poly_deg=2,
+    path_type='simple',
     display=False,
     savefig=False,
     verbose=False
@@ -147,12 +149,25 @@ def tof_to_wepl_fit(
         ws = data['Position_X'][event_mask]
         times = data['PreGlobalTime'][event_mask]
 
-        # TODO various strategies
         tofs_event = [times[k] - times[0] for k in range(len(times))]
-        wepls_event = [
-            np.sqrt((us[k] - us[0])**2 + (vs[k] - vs[0])**2 + (ws[k] - ws[0])**2)
-            for k in range(len(ws))
-        ]
+
+        if path_type == 'simple':
+            # Straight line between interaction position in first plane and in plane k
+            wepls_event = [
+                np.sqrt((us[k] - us[0])**2 + (vs[k] - vs[0])**2 + (ws[k] - ws[0])**2)
+                for k in range(len(ws))
+            ]
+        elif path_type == 'realistic':
+            # Path length through all detectors
+            wepls_event = [
+                np.sum([
+                    np.sqrt((us[l] - us[l - 1])**2 + (vs[l] - vs[l - 1])**2 + (ws[l] - ws[l - 1])**2)
+                    for l in range(1, k)
+                ])
+                for k in range(len(ws))
+            ]
+        else:
+            sys.exit(f"Invalid path time {path_type}!")
 
         tofs.extend(tofs_event)
         wepls.extend(wepls_event)
@@ -186,13 +201,14 @@ def pcttoftowepl(
     output='pcttoftowepl',
     number_of_particles=1e4,
     poly_deg=2,
+    path_type='simple',
     visu=False,
     display=False,
     savefig=False,
     verbose=False
 ):
     tof_to_wepl_mc(output, number_of_particles, visu, verbose)
-    p = tof_to_wepl_fit(output, poly_deg, display, savefig, verbose)
+    p = tof_to_wepl_fit(output, poly_deg, path_type, display, savefig, verbose)
     return p
 
 
@@ -202,6 +218,7 @@ def main():
     parser.add_argument('--output', help="Path of outputs", default='pcttoftowepl')
     parser.add_argument('-n', '--number-of-particles', help="Number of generated particles", default=1e4, type=int)
     parser.add_argument('--poly-deg', help="Degrees of polynomial fit", default=2, type=int)
+    parser.add_argument('--path-type', help="How to compute proton path", choices=['simple', 'realistic'], default='simple')
     parser.add_argument('--visu', help="Visualize Monte Carlo simulation", default=False, action='store_true')
     parser.add_argument('--display', help="Display polynomial fit plot", default=False, action='store_true')
     parser.add_argument('--savefig', help="Write polynomial fit plot to disk", default=False, action='store_true')
