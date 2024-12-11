@@ -160,7 +160,7 @@ def main():
     parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
     parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
     parser.add_argument('--projw', help="Provide the name of the third axis in the root file", default='X')
-    parser.add_argument('--wweight', help="Weight of the third axis", default=-1.)
+    parser.add_argument('--wweight', help="Weight of the third axis", default=-1., type=float)
     parser.add_argument('--psin', help="Name of tree in input phase space", default='PhaseSpace')
     parser.add_argument('--psout', help="Name of tree in output phase space", default='PhaseSpace')
     args_info = parser.parse_args()
