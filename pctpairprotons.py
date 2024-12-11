@@ -37,7 +37,6 @@ def pctpairprotons(
             'EventID',
             'TrackID',
             'KineticEnergy',
-            'GlobalTime',
             'Position_X',
             'Position_Y',
             'Position_Z',
