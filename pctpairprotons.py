@@ -16,10 +16,6 @@ def pctpairprotons(
     max_run=1e6,
     no_nuclear=False,
     verbose=False,
-    proju='Y',
-    projv='Z',
-    projw='X',
-    wweight=-1.,
     psin='PhaseSpace',
     psout='PhaseSpace'
 ):
@@ -54,14 +50,14 @@ def pctpairprotons(
             ps[branch_name] = branches[branch_name]
 
         ps = rfn.rename_fields(ps, {
-            'Position_' + str(proju): 'u',
-            'Position_' + str(projv): 'v',
-            'Position_' + str(projw): 'w',
+            'Position_X': 'u',
+            'Position_Y': 'v',
+            'Position_Z': 'w',
         })
         ps = rfn.rename_fields(ps, {
-            'Direction_' + str(proju): 'du',
-            'Direction_' + str(projv): 'dv',
-            'Direction_' + str(projw): 'dw',
+            'Direction_X': 'du',
+            'Direction_Y': 'dv',
+            'Direction_Z': 'dw',
         })
 
         ps = ps[(ps['RunID'] >= min_run) & (ps['RunID'] < max_run)]
@@ -131,10 +127,10 @@ def pctpairprotons(
         ps_np[:,1,2] = ps_run['w_out']
         ps_np[:,2,0] = ps_run['du_in']
         ps_np[:,2,1] = ps_run['dv_in']
-        ps_np[:,2,2] = ps_run['dw_in'] * wweight
+        ps_np[:,2,2] = ps_run['dw_in']
         ps_np[:,3,0] = ps_run['du_out']
         ps_np[:,3,1] = ps_run['dv_out']
-        ps_np[:,3,2] = ps_run['dw_out'] * wweight
+        ps_np[:,3,2] = ps_run['dw_out']
         ps_np[:,4,0] = ps_run['KineticEnergy_in']
         ps_np[:,4,1] = ps_run['KineticEnergy_out']
         ps_np[:,4,2] = ps_run['TrackID'] if no_nuclear else ps_run['TrackID_out']
@@ -157,10 +153,6 @@ def main():
     parser.add_argument('--max-run', help="Maximum run (exclusive)", default=1e6, type=int)
     parser.add_argument('--no-nuclear', help="Remove inelastic nuclear collisions", default=False, action='store_true')
     parser.add_argument('--verbose', '-v', help="Verbose execution", default=False, action='store_true')
-    parser.add_argument('--proju', help="Provide the name of the first axis in the root file", default='Y')
-    parser.add_argument('--projv', help="Provide the name of the second axis in the root file", default='Z')
-    parser.add_argument('--projw', help="Provide the name of the third axis in the root file", default='X')
-    parser.add_argument('--wweight', help="Weight of the third axis", default=-1., type=float)
     parser.add_argument('--psin', help="Name of tree in input phase space", default='PhaseSpace')
     parser.add_argument('--psout', help="Name of tree in output phase space", default='PhaseSpace')
     args_info = parser.parse_args()

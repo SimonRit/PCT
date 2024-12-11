@@ -73,8 +73,6 @@ ENDMACRO (ADD_PCT_EXECUTABLE)
 
 # Executables
 IF(PCT_WITH_ROOT AND NOT WIN32)
-  ADD_PCT_EXECUTABLE(pctpairprotons pctpairprotons.cxx)
-  TARGET_LINK_LIBRARIES(pctpairprotons ${ROOT_LIBRARIES})
   ADD_PCT_EXECUTABLE(pctpairprotonsLomaLinda pctpairprotonsLomaLinda.cxx)
   TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${ROOT_LIBRARIES})
   ADD_PCT_EXECUTABLE(pctpairprotonsLMU_IMPCT pctpairprotonsLMU_IMPCT.cxx)
