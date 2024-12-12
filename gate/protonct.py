@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation
 def protonct(output,
     projections=720,
     protons_per_projection=1000,
+    seed=None,
     visu=False,
     verbose=False
 ):
@@ -25,7 +26,7 @@ def protonct(output,
     sim = gate.Simulation()
 
     sim.random_engine = 'MersenneTwister'
-    sim.random_seed = 'auto'
+    sim.random_seed = 'auto' if seed is None else seed
     sim.check_volumes_overlap = False
     sim.visu = visu
     sim.visu_type = 'vrml'
@@ -146,6 +147,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', help="Output folder", default='output')
     parser.add_argument('-p', '--projections', help="Number of projections", default=720, type=int)
     parser.add_argument('-n', '--protons-per-projection', help="Number of protons per projection", default=1000, type=int)
+    parser.add_argument('-s', '--seed', help="Random number generator seed", type=int, required=False)
     parser.add_argument('--visu', help="Enable visualization", default=False, action='store_true')
     parser.add_argument('--verbose', help="Verbose execution", default=False, action='store_true')
     args = parser.parse_args()
