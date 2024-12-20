@@ -21,14 +21,19 @@ FIND_PACKAGE(Gengetopt REQUIRED)
 find_package(ITK 5.0.0 REQUIRED COMPONENTS RTK)
 include(${ITK_USE_FILE})
 
-IF(NOT WIN32)
+IF(NOT ITK_USE_FFTWD OR NOT ITK_USE_FFTWF)
+    MESSAGE(FATAL_ERROR "You must recompile ITK with ITK_USE_FFTWF and ITK_USE_FFTWD. Then, recompile RTK first and pct second.")
+ENDIF()
+
+#=========================================================
+# ROOT stuff
+OPTION(PCT_WITH_ROOT "Use ROOT" OFF)
+IF(PCT_WITH_ROOT AND NOT WIN32)
   FIND_PACKAGE(ROOT REQUIRED)
   INCLUDE_DIRECTORIES(${ROOT_INCLUDE_DIR})
   SET(LINK_DIRECTORIES ${ROOT_LIBRARY_DIR})
-ENDIF(NOT WIN32)
-
-IF(NOT ITK_USE_FFTWD OR NOT ITK_USE_FFTWF)
-    MESSAGE(FATAL_ERROR "You must recompile ITK with ITK_USE_FFTWF and ITK_USE_FFTWD. Then, recompile RTK first and pct second.")
+ELSE()
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ENDIF()
 
 #=========================================================
@@ -52,6 +57,10 @@ ENDIF()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
 
 #=========================================================
+# Propagate cmake options in a header file
+configure_file(pctConfiguration.h.in pctConfiguration.h)
+
+#=========================================================
 # Executables
 MACRO (ADD_PCT_EXECUTABLE EXE_NAME)
   WRAP_GGO(${EXE_NAME}_GGO_C ${EXE_NAME}.ggo)
@@ -63,18 +72,18 @@ MACRO (ADD_PCT_EXECUTABLE EXE_NAME)
 ENDMACRO (ADD_PCT_EXECUTABLE)
 
 # Executables
-IF(NOT WIN32)
-  ADD_PCT_EXECUTABLE(pctpairprotons pctpairprotons.cxx)
-  TARGET_LINK_LIBRARIES(pctpairprotons ${ROOT_LIBRARIES})
+IF(PCT_WITH_ROOT AND NOT WIN32)
   ADD_PCT_EXECUTABLE(pctpairprotonsLomaLinda pctpairprotonsLomaLinda.cxx)
   TARGET_LINK_LIBRARIES(pctpairprotonsLomaLinda ${ROOT_LIBRARIES})
   ADD_PCT_EXECUTABLE(pctpairprotonsLMU_IMPCT pctpairprotonsLMU_IMPCT.cxx)
   TARGET_LINK_LIBRARIES(pctpairprotonsLMU_IMPCT ${ROOT_LIBRARIES})
-ENDIF(NOT WIN32)
-ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
-TARGET_LINK_LIBRARIES(pctpaircuts ${ROOT_LIBRARIES} RooFit RooFitCore Minuit)
-ADD_PCT_EXECUTABLE(pctlluconverter pctlluconverter.cxx)
-TARGET_LINK_LIBRARIES(pctlluconverter ${ROOT_LIBRARIES})
+  ADD_PCT_EXECUTABLE(pctlluconverter pctlluconverter.cxx)
+  TARGET_LINK_LIBRARIES(pctlluconverter ${ROOT_LIBRARIES})
+  ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
+  TARGET_LINK_LIBRARIES(pctpaircuts ${ROOT_LIBRARIES} RooFit RooFitCore Minuit)
+ELSE()
+  ADD_PCT_EXECUTABLE(pctpaircuts pctpaircuts.cxx)
+ENDIF()
 ADD_PCT_EXECUTABLE(pctpairgeometry pctpairgeometry.cxx)
 ADD_PCT_EXECUTABLE(pctmostlikelypath pctmostlikelypath.cxx)
 ADD_PCT_EXECUTABLE(pctbinning pctbinning.cxx)
@@ -93,4 +102,5 @@ IF(PCT_WITH_GEANT4)
   ADD_PCT_EXECUTABLE(pctdiffxsection pctdiffxsection.cxx)
 ENDIF(PCT_WITH_GEANT4)
 
+CONFIGURE_FILE("pctpairprotons.py" "pctpairprotons.py" COPYONLY)
 CONFIGURE_FILE("pcttoftowepl.py" "pcttoftowepl.py" COPYONLY)
